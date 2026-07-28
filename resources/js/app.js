@@ -1,7 +1,14 @@
-import './bootstrap';
+window.addEventListener("scroll", () => {
 
-import Alpine from 'alpinejs';
+    let nav = document.getElementById("mainNavbar");
 
-window.Alpine = Alpine;
+    if(window.scrollY > 50){
 
-Alpine.start();
+        nav.classList.add("shadow");
+
+    }else{
+
+        nav.classList.remove("shadow");
+    }
+
+});

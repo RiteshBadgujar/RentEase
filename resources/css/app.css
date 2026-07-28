@@ -1,3 +1,178 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "./navbar.css";
+@import "./footer.css";
+@import "./home.css";
+@import "./responsive.css";
+@import "./animations.css";
+
+:root{
+
+    --primary:#2563EB;
+    --primary-dark:#1D4ED8;
+    --secondary:#F59E0B;
+    --success:#10B981;
+
+    --dark:#0F172A;
+    --text:#334155;
+    --light:#F8FAFC;
+
+    --white:#ffffff;
+
+    --radius:18px;
+
+    --transition:.35s ease;
+
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+
+    font-family:'Poppins',sans-serif;
+    background:var(--light);
+    color:var(--text);
+    overflow-x:hidden;
+
+}
+
+section{
+
+    padding:90px 0;
+
+}
+
+.container{
+
+    max-width:1240px;
+
+}
+/* ===========================
+   Navbar
+=========================== */
+
+#mainNavbar{
+    backdrop-filter: blur(15px);
+    transition: .4s ease;
+}
+
+.navbar-brand{
+    letter-spacing:1px;
+}
+
+.nav-link{
+    margin:0 10px;
+    font-weight:500;
+    position:relative;
+}
+
+.nav-link::after{
+
+    content:'';
+    width:0;
+    height:2px;
+    background:#2563EB;
+
+    position:absolute;
+    bottom:-5px;
+    left:0;
+
+    transition:.4s;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after{
+
+    width:100%;
+}
+
+.btn{
+
+    border-radius:50px;
+    transition:.3s;
+}
+
+.btn:hover{
+
+    transform:translateY(-3px);
+}
+
+@media(max-width:991px){
+
+    .navbar-nav{
+
+        text-align:center;
+        margin:25px 0;
+    }
+
+}
+/* ===========================
+   Footer
+=========================== */
+
+.footer-section{
+
+    background:#0F172A;
+
+    padding:70px 0 25px;
+
+}
+
+.footer-section a{
+
+    color:#CBD5E1;
+
+    text-decoration:none;
+
+    display:block;
+
+    margin-bottom:10px;
+
+    transition:.3s;
+
+}
+
+.footer-section a:hover{
+
+    color:white;
+
+    padding-left:8px;
+
+}
+
+.social-icons a{
+
+    width:42px;
+
+    height:42px;
+
+    display:inline-flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border-radius:50%;
+
+    background:#1E293B;
+
+    margin-right:10px;
+
+    font-size:20px;
+
+    transition:.3s;
+
+}
+
+.social-icons a:hover{
+
+    background:#2563EB;
+
+    transform:translateY(-5px);
+}

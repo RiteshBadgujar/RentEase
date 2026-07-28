@@ -1,0 +1,40 @@
+@media(max-width:991px){
+
+    section{
+
+        padding:70px 0;
+
+    }
+
+    h1{
+
+        font-size:2.5rem;
+
+    }
+
+}
+
+@media(max-width:576px){
+
+    h1{
+
+        font-size:2rem;
+
+    }
+
+}
+@media(max-width:991px){
+
+    .advanced-search{
+
+        margin-top:30px;
+
+    }
+
+    .search-wrapper{
+
+        padding:25px;
+
+    }
+
+}
