@@ -11,9 +11,83 @@ class PropertyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $properties = Property::latest()->paginate(10);
+        $query = Property::query();
+
+        // Search by Property Title
+        if ($request->filled('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        // Search by City
+        if ($request->filled('city')) {
+            $query->where('city', 'like', '%' . $request->city . '%');
+        }
+
+        // Filter by Property Type
+        if ($request->filled('property_type')) {
+            $query->where('property_type', $request->property_type);
+        }
+
+        // Filter by Purpose
+        if ($request->filled('purpose')) {
+            $query->where('purpose', $request->purpose);
+        }
+
+        // Filter by Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        // Minimum Price
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+
+        // Maximum Price
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+        // Bedrooms
+        if ($request->filled('bedrooms')) {
+            $query->where('bedrooms', $request->bedrooms);
+        }
+        // Bathrooms
+        if ($request->filled('bathrooms')) {
+            $query->where('bathrooms', $request->bathrooms);
+        }
+
+        // Sorting
+        if ($request->filled('sort')) {
+
+            switch ($request->sort) {
+
+                case 'price_low':
+                    $query->orderBy('price');
+                    break;
+
+                case 'price_high':
+                    $query->orderByDesc('price');
+                    break;
+
+                case 'oldest':
+                    $query->oldest();
+                    break;
+
+                default:
+                    $query->latest();
+                    break;
+            }
+
+        } else {
+
+            $query->latest();
+
+        }
+
+        $properties = $query
+            ->paginate(10)
+            ->withQueryString();
 
         return view('property.index', compact('properties'));
     }
