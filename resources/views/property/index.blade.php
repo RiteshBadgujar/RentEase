@@ -4,474 +4,608 @@
 
 @section('content')
 
-    <div class="container py-5">
+<div class="container py-5">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-            <h2 class="fw-bold">
-                Property Management
-            </h2>
+        <h2 class="fw-bold">
 
-            <a href="{{ route('properties.create') }}" class="btn btn-primary">
+            Property Management
 
-                <i class="bi bi-plus-circle"></i>
+        </h2>
 
-                Add Property
+        <a
+            href="{{ route('properties.create') }}"
+            class="btn btn-primary">
 
-            </a>
+            <i class="bi bi-plus-circle"></i>
+
+            Add Property
+
+        </a>
+
+    </div>
+
+    @if(session('success'))
+
+        <div class="alert alert-success alert-dismissible fade show">
+
+            {{ session('success') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
 
         </div>
 
-        @if(session('success'))
+    @endif
 
-            <div class="alert alert-success alert-dismissible fade show">
+    <!-- Search & Filter -->
 
-                {{ session('success') }}
+    <div class="card shadow border-0 mb-4">
 
-                <button class="btn-close" data-bs-dismiss="alert">
-                </button>
+        <div class="card-header bg-light">
 
-            </div>
+            <h5 class="mb-0">
 
-        @endif
-        <!-- Search & Filter -->
-        <div class="card shadow border-0 mb-4">
+                <i class="bi bi-search me-2"></i>
 
-            <div class="card-header bg-light">
+                Search Properties
 
-                <h5 class="mb-0">
+            </h5>
 
-                    <i class="bi bi-search me-2"></i>
+        </div>
 
-                    Search Properties
+        <div class="card-body">
 
-                </h5>
+            <form
+                action="{{ route('properties.index') }}"
+                method="GET">
 
-            </div>
+                <div class="row">
 
-            <div class="card-body">
+                    <!-- Property Title -->
 
-                <form action="{{ route('properties.index') }}" method="GET">
+                    <div class="col-md-3 mb-3">
 
-                    <div class="row">
+                        <label class="form-label">
 
-                        <!-- Title -->
-                        <div class="col-md-3 mb-3">
+                            Property Title
 
-                            <label class="form-label">
-                                Property Title
-                            </label>
+                        </label>
 
-                            <input type="text" name="title" value="{{ request('title') }}" class="form-control"
-                                placeholder="Property Title">
-
-                        </div>
-
-                        <!-- City -->
-                        <div class="col-md-2 mb-3">
-
-                            <label class="form-label">
-                                City
-                            </label>
-
-                            <input type="text" name="city" value="{{ request('city') }}" class="form-control"
-                                placeholder="City">
-
-                        </div>
-
-                        <!-- Property Type -->
-                        <div class="col-md-2 mb-3">
-
-                            <label class="form-label">
-                                Type
-                            </label>
-
-                            <select name="property_type" class="form-select">
-
-                                <option value="">All</option>
-
-                                <option value="Apartment" {{ request('property_type') == 'Apartment' ? 'selected' : '' }}>
-                                    Apartment
-                                </option>
-
-                                <option value="Villa" {{ request('property_type') == 'Villa' ? 'selected' : '' }}>
-                                    Villa
-                                </option>
-
-                                <option value="House" {{ request('property_type') == 'House' ? 'selected' : '' }}>
-                                    House
-                                </option>
-
-                                <option value="Office" {{ request('property_type') == 'Office' ? 'selected' : '' }}>
-                                    Office
-                                </option>
-
-                                <option value="Shop" {{ request('property_type') == 'Shop' ? 'selected' : '' }}>
-                                    Shop
-                                </option>
-
-                                <option value="Land" {{ request('property_type') == 'Land' ? 'selected' : '' }}>
-                                    Land
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <!-- Purpose -->
-                        <div class="col-md-2 mb-3">
-
-                            <label class="form-label">
-                                Purpose
-                            </label>
-
-                            <select name="purpose" class="form-select">
-
-                                <option value="">All</option>
-
-                                <option value="Rent" {{ request('purpose') == 'Rent' ? 'selected' : '' }}>
-                                    Rent
-                                </option>
-
-                                <option value="Sale" {{ request('purpose') == 'Sale' ? 'selected' : '' }}>
-                                    Sale
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <!-- Status -->
-                        <div class="col-md-3 mb-3">
-
-                            <label class="form-label">
-                                Status
-                            </label>
-
-                            <select name="status" class="form-select">
-
-                                <option value="">All</option>
-
-                                <option value="Available" {{ request('status') == 'Available' ? 'selected' : '' }}>
-                                    Available
-                                </option>
-
-                                <option value="Rented" {{ request('status') == 'Rented' ? 'selected' : '' }}>
-                                    Rented
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <!-- Minimum Price -->
-                        <div class="col-md-2 mb-3">
-
-                            <label class="form-label">
-                                Min Price
-                            </label>
-
-                            <input type="number" name="min_price" value="{{ request('min_price') }}" class="form-control"
-                                placeholder="10000">
-
-                        </div>
-
-                        <!-- Maximum Price -->
-                        <div class="col-md-2 mb-3">
-
-                            <label class="form-label">
-                                Max Price
-                            </label>
-
-                            <input type="number" name="max_price" value="{{ request('max_price') }}" class="form-control"
-                                placeholder="50000">
-
-                        </div>
-
-                        <!-- Bedrooms -->
-                        <div class="col-md-2 mb-3">
-
-                            <label class="form-label">
-                                Bedrooms
-                            </label>
-
-                            <select name="bedrooms" class="form-select">
-
-                                <option value="">All</option>
-
-                                @for($i = 1; $i <= 10; $i++)
-
-                                    <option value="{{ $i }}" {{ request('bedrooms') == $i ? 'selected' : '' }}>
-
-                                        {{ $i }}
-
-                                    </option>
-
-                                @endfor
-
-                            </select>
-
-                        </div>
-
-                        <!-- Bathrooms -->
-                        <div class="col-md-2 mb-3">
-
-                            <label class="form-label">
-                                Bathrooms
-                            </label>
-
-                            <select name="bathrooms" class="form-select">
-
-                                <option value="">All</option>
-
-                                @for($i = 1; $i <= 10; $i++)
-
-                                    <option value="{{ $i }}" {{ request('bathrooms') == $i ? 'selected' : '' }}>
-
-                                        {{ $i }}
-
-                                    </option>
-
-                                @endfor
-
-                            </select>
-
-                        </div>
-
-                        <!-- Sort -->
-                        <div class="col-md-3 mb-3">
-
-                            <label class="form-label">
-                                Sort By
-                            </label>
-
-                            <select name="sort" class="form-select">
-
-                                <option value="">Latest</option>
-
-                                <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>
-                                    Price: Low to High
-                                </option>
-
-                                <option value="price_high" {{ request('sort') == 'price_high' ? 'selected' : '' }}>
-                                    Price: High to Low
-                                </option>
-
-                                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>
-                                    Oldest
-                                </option>
-
-                            </select>
-
-                        </div>
+                        <input
+                            type="text"
+                            name="title"
+                            value="{{ request('title') }}"
+                            class="form-control"
+                            placeholder="Property Title">
 
                     </div>
 
-                    <div class="text-end">
+                    <!-- City -->
 
-                        <a href="{{ route('properties.index') }}" class="btn btn-secondary">
+                    <div class="col-md-2 mb-3">
 
-                            Reset
+                        <label class="form-label">
 
-                        </a>
+                            City
 
-                        <button type="submit" class="btn btn-primary">
+                        </label>
 
-                            Search
-
-                        </button>
+                        <input
+                            type="text"
+                            name="city"
+                            value="{{ request('city') }}"
+                            class="form-control"
+                            placeholder="City">
 
                     </div>
-                </form>
 
-            </div>
+                    <!-- Property Type -->
 
-        </div> 
+                    <div class="col-md-2 mb-3">
 
+                        <label class="form-label">
 
-        <div class="card shadow border-0">
+                            Type
 
-            <div class="card-body">
+                        </label>
 
-                <div class="table-responsive">
+                        <select
+                            name="property_type"
+                            class="form-select">
 
-                    <table class="table table-hover align-middle">
+                            <option value="">All</option>
 
-                        <thead class="table-dark">
+                            <option value="Apartment"
+                                {{ request('property_type') == 'Apartment' ? 'selected' : '' }}>
+                                Apartment
+                            </option>
 
-                            <tr>
+                            <option value="Villa"
+                                {{ request('property_type') == 'Villa' ? 'selected' : '' }}>
+                                Villa
+                            </option>
 
-                                <th>#</th>
+                            <option value="House"
+                                {{ request('property_type') == 'House' ? 'selected' : '' }}>
+                                House
+                            </option>
 
-                                <th>Image</th>
+                            <option value="Office"
+                                {{ request('property_type') == 'Office' ? 'selected' : '' }}>
+                                Office
+                            </option>
 
-                                <th>Title</th>
+                            <option value="Shop"
+                                {{ request('property_type') == 'Shop' ? 'selected' : '' }}>
+                                Shop
+                            </option>
 
-                                <th>Type</th>
+                            <option value="Land"
+                                {{ request('property_type') == 'Land' ? 'selected' : '' }}>
+                                Land
+                            </option>
 
-                                <th>Purpose</th>
+                        </select>
 
-                                <th>Price</th>
+                    </div>
 
-                                <th>City</th>
+                    <!-- Purpose -->
 
-                                <th>Status</th>
+                    <div class="col-md-2 mb-3">
 
-                                <th width="180">Action</th>
+                        <label class="form-label">
 
-                            </tr>
+                            Purpose
 
-                        </thead>
+                        </label>
 
-                        <tbody>
+                        <select
+                            name="purpose"
+                            class="form-select">
 
-                            @forelse($properties as $property)
+                            <option value="">All</option>
 
-                                <tr>
+                            <option value="Rent"
+                                {{ request('purpose') == 'Rent' ? 'selected' : '' }}>
+                                Rent
+                            </option>
 
-                                    <td>{{ $properties->firstItem() + $loop->index }}</td>
+                            <option value="Sale"
+                                {{ request('purpose') == 'Sale' ? 'selected' : '' }}>
+                                Sale
+                            </option>
 
-                                    <td>
+                        </select>
 
-                                        @if($property->image)
+                    </div>
 
-                                            <img src="{{ asset('uploads/properties/' . $property->image) }}" width="80"
-                                                class="rounded shadow">
+                    <!-- Status -->
 
-                                        @else
+                    <div class="col-md-3 mb-3">
 
-                                            <span class="badge bg-secondary">
-                                                No Image
-                                            </span>
+                        <label class="form-label">
 
-                                        @endif
+                            Status
 
-                                    </td>
+                        </label>
 
-                                    <td>
+                        <select
+                            name="status"
+                            class="form-select">
 
-                                        <strong>
+                            <option value="">All</option>
 
-                                            {{ $property->title }}
+                            <option value="Available"
+                                {{ request('status') == 'Available' ? 'selected' : '' }}>
+                                Available
+                            </option>
 
-                                        </strong>
+                            <option value="Rented"
+                                {{ request('status') == 'Rented' ? 'selected' : '' }}>
+                                Rented
+                            </option>
 
-                                    </td>
+                        </select>
 
-                                    <td>
+                    </div>
 
-                                        {{ $property->property_type }}
+                    <!-- Minimum Price -->
 
-                                    </td>
+                    <div class="col-md-2 mb-3">
 
-                                    <td>
+                        <label class="form-label">
 
-                                        {{ $property->purpose }}
+                            Min Price
 
-                                    </td>
+                        </label>
 
-                                    <td>
+                        <input
+                            type="number"
+                            name="min_price"
+                            value="{{ request('min_price') }}"
+                            class="form-control"
+                            placeholder="10000">
 
-                                        ₹{{ number_format($property->price) }}
+                    </div>
 
-                                    </td>
+                    <!-- Maximum Price -->
 
-                                    <td>
+                    <div class="col-md-2 mb-3">
 
-                                        {{ $property->city }}
+                        <label class="form-label">
 
-                                    </td>
+                            Max Price
 
-                                    <td>
+                        </label>
 
-                                        @if($property->status == 'Available')
+                        <input
+                            type="number"
+                            name="max_price"
+                            value="{{ request('max_price') }}"
+                            class="form-control"
+                            placeholder="50000">
 
-                                            <span class="badge bg-success">
+                    </div>
 
-                                                Available
+                    <!-- Bedrooms -->
 
-                                            </span>
+                    <div class="col-md-2 mb-3">
 
-                                        @else
+                        <label class="form-label">
 
-                                            <span class="badge bg-danger">
+                            Bedrooms
 
-                                                Rented
+                        </label>
 
-                                            </span>
+                        <select
+                            name="bedrooms"
+                            class="form-select">
 
-                                        @endif
+                            <option value="">All</option>
 
-                                    </td>
+                            @for($i = 1; $i <= 10; $i++)
 
-                                    <td>
+                                <option
+                                    value="{{ $i }}"
+                                    {{ request('bedrooms') == $i ? 'selected' : '' }}>
 
-                                        <a href="{{ route('properties.show', $property->id) }}" class="btn btn-info btn-sm">
+                                    {{ $i }}
 
-                                            View
+                                </option>
 
-                                        </a>
+                            @endfor
 
-                                        <a href="{{ route('properties.edit', $property->id) }}" class="btn btn-warning btn-sm">
+                        </select>
 
-                                            Edit
+                    </div>
 
-                                        </a>
+                    <!-- Bathrooms -->
 
-                                        <form action="{{ route('properties.destroy', $property->id) }}" method="POST"
-                                            class="d-inline">
+                    <div class="col-md-2 mb-3">
 
-                                            @csrf
+                        <label class="form-label">
 
-                                            @method('DELETE')
+                            Bathrooms
 
-                                            <button class="btn btn-danger btn-sm"
-                                                onclick="return confirm('Delete this property?')">
+                        </label>
 
-                                                Delete
+                        <select
+                            name="bathrooms"
+                            class="form-select">
 
-                                            </button>
+                            <option value="">All</option>
 
-                                        </form>
+                            @for($i = 1; $i <= 10; $i++)
 
-                                    </td>
+                                <option
+                                    value="{{ $i }}"
+                                    {{ request('bathrooms') == $i ? 'selected' : '' }}>
 
-                                </tr>
+                                    {{ $i }}
 
-                            @empty
+                                </option>
 
-                                <tr>
+                            @endfor
 
-                                    <td colspan="9" class="text-center py-5">
+                        </select>
 
-                                        <h5>
+                    </div>
 
-                                            No Properties Found
+                    <!-- Sort -->
 
-                                        </h5>
+                    <div class="col-md-3 mb-3">
 
-                                    </td>
+                        <label class="form-label">
 
-                                </tr>
+                            Sort By
 
-                            @endforelse
+                        </label>
 
-                        </tbody>
+                        <select
+                            name="sort"
+                            class="form-select">
 
-                    </table>
+                            <option value="">Latest</option>
+
+                            <option value="price_low"
+                                {{ request('sort') == 'price_low' ? 'selected' : '' }}>
+                                Price: Low to High
+                            </option>
+
+                            <option value="price_high"
+                                {{ request('sort') == 'price_high' ? 'selected' : '' }}>
+                                Price: High to Low
+                            </option>
+
+                            <option value="oldest"
+                                {{ request('sort') == 'oldest' ? 'selected' : '' }}>
+                                Oldest
+                            </option>
+
+                        </select>
+
+                    </div>
 
                 </div>
 
-                <div class="mt-3">
+                <div class="text-end">
 
-                    {{ $properties->links() }}
+                    <a
+                        href="{{ route('properties.index') }}"
+                        class="btn btn-secondary">
+
+                        Reset
+
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Search
+
+                    </button>
 
                 </div>
 
-            </div>
+            </form>
 
         </div>
 
     </div>
+<div class="card shadow border-0">
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-primary">
+
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Image</th>
+
+                        <th>Title</th>
+
+                        <th>Type</th>
+
+                        <th>Purpose</th>
+
+                        <th>City</th>
+
+                        <th>Price</th>
+
+                        <th>Status</th>
+
+                        <th width="260">Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @forelse($properties as $property)
+
+                        <tr>
+
+                            <td>
+
+                                {{ $properties->firstItem() + $loop->index }}
+
+                            </td>
+
+                            <td>
+
+                                @if(!empty($property->image))
+
+                                    <img
+                                        src="{{ asset('uploads/properties/' . $property->image) }}"
+                                        width="80"
+                                        height="60"
+                                        class="rounded shadow"
+                                        style="object-fit:cover;"
+                                        alt="{{ $property->title }}">
+
+                                @else
+
+                                    <span class="badge bg-secondary">
+
+                                        No Image
+
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                            <td>
+
+                                <strong>
+
+                                    {{ $property->title }}
+
+                                </strong>
+
+                            </td>
+
+                            <td>
+
+                                {{ $property->property_type }}
+
+                            </td>
+
+                            <td>
+
+                                {{ $property->purpose }}
+
+                            </td>
+
+                            <td>
+
+                                {{ $property->city }}
+
+                            </td>
+
+                            <td>
+
+                                ₹{{ number_format($property->price) }}
+
+                            </td>
+
+                            <td>
+
+                                @if($property->status == 'Available')
+
+                                    <span class="badge bg-success">
+
+                                        Available
+
+                                    </span>
+
+                                @else
+
+                                    <span class="badge bg-danger">
+
+                                        Rented
+
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                            <td>
+
+                                <!-- View -->
+
+                                <a
+                                    href="{{ route('properties.show', $property->id) }}"
+                                    class="btn btn-info btn-sm">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </a>
+
+                                @if(auth()->id() == $property->user_id)
+
+                                    <!-- Edit -->
+
+                                    <a
+                                        href="{{ route('properties.edit', $property->id) }}"
+                                        class="btn btn-warning btn-sm">
+
+                                        <i class="bi bi-pencil-square"></i>
+
+                                    </a>
+
+                                    <!-- Delete -->
+
+                                    <form
+                                        action="{{ route('properties.destroy', $property->id) }}"
+                                        method="POST"
+                                        class="d-inline">
+
+                                        @csrf
+
+                                        @method('DELETE')
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Are you sure you want to delete this property?')">
+
+                                            <i class="bi bi-trash"></i>
+
+                                        </button>
+
+                                    </form>
+
+                                @endif
+
+                            </td>
+
+                        </tr>
+
+                    @empty
+
+                        <tr>
+
+                            <td colspan="9" class="text-center py-5">
+
+                                <i class="bi bi-house display-1 text-secondary"></i>
+
+                                <h4 class="mt-3">
+
+                                    No Properties Found
+
+                                </h4>
+
+                                <p class="text-muted">
+
+                                    Try changing your search filters or add a new property.
+
+                                </p>
+
+                                <a
+                                    href="{{ route('properties.create') }}"
+                                    class="btn btn-primary">
+
+                                    Add Property
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    @endforelse
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Pagination -->
+
+<div class="d-flex justify-content-center mt-4">
+
+    {{ $properties->links() }}
+
+</div>
 
 @endsection

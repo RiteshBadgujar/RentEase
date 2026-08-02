@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title','RentEase | Find Your Dream Home')
+@section('title', 'RentEase | Find Your Dream Home')
 
 @section('content')
 
@@ -29,73 +29,102 @@
                 </p>
 
                 <!-- Search -->
+                <form action="{{ route('properties.index') }}" method="GET">
 
-                <div class="search-box shadow-lg">
+                    <div class="search-box shadow-lg">
 
-                    <div class="row g-2">
+                        <div class="row g-2">
 
-                        <div class="col-md-8">
+                            <div class="col-md-8">
 
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder="Search city, apartment or locality">
+                                <input
+                                    type="text"
+                                    name="title"
+                                    class="form-control"
+                                    placeholder="Search city, apartment or locality">
 
-                        </div>
+                            </div>
 
-                        <div class="col-md-4">
+                            <div class="col-md-4">
 
-                            <button class="btn btn-primary w-100">
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-100">
 
-                                <i class="bi bi-search"></i>
+                                    <i class="bi bi-search"></i>
 
-                                Search
+                                    Search
 
-                            </button>
+                                </button>
+
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
+                </form>
 
                 <!-- Buttons -->
-
                 <div class="mt-4 d-flex gap-3 flex-wrap">
 
-                    <a href="#" class="btn btn-primary btn-lg">
+                    <a href="{{ route('properties.index') }}"
+                       class="btn btn-primary btn-lg">
+
+                        <i class="bi bi-buildings me-2"></i>
+
                         Explore Properties
+
                     </a>
 
-                    <a href="#" class="btn btn-outline-primary btn-lg">
-                        Become a Landlord
-                    </a>
+                    @guest
+
+                        <a href="{{ route('register') }}"
+                           class="btn btn-outline-primary btn-lg">
+
+                            <i class="bi bi-person-plus me-2"></i>
+
+                            Become a Landlord
+
+                        </a>
+
+                    @else
+
+                        <a href="{{ route('properties.create') }}"
+                           class="btn btn-outline-primary btn-lg">
+
+                            <i class="bi bi-plus-circle me-2"></i>
+
+                            Add Property
+
+                        </a>
+
+                    @endguest
 
                 </div>
 
                 <!-- Stats -->
-
                 <div class="row mt-5">
 
-                    <div class="col-4">
+                    <div class="col-4 text-center">
 
-                        <h2>15K+</h2>
+                        <h2>{{ number_format($totalProperties) }}+</h2>
 
                         <p>Properties</p>
 
                     </div>
 
-                    <div class="col-4">
+                    <div class="col-4 text-center">
 
-                        <h2>8K+</h2>
+                        <h2>{{ number_format($totalUsers) }}+</h2>
 
-                        <p>Tenants</p>
+                        <p>Users</p>
 
                     </div>
 
-                    <div class="col-4">
+                    <div class="col-4 text-center">
 
-                        <h2>500+</h2>
+                        <h2>{{ number_format($totalLandlords) }}+</h2>
 
                         <p>Landlords</p>
 
@@ -104,9 +133,9 @@
                 </div>
 
             </div>
+            <!-- End Left Side -->
 
             <!-- Right Side -->
-
             <div class="col-lg-6">
 
                 <div class="hero-image-area">
@@ -136,100 +165,129 @@
                 </div>
 
             </div>
+            <!-- End Right Side -->
 
         </div>
 
     </div>
 
 </section>
-<!-- Advanced Search Section -->
+   <!-- =========================
+     Advanced Search Section
+========================= -->
 
 <section class="advanced-search">
 
     <div class="container">
 
-        <div class="search-wrapper shadow-lg">
+        <form action="{{ route('properties.index') }}" method="GET">
 
-            <div class="row g-3 align-items-end">
+            <div class="search-wrapper shadow-lg">
 
-                <div class="col-lg-3 col-md-6">
+                <div class="row g-3 align-items-end">
 
-                    <label class="form-label fw-semibold">
-                        <i class="bi bi-geo-alt-fill text-primary"></i>
-                        Location
-                    </label>
+                    <!-- Location -->
+                    <div class="col-lg-3 col-md-6">
 
-                    <select class="form-select">
-                        <option>Select City</option>
-                        <option>Nashik</option>
-                        <option>Mumbai</option>
-                        <option>Pune</option>
-                        <option>Delhi</option>
-                    </select>
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-geo-alt-fill text-primary"></i>
+                            Location
+                        </label>
 
-                </div>
+                        <select name="city" class="form-select">
 
-                <div class="col-lg-3 col-md-6">
+                            <option value="">Select City</option>
+                            <option value="Nashik">Nashik</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Pune">Pune</option>
+                            <option value="Delhi">Delhi</option>
 
-                    <label class="form-label fw-semibold">
-                        <i class="bi bi-house-door-fill text-primary"></i>
-                        Property Type
-                    </label>
+                        </select>
 
-                    <select class="form-select">
-                        <option>Apartment</option>
-                        <option>Villa</option>
-                        <option>House</option>
-                        <option>PG</option>
-                    </select>
+                    </div>
 
-                </div>
+                    <!-- Property Type -->
+                    <div class="col-lg-3 col-md-6">
 
-                <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-house-door-fill text-primary"></i>
+                            Property Type
+                        </label>
 
-                    <label class="form-label fw-semibold">
-                        Budget
-                    </label>
+                        <select name="property_type" class="form-select">
 
-                    <select class="form-select">
-                        <option>$200 - $500</option>
-                        <option>$500 - $800</option>
-                        <option>$800 - $1200</option>
-                    </select>
+                            <option value="">Select Type</option>
+                            <option value="Apartment">Apartment</option>
+                            <option value="House">House</option>
+                            <option value="Villa">Villa</option>
+                            <option value="PG">PG</option>
+                            <option value="Commercial">Commercial</option>
 
-                </div>
+                        </select>
 
-                <div class="col-lg-2 col-md-6">
+                    </div>
 
-                    <label class="form-label fw-semibold">
-                        Bedrooms
-                    </label>
+                    <!-- Budget -->
+                    <div class="col-lg-2 col-md-6">
 
-                    <select class="form-select">
-                        <option>1 BHK</option>
-                        <option>2 BHK</option>
-                        <option>3 BHK</option>
-                        <option>4 BHK</option>
-                    </select>
+                        <label class="form-label fw-semibold">
+                            Budget
+                        </label>
 
-                </div>
+                        <select name="max_price" class="form-select">
 
-                <div class="col-lg-2">
+                            <option value="">Any Budget</option>
+                            <option value="10000">₹10,000</option>
+                            <option value="20000">₹20,000</option>
+                            <option value="30000">₹30,000</option>
+                            <option value="50000">₹50,000</option>
 
-                    <button class="btn btn-primary w-100">
-                        <i class="bi bi-search"></i>
-                        Search
-                    </button>
+                        </select>
+
+                    </div>
+
+                    <!-- Bedrooms -->
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Bedrooms
+                        </label>
+
+                        <select name="bedrooms" class="form-select">
+
+                            <option value="">Any</option>
+                            <option value="1">1 BHK</option>
+                            <option value="2">2 BHK</option>
+                            <option value="3">3 BHK</option>
+                            <option value="4">4+ BHK</option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- Search -->
+                    <div class="col-lg-2">
+
+                        <button type="submit" class="btn btn-primary w-100">
+
+                            <i class="bi bi-search"></i>
+
+                            Search
+
+                        </button>
+
+                    </div>
 
                 </div>
 
             </div>
 
-        </div>
+        </form>
 
     </div>
 
 </section>
+
 <!-- =========================
      Featured Properties
 ========================= -->
@@ -240,80 +298,120 @@
 
         <div class="text-center mb-5">
 
-            <span class="section-badge">Featured Listings</span>
+            <span class="section-badge">
+
+                Featured Listings
+
+            </span>
 
             <h2 class="section-title mt-3">
+
                 Discover Your Perfect Rental
+
             </h2>
 
             <p class="section-subtitle">
+
                 Explore premium rental properties verified by RentEase.
+
             </p>
 
         </div>
 
         <div class="row g-4">
 
-            <!-- Property Card 1 -->
+            @forelse($featuredProperties as $property)
 
-            <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6">
 
-                <div class="property-card">
+                    <div class="property-card">
 
-                    <div class="property-image">
+                        <div class="property-image">
 
-                        <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800"
-                             class="img-fluid"
-                             alt="Property">
+                            @if($property->image)
 
-                        <span class="property-badge">
-                            Featured
-                        </span>
+                                <img
+                                    src="{{ asset('uploads/properties/' . $property->image) }}"
+                                    class="img-fluid"
+                                    style="height:250px;width:100%;object-fit:cover;"
+                                    alt="{{ $property->title }}">
 
-                        <button class="favorite-btn">
+                            @else
 
-                            <i class="bi bi-heart"></i>
+                                <img
+                                    src="https://placehold.co/600x400?text=No+Image"
+                                    class="img-fluid"
+                                    style="height:250px;width:100%;object-fit:cover;"
+                                    alt="No Image">
 
-                        </button>
+                            @endif
 
-                    </div>
+                            <span class="property-badge">
 
-                    <div class="property-content">
-
-                        <h4>$1,200 / Month</h4>
-
-                        <h5>Modern Family Apartment</h5>
-
-                        <p>
-                            <i class="bi bi-geo-alt-fill"></i>
-                            Nashik, Maharashtra
-                        </p>
-
-                        <div class="property-info">
-
-                            <span><i class="bi bi-door-open"></i> 3 Beds</span>
-
-                            <span><i class="bi bi-droplet"></i> 2 Baths</span>
-
-                            <span><i class="bi bi-aspect-ratio"></i> 1200 sqft</span>
-
-                        </div>
-
-                        <hr>
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <span>
-
-                                ⭐ 4.9
+                                {{ $property->status }}
 
                             </span>
 
-                            <button class="btn btn-primary">
+                        </div>
+
+                        <div class="property-content">
+
+                            <h4>
+
+                                ₹{{ number_format($property->price) }}/Month
+
+                            </h4>
+
+                            <h5>
+
+                                {{ $property->title }}
+
+                            </h5>
+
+                            <p>
+
+                                <i class="bi bi-geo-alt-fill"></i>
+
+                                {{ $property->city }}
+
+                            </p>
+
+                            <div class="property-info">
+
+                                <span>
+
+                                    <i class="bi bi-door-open"></i>
+
+                                    {{ $property->bedrooms }} Beds
+
+                                </span>
+
+                                <span>
+
+                                    <i class="bi bi-droplet"></i>
+
+                                    {{ $property->bathrooms }} Baths
+
+                                </span>
+
+                                <span>
+
+                                    <i class="bi bi-aspect-ratio"></i>
+
+                                    {{ $property->area }} Sq.Ft.
+
+                                </span>
+
+                            </div>
+
+                            <hr>
+
+                            <a href="{{ route('properties.show', $property->id) }}"
+                               class="btn btn-primary w-100">
 
                                 View Details
 
-                            </button>
+                            </a>
 
                         </div>
 
@@ -321,80 +419,24 @@
 
                 </div>
 
-            </div>
+            @empty
 
-            <!-- Duplicate this card for more properties -->
+                <div class="col-12 text-center">
+
+                    <h4>No Properties Available</h4>
+
+                </div>
+
+            @endforelse
 
         </div>
 
     </div>
 
 </section>
-<section class="why-us py-5">
 
-<div class="container">
-
-<div class="text-center mb-5">
-
-<span class="section-badge">Why Choose Us</span>
-
-<h2 class="section-title mt-3">
-Why RentEase?
-</h2>
-
-</div>
-
-<div class="row g-4">
-
-<div class="col-md-4">
-
-<div class="feature-card">
-
-<i class="bi bi-patch-check-fill"></i>
-
-<h4>Verified Listings</h4>
-
-<p>Every property is verified before publishing.</p>
-
-</div>
-
-</div>
-
-<div class="col-md-4">
-
-<div class="feature-card">
-
-<i class="bi bi-shield-lock-fill"></i>
-
-<h4>Secure Platform</h4>
-
-<p>Safe login, bookings and communication.</p>
-
-</div>
-
-</div>
-
-<div class="col-md-4">
-
-<div class="feature-card">
-
-<i class="bi bi-headset"></i>
-
-<h4>24×7 Support</h4>
-
-<p>Dedicated support whenever you need help.</p>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-<!-- =========================
-     Property Categories
+    <!-- =========================
+      Property Categories
 ========================= -->
 
 <section class="categories py-5">
@@ -406,47 +448,89 @@ Why RentEase?
             <span class="section-badge">Categories</span>
 
             <h2 class="section-title mt-3">
+
                 Browse By Property Type
+
             </h2>
 
             <p class="section-subtitle">
+
                 Find the perfect property that matches your lifestyle.
+
             </p>
 
         </div>
 
-        <div class="row g-4">
+        @php
 
-            @php
-                $categories = [
-                    ['icon'=>'bi-buildings-fill','title'=>'Apartment','count'=>'320+'],
-                    ['icon'=>'bi-house-door-fill','title'=>'House','count'=>'210+'],
-                    ['icon'=>'bi-bank','title'=>'Villa','count'=>'95+'],
-                    ['icon'=>'bi-door-open-fill','title'=>'PG','count'=>'180+'],
-                    ['icon'=>'bi-building','title'=>'Office','count'=>'75+'],
-                    ['icon'=>'bi-shop','title'=>'Commercial','count'=>'55+']
-                ];
-            @endphp
+            use App\Models\Property;
+
+            $categories = [
+
+                [
+                    'icon' => 'bi-buildings-fill',
+                    'title' => 'Apartment'
+                ],
+
+                [
+                    'icon' => 'bi-house-door-fill',
+                    'title' => 'House'
+                ],
+
+                [
+                    'icon' => 'bi-bank',
+                    'title' => 'Villa'
+                ],
+
+                [
+                    'icon' => 'bi-door-open-fill',
+                    'title' => 'PG'
+                ],
+
+                [
+                    'icon' => 'bi-building',
+                    'title' => 'Office'
+                ],
+
+                [
+                    'icon' => 'bi-shop',
+                    'title' => 'Commercial'
+                ]
+
+            ];
+
+        @endphp
+
+        <div class="row g-4">
 
             @foreach($categories as $category)
 
-            <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6">
 
-                <div class="category-card">
+                    <div class="category-card text-center">
 
-                    <div class="category-icon">
+                        <div class="category-icon">
 
-                        <i class="bi {{ $category['icon'] }}"></i>
+                            <i class="bi {{ $category['icon'] }}"></i>
+
+                        </div>
+
+                        <h4>
+
+                            {{ $category['title'] }}
+
+                        </h4>
+
+                        <p>
+
+                            {{ Property::where('property_type', $category['title'])->count() }}
+                            Properties
+
+                        </p>
 
                     </div>
 
-                    <h4>{{ $category['title'] }}</h4>
-
-                    <p>{{ $category['count'] }} Properties</p>
-
                 </div>
-
-            </div>
 
             @endforeach
 
@@ -455,174 +539,81 @@ Why RentEase?
     </div>
 
 </section>
+
+<!-- =========================
+      Popular Cities
+========================= -->
+
 <section class="popular-cities py-5">
 
-<div class="container">
+    <div class="container">
 
-<div class="text-center mb-5">
+        <div class="text-center mb-5">
 
-<span class="section-badge">Popular Cities</span>
+            <span class="section-badge">
 
-<h2 class="section-title">
-Top Rental Locations
-</h2>
+                Popular Cities
 
-</div>
+            </span>
 
-<div class="row g-4">
+            <h2 class="section-title">
 
-@foreach(['Nashik','Mumbai','Pune','Delhi','Bengaluru','Hyderabad'] as $city)
+                Top Rental Locations
 
-<div class="col-lg-4 col-md-6">
+            </h2>
 
-<div class="city-card">
+        </div>
 
-<h3>{{ $city }}</h3>
+        @php
 
-<p>120+ Properties Available</p>
+            $cities = Property::select('city')
+                        ->distinct()
+                        ->orderBy('city')
+                        ->get();
 
-</div>
+        @endphp
 
-</div>
+        <div class="row g-4">
 
-@endforeach
+            @forelse($cities as $city)
 
-</div>
+                <div class="col-lg-4 col-md-6">
 
-</div>
+                    <div class="city-card">
 
-</section>
-<section class="testimonials py-5">
+                        <h3>
 
-<div class="container">
+                            {{ $city->city }}
 
-<div class="text-center mb-5">
+                        </h3>
 
-<span class="section-badge">
-Testimonials
-</span>
+                        <p>
 
-<h2 class="section-title">
-What Our Users Say
-</h2>
+                            {{ Property::where('city', $city->city)->count() }}
+                            Properties Available
 
-</div>
+                        </p>
 
-<div class="row g-4">
+                    </div>
 
-@for($i=1;$i<=3;$i++)
+                </div>
 
-<div class="col-lg-4">
+            @empty
 
-<div class="testimonial-card">
+                <div class="col-12 text-center">
 
-<h5>★★★★★</h5>
+                    <h4>
 
-<p>
+                        No Cities Available
 
-RentEase helped me find a rental home quickly.
-The interface is clean and easy to use.
+                    </h4>
 
-</p>
+                </div>
 
-<h6>Rahul Sharma</h6>
+            @endforelse
 
-<small>Tenant</small>
+        </div>
 
-</div>
-
-</div>
-
-@endfor
-
-</div>
-
-</div>
+    </div>
 
 </section>
-<section class="stats py-5 bg-primary text-white">
-
-<div class="container">
-
-<div class="row text-center">
-
-<div class="col-md-3">
-
-<h2>15K+</h2>
-
-<p>Properties</p>
-
-</div>
-
-<div class="col-md-3">
-
-<h2>8K+</h2>
-
-<p>Tenants</p>
-
-</div>
-
-<div class="col-md-3">
-
-<h2>500+</h2>
-
-<p>Landlords</p>
-
-</div>
-
-<div class="col-md-3">
-
-<h2>95%</h2>
-
-<p>Satisfaction</p>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-<section class="newsletter py-5">
-
-<div class="container">
-
-<div class="newsletter-box">
-
-<div class="row align-items-center">
-
-<div class="col-lg-6">
-
-<h2>Subscribe To Our Newsletter</h2>
-
-<p>Receive the latest property listings and rental updates.</p>
-
-</div>
-
-<div class="col-lg-6">
-
-<form class="d-flex gap-2">
-
-<input
-type="email"
-class="form-control"
-placeholder="Enter your email">
-
-<button class="btn btn-primary">
-
-Subscribe
-
-</button>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-@endsection

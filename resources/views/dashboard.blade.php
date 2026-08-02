@@ -126,6 +126,95 @@
         </div>
 
     </div>
+    <!-- Enquiry Statistics -->
+
+<div class="row g-4 mt-1">
+
+    <!-- Total Enquiries -->
+
+    <div class="col-lg-4 col-md-6">
+
+        <div class="card shadow border-0 h-100">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-chat-dots-fill display-4 text-primary"></i>
+
+                <h5 class="mt-3">
+
+                    Total Enquiries
+
+                </h5>
+
+                <h2 class="fw-bold">
+
+                    {{ $totalEnquiries }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Pending Enquiries -->
+
+    <div class="col-lg-4 col-md-6">
+
+        <div class="card shadow border-0 h-100">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-hourglass-split display-4 text-warning"></i>
+
+                <h5 class="mt-3">
+
+                    Pending
+
+                </h5>
+
+                <h2 class="fw-bold">
+
+                    {{ $pendingEnquiries }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Replied Enquiries -->
+
+    <div class="col-lg-4 col-md-6">
+
+        <div class="card shadow border-0 h-100">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-check-circle-fill display-4 text-success"></i>
+
+                <h5 class="mt-3">
+
+                    Replied
+
+                </h5>
+
+                <h2 class="fw-bold">
+
+                    {{ $repliedEnquiries }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
     <!-- Quick Actions -->
     <div class="row mt-4">

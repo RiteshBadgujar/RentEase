@@ -47,8 +47,19 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * User owns many properties.
+     */
     public function properties()
-{
-    return $this->hasMany(Property::class);
-}
+    {
+        return $this->hasMany(Property::class);
+    }
+
+    /**
+     * User has many wishlist items.
+     */
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
 }

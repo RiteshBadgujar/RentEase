@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Property;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+
 
 class PropertyController extends Controller
 {
@@ -103,6 +105,19 @@ class PropertyController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    /**
+     * Generate unique property slug.
+     */
+    private function generateSlug($title)
+    {
+        $slug = Str::slug($title);
+
+        $count = Property::where('slug', 'LIKE', "{$slug}%")->count();
+
+        return $count
+            ? "{$slug}-" . ($count + 1)
+            : $slug;
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -141,7 +156,7 @@ class PropertyController extends Controller
         Property::create([
             'user_id' => auth()->id(),
             'title' => $request->title,
-            'slug' => Str::slug($request->title),
+            'slug' => $this->generateSlug($request->title),
             'description' => $request->description,
             'property_type' => $request->property_type,
             'purpose' => $request->purpose,
@@ -171,7 +186,20 @@ class PropertyController extends Controller
      */
     public function show(Property $property)
     {
-        return view('property.show', compact('property'));
+        $isWishlisted = false;
+
+        if (auth()->check()) {
+
+            $isWishlisted = \App\Models\Wishlist::where('user_id', auth()->id())
+                ->where('property_id', $property->id)
+                ->exists();
+
+        }
+
+        return view('property.show', compact(
+            'property',
+            'isWishlisted'
+        ));
     }
 
     /**
@@ -179,6 +207,12 @@ class PropertyController extends Controller
      */
     public function edit(Property $property)
     {
+        if ($property->user_id !== auth()->id()) {
+
+            abort(403, 'Unauthorized Access.');
+
+        }
+
         return view('property.edit', compact('property'));
     }
 
@@ -187,6 +221,11 @@ class PropertyController extends Controller
      */
     public function update(Request $request, Property $property)
     {
+        if ($property->user_id !== auth()->id()) {
+
+            abort(403, 'Unauthorized Access.');
+
+        }
         $request->validate([
             'title' => 'required|max:255',
             'property_type' => 'required',
@@ -229,7 +268,7 @@ class PropertyController extends Controller
 
         $property->update([
             'title' => $request->title,
-            'slug' => Str::slug($request->title),
+            'slug' => $this->generateSlug($request->title),
             'description' => $request->description,
             'property_type' => $request->property_type,
             'purpose' => $request->purpose,
@@ -259,6 +298,12 @@ class PropertyController extends Controller
      */
     public function destroy(Property $property)
     {
+        if ($property->user_id !== auth()->id()) {
+
+            abort(403, 'Unauthorized Access.');
+
+        }
+
         if (
             $property->image &&
             file_exists(public_path('uploads/properties/' . $property->image))

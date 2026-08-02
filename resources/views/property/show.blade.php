@@ -14,19 +14,13 @@
 
                 @if($property->image)
 
-                    <img
-                        src="{{ asset('uploads/properties/'.$property->image) }}"
-                        class="card-img-top"
-                        style="height:450px;object-fit:cover;"
-                        alt="{{ $property->title }}">
+                    <img src="{{ asset('uploads/properties/' . $property->image) }}" class="card-img-top"
+                        style="height:450px;object-fit:cover;" alt="{{ $property->title }}">
 
                 @else
 
-                    <img
-                        src="https://placehold.co/1200x450?text=No+Image"
-                        class="card-img-top"
-                        style="height:450px;object-fit:cover;"
-                        alt="No Image">
+                    <img src="https://placehold.co/1200x450?text=No+Image" class="card-img-top"
+                        style="height:450px;object-fit:cover;" alt="No Image">
 
                 @endif
 
@@ -62,7 +56,7 @@
 
                     <h3 class="text-primary fw-bold mb-4">
 
-                        ₹{{ number_format($property->price,2) }}
+                        ₹{{ number_format($property->price, 2) }}
 
                     </h3>
 
@@ -72,13 +66,16 @@
 
                             <div class="border rounded p-3 h-100">
 
-                                <p><strong><i class="bi bi-house-door me-2"></i>Type:</strong> {{ $property->property_type }}</p>
+                                <p><strong><i class="bi bi-house-door me-2"></i>Type:</strong>
+                                    {{ $property->property_type }}</p>
 
                                 <p><strong><i class="bi bi-tag me-2"></i>Purpose:</strong> {{ $property->purpose }}</p>
 
-                                <p><strong><i class="bi bi-wallet2 me-2"></i>Deposit:</strong> ₹{{ number_format($property->deposit ?? 0,2) }}</p>
+                                <p><strong><i class="bi bi-wallet2 me-2"></i>Deposit:</strong>
+                                    ₹{{ number_format($property->deposit ?? 0, 2) }}</p>
 
-                                <p><strong><i class="bi bi-rulers me-2"></i>Area:</strong> {{ $property->area }} Sq. Ft.</p>
+                                <p><strong><i class="bi bi-rulers me-2"></i>Area:</strong> {{ $property->area }} Sq. Ft.
+                                </p>
 
                             </div>
 
@@ -88,11 +85,14 @@
 
                             <div class="border rounded p-3 h-100">
 
-                                <p><strong><i class="bi bi-door-open me-2"></i>Bedrooms:</strong> {{ $property->bedrooms }}</p>
+                                <p><strong><i class="bi bi-door-open me-2"></i>Bedrooms:</strong>
+                                    {{ $property->bedrooms }}</p>
 
-                                <p><strong><i class="bi bi-droplet me-2"></i>Bathrooms:</strong> {{ $property->bathrooms }}</p>
+                                <p><strong><i class="bi bi-droplet me-2"></i>Bathrooms:</strong>
+                                    {{ $property->bathrooms }}</p>
 
-                                <p><strong><i class="bi bi-building me-2"></i>Balconies:</strong> {{ $property->balconies }}</p>
+                                <p><strong><i class="bi bi-building me-2"></i>Balconies:</strong>
+                                    {{ $property->balconies }}</p>
 
                                 <p><strong><i class="bi bi-car-front me-2"></i>Parking:</strong>
 
@@ -165,15 +165,111 @@
                             - {{ $property->pincode }}
 
                         </p>
-
                     </div>
 
                     <hr>
 
-                    <div class="d-flex gap-2">
+                    @auth
 
-                        <a href="{{ route('properties.index') }}"
-                           class="btn btn-secondary">
+                        @if(auth()->id() != $property->user_id)
+
+                            <div class="card border-0 shadow-sm mb-4">
+
+                                <div class="card-body">
+
+                                    <h4 class="fw-bold mb-3">
+
+                                        <i class="bi bi-chat-dots-fill text-success me-2"></i>
+
+                                        Contact Landlord
+
+                                    </h4>
+
+                                    @if(session('success'))
+
+                                        <div class="alert alert-success">
+
+                                            {{ session('success') }}
+
+                                        </div>
+
+                                    @endif
+
+                                    @if(session('error'))
+
+                                        <div class="alert alert-danger">
+
+                                            {{ session('error') }}
+
+                                        </div>
+
+                                    @endif
+
+                                    @if($errors->any())
+
+                                        <div class="alert alert-danger">
+
+                                            <ul class="mb-0">
+
+                                                @foreach($errors->all() as $error)
+
+                                                    <li>{{ $error }}</li>
+
+                                                @endforeach
+
+                                            </ul>
+
+                                        </div>
+
+                                    @endif
+
+                                    <form action="{{ route('enquiries.store', $property->id) }}" method="POST">
+
+                                        @csrf
+
+                                        <div class="mb-3">
+
+                                            <label class="form-label">
+
+                                                Message
+
+                                            </label>
+
+                                            <textarea
+                                                name="message"
+                                                class="form-control"
+                                                rows="5"
+                                                placeholder="Write your enquiry..."
+                                                required>{{ old('message') }}</textarea>
+
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-success">
+
+                                            <i class="bi bi-send-fill me-2"></i>
+
+                                            Send Enquiry
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        @endif
+
+                    @endauth
+
+                    <hr>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <!-- Back Button -->
+                        <a href="{{ route('properties.index') }}" class="btn btn-secondary">
 
                             <i class="bi bi-arrow-left me-1"></i>
 
@@ -181,33 +277,74 @@
 
                         </a>
 
-                        <a href="{{ route('properties.edit', $property->id) }}"
-                           class="btn btn-warning">
+                        @if(auth()->id() == $property->user_id)
 
-                            <i class="bi bi-pencil-square me-1"></i>
+                            <!-- Edit -->
+                            <a href="{{ route('properties.edit', $property->id) }}" class="btn btn-warning">
 
-                            Edit
+                                <i class="bi bi-pencil-square me-1"></i>
 
-                        </a>
+                                Edit
 
-                        <form action="{{ route('properties.destroy', $property->id) }}"
-                              method="POST">
+                            </a>
 
-                            @csrf
-                            @method('DELETE')
+                            <!-- Delete -->
+                            <form action="{{ route('properties.destroy', $property->id) }}" method="POST">
 
-                            <button
-                                type="submit"
-                                class="btn btn-danger"
-                                onclick="return confirm('Are you sure you want to delete this property?')">
+                                @csrf
+                                @method('DELETE')
 
-                                <i class="bi bi-trash me-1"></i>
+                                <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Are you sure you want to delete this property?')">
 
-                                Delete
+                                    <i class="bi bi-trash me-1"></i>
 
-                            </button>
+                                    Delete
 
-                        </form>
+                                </button>
+
+                            </form>
+
+                        @endif
+                        <!-- Wishlist -->
+                        @auth
+
+                            @if($isWishlisted)
+
+                                <form action="{{ route('wishlist.destroy', $property->id) }}" method="POST">
+
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn btn-outline-danger">
+
+                                        <i class="bi bi-heartbreak-fill me-1"></i>
+
+                                        Remove Wishlist
+
+                                    </button>
+
+                                </form>
+
+                            @else
+
+                                <form action="{{ route('wishlist.store', $property->id) }}" method="POST">
+
+                                    @csrf
+
+                                    <button type="submit" class="btn btn-outline-primary">
+
+                                        <i class="bi bi-heart-fill me-1"></i>
+
+                                        Add Wishlist
+
+                                    </button>
+
+                                </form>
+
+                            @endif
+
+                        @endauth
 
                     </div>
 
@@ -220,5 +357,4 @@
     </div>
 
 </div>
-
 @endsection
