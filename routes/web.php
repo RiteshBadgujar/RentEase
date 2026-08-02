@@ -7,6 +7,8 @@ use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\EnquiryController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\TenantBookingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +76,42 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | Booking System (Landlord)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/bookings', [BookingController::class, 'index'])
+        ->name('bookings.index');
+
+    Route::post('/properties/{property}/booking', [BookingController::class, 'store'])
+        ->name('bookings.store');
+
+    Route::get('/bookings/{booking}', [BookingController::class, 'show'])
+        ->name('bookings.show');
+
+    Route::patch('/bookings/{booking}', [BookingController::class, 'update'])
+        ->name('bookings.update');
+
+    Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])
+        ->name('bookings.destroy');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tenant Booking History
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/my-bookings', [TenantBookingController::class, 'index'])
+        ->name('tenant.bookings.index');
+
+    Route::get('/my-bookings/{booking}', [TenantBookingController::class, 'show'])
+        ->name('tenant.bookings.show');
+
+    Route::delete('/my-bookings/{booking}', [TenantBookingController::class, 'destroy'])
+        ->name('tenant.bookings.destroy');
+
+    /*
+    |--------------------------------------------------------------------------
     | User Profile
     |--------------------------------------------------------------------------
     */
@@ -86,7 +124,6 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
-
 });
 
 require __DIR__.'/auth.php';

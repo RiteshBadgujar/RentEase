@@ -9,23 +9,34 @@ class Property extends Model
 {
     use HasFactory;
 
-    /**
-     * Mass assignable attributes.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignable Attributes
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
+
         'user_id',
+
         'title',
+
         'slug',
+
         'description',
 
         'property_type',
+
         'purpose',
 
         'price',
+
         'deposit',
 
         'bedrooms',
+
         'bathrooms',
+
         'balconies',
 
         'area',
@@ -35,26 +46,43 @@ class Property extends Model
         'parking',
 
         'address',
+
         'city',
+
         'state',
+
         'pincode',
 
         'image',
 
         'status',
+
     ];
 
-    /**
-     * Attribute casting.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Attribute Casting
+    |--------------------------------------------------------------------------
+    */
+
     protected $casts = [
+
         'price' => 'decimal:2',
+
         'deposit' => 'decimal:2',
+
         'parking' => 'boolean',
+
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     /**
-     * Property belongs to a user (owner).
+     * Property belongs to a User (Owner)
      */
     public function user()
     {
@@ -62,10 +90,26 @@ class Property extends Model
     }
 
     /**
-     * Property has many wishlist entries.
+     * Property has many Wishlist items.
      */
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
+    }
+
+    /**
+     * Property has many Enquiries.
+     */
+    public function enquiries()
+    {
+        return $this->hasMany(Enquiry::class);
+    }
+
+    /**
+     * Property has many Bookings.
+     */
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
     }
 }
