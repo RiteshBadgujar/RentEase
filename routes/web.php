@@ -15,6 +15,11 @@ use App\Http\Controllers\AdminController;
 
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminPropertyController;
+use App\Http\Controllers\Admin\AdminBookingController;
+use App\Http\Controllers\Admin\AdminEnquiryController;
+use App\Http\Controllers\Admin\AdminNotificationController;
+use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminActivityLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -192,6 +197,32 @@ Route::middleware([
         */
 
         Route::resource('properties', AdminPropertyController::class)
+            ->except([
+                'create',
+                'store'
+            ]);
+
+        Route::resource('bookings', AdminBookingController::class)
+            ->except([
+                'create',
+                'store'
+            ]);
+        Route::resource('enquiries', AdminEnquiryController::class)
+            ->except([
+                'create',
+                'store'
+            ]);
+
+        Route::resource('notifications', AdminNotificationController::class)
+            ->except([
+                'create',
+                'store'
+            ]);
+
+        Route::get('/reports', [AdminReportController::class, 'index'])
+            ->name('reports.index');
+
+        Route::resource('activity-logs', AdminActivityLogController::class)
             ->except([
                 'create',
                 'store'

@@ -201,4 +201,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+    /**
+     * Activity Logs
+     */
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
 }
