@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Enquiry extends Model
+class Notification extends Model
 {
     use HasFactory;
 
@@ -17,15 +17,17 @@ class Enquiry extends Model
 
     protected $fillable = [
 
-        'property_id',
+        'user_id',
 
-        'sender_id',
-
-        'receiver_id',
+        'title',
 
         'message',
 
-        'status',
+        'type',
+
+        'url',
+
+        'is_read',
 
     ];
 
@@ -37,7 +39,19 @@ class Enquiry extends Model
 
     protected $attributes = [
 
-        'status' => 'Pending',
+        'is_read' => false,
+
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Attribute Casting
+    |--------------------------------------------------------------------------
+    */
+
+    protected $casts = [
+
+        'is_read' => 'boolean',
 
     ];
 
@@ -48,27 +62,11 @@ class Enquiry extends Model
     */
 
     /**
-     * Enquiry belongs to a Property.
+     * Notification belongs to a User.
      */
-    public function property()
+    public function user()
     {
-        return $this->belongsTo(Property::class);
-    }
-
-    /**
-     * User who sent the enquiry.
-     */
-    public function sender()
-    {
-        return $this->belongsTo(User::class, 'sender_id');
-    }
-
-    /**
-     * Property owner who received the enquiry.
-     */
-    public function receiver()
-    {
-        return $this->belongsTo(User::class, 'receiver_id');
+        return $this->belongsTo(User::class);
     }
 
     /*
@@ -78,18 +76,36 @@ class Enquiry extends Model
     */
 
     /**
-     * Pending enquiries.
+     * Scope unread notifications.
      */
-    public function scopePending($query)
+    public function scopeUnread($query)
     {
-        return $query->where('status', 'Pending');
+        return $query->where('is_read', false);
     }
 
     /**
-     * Replied enquiries.
+     * Scope read notifications.
      */
-    public function scopeReplied($query)
+    public function scopeRead($query)
     {
-        return $query->where('status', 'Replied');
+        return $query->where('is_read', true);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helper Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Mark the notification as read.
+     */
+    public function markAsRead()
+    {
+        $this->update([
+
+            'is_read' => true,
+
+        ]);
     }
 }

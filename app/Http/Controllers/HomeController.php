@@ -18,11 +18,13 @@ class HomeController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalProperties = Property::count();
+        $totalProperties = Property::where('status', 'Available')
+            ->count();
 
         $totalUsers = User::count();
 
-        $totalLandlords = User::has('properties')->count();
+        $totalLandlords = User::has('properties')
+            ->count();
 
         /*
         |--------------------------------------------------------------------------
@@ -30,18 +32,20 @@ class HomeController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $featuredProperties = Property::where('status', 'Available')
+        $featuredProperties = Property::with('user')
+            ->where('status', 'Available')
             ->latest()
             ->take(6)
             ->get();
 
         /*
         |--------------------------------------------------------------------------
-        | Property Category Counts (Single Query)
+        | Property Category Counts
         |--------------------------------------------------------------------------
         */
 
-        $categoryCounts = Property::select('property_type')
+        $categoryCounts = Property::where('status', 'Available')
+            ->select('property_type')
             ->selectRaw('COUNT(*) as total')
             ->groupBy('property_type')
             ->pluck('total', 'property_type');
@@ -92,7 +96,8 @@ class HomeController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $cities = Property::select('city')
+        $cities = Property::where('status', 'Available')
+            ->select('city')
             ->selectRaw('COUNT(*) as total')
             ->groupBy('city')
             ->orderBy('city')

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Property;
-use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -15,7 +14,7 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Property::query();
+        $query = Property::with('user');
 
         // Search by Property Title
         if ($request->filled('title')) {
@@ -154,26 +153,47 @@ class PropertyController extends Controller
         }
 
         Property::create([
+
             'user_id' => auth()->id(),
+
             'title' => $request->title,
+
             'slug' => $this->generateSlug($request->title),
+
             'description' => $request->description,
+
             'property_type' => $request->property_type,
+
             'purpose' => $request->purpose,
+
             'price' => $request->price,
+
             'deposit' => $request->deposit,
+
             'bedrooms' => $request->bedrooms,
+
             'bathrooms' => $request->bathrooms,
+
             'balconies' => $request->balconies,
+
             'area' => $request->area,
+
             'furnishing' => $request->furnishing,
+
             'parking' => $request->parking,
+
             'address' => $request->address,
+
             'city' => $request->city,
+
             'state' => $request->state,
+
             'pincode' => $request->pincode,
+
             'image' => $imageName,
+
             'status' => $request->status,
+
         ]);
 
         return redirect()
@@ -266,27 +286,45 @@ class PropertyController extends Controller
             );
         }
 
-        $property->update([
-            'title' => $request->title,
-            'slug' => $this->generateSlug($request->title),
-            'description' => $request->description,
-            'property_type' => $request->property_type,
-            'purpose' => $request->purpose,
-            'price' => $request->price,
-            'deposit' => $request->deposit,
-            'bedrooms' => $request->bedrooms,
-            'bathrooms' => $request->bathrooms,
-            'balconies' => $request->balconies,
-            'area' => $request->area,
-            'furnishing' => $request->furnishing,
-            'parking' => $request->parking,
-            'address' => $request->address,
-            'city' => $request->city,
-            'state' => $request->state,
-            'pincode' => $request->pincode,
-            'image' => $imageName,
-            'status' => $request->status,
-        ]);
+     $request->validate([
+
+    'title' => 'required|string|max:255',
+
+    'property_type' => 'required|string|max:100',
+
+    'purpose' => 'required|string|max:100',
+
+    'price' => 'required|numeric|min:0',
+
+    'deposit' => 'nullable|numeric|min:0',
+
+    'bedrooms' => 'required|integer|min:0',
+
+    'bathrooms' => 'required|integer|min:0',
+
+    'balconies' => 'nullable|integer|min:0',
+
+    'area' => 'required|numeric|min:1',
+
+    'furnishing' => 'required|string|max:100',
+
+    'parking' => 'required|boolean',
+
+    'address' => 'required|string|max:500',
+
+    'city' => 'required|string|max:100',
+
+    'state' => 'required|string|max:100',
+
+    'pincode' => 'required|digits:6',
+
+    'description' => 'required|string|min:20|max:5000',
+
+    'status' => 'required|in:Available,Rented',
+
+    'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+
+]);
 
         return redirect()
             ->route('properties.index')

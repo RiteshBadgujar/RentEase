@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Enquiry;
+use App\Models\Notification;
 use App\Models\Property;
 use Illuminate\Http\Request;
 
@@ -12,17 +13,23 @@ class DashboardController extends Controller
     {
         /*
         |--------------------------------------------------------------------------
-        | Property Statistics
+        | Property Statistics (Current Landlord)
         |--------------------------------------------------------------------------
         */
 
-        $totalProperties = Property::count();
+        $totalProperties = Property::where('user_id', auth()->id())
+            ->count();
 
-        $availableProperties = Property::where('status', 'Available')->count();
+        $availableProperties = Property::where('user_id', auth()->id())
+            ->where('status', 'Available')
+            ->count();
 
-        $rentedProperties = Property::where('status', 'Rented')->count();
+        $rentedProperties = Property::where('user_id', auth()->id())
+            ->where('status', 'Rented')
+            ->count();
 
-        $totalValue = Property::sum('price');
+        $totalValue = Property::where('user_id', auth()->id())
+            ->sum('price');
 
         /*
         |--------------------------------------------------------------------------
@@ -30,14 +37,32 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalEnquiries = Enquiry::where('receiver_id', auth()->id())->count();
+        $totalEnquiries = Enquiry::where('receiver_id', auth()->id())
+            ->count();
 
         $pendingEnquiries = Enquiry::where('receiver_id', auth()->id())
-            ->where('status', 'Pending')
+            ->pending()
             ->count();
 
         $repliedEnquiries = Enquiry::where('receiver_id', auth()->id())
-            ->where('status', 'Replied')
+            ->replied()
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notification Statistics
+        |--------------------------------------------------------------------------
+        */
+
+        $totalNotifications = Notification::where('user_id', auth()->id())
+            ->count();
+
+        $unreadNotifications = Notification::where('user_id', auth()->id())
+            ->unread()
+            ->count();
+
+        $readNotifications = Notification::where('user_id', auth()->id())
+            ->read()
             ->count();
 
         /*
@@ -46,25 +71,25 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $recentProperties = Property::latest()
+        $recentProperties = Property::where('user_id', auth()->id())
+            ->latest()
             ->take(5)
             ->get();
 
         return view('dashboard', compact(
 
             'totalProperties',
-
             'availableProperties',
-
             'rentedProperties',
-
             'totalValue',
 
             'totalEnquiries',
-
             'pendingEnquiries',
-
             'repliedEnquiries',
+
+            'totalNotifications',
+            'unreadNotifications',
+            'readNotifications',
 
             'recentProperties'
 

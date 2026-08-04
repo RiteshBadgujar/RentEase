@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,32 +9,37 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Property;
 use App\Models\Wishlist;
 use App\Models\Booking;
+use App\Models\Notification;
+use App\Models\Enquiry;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignable Attributes
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
 
         'name',
 
         'email',
 
+        'role',
+
         'password',
 
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Hidden Attributes
+    |--------------------------------------------------------------------------
+    */
+
     protected $hidden = [
 
         'password',
@@ -46,11 +48,12 @@ class User extends Authenticatable
 
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Attribute Casting
+    |--------------------------------------------------------------------------
+    */
+
     protected function casts(): array
     {
         return [
@@ -60,6 +63,57 @@ class User extends Authenticatable
             'password' => 'hashed',
 
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Role Helper Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Check if user is Admin.
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is Landlord.
+     */
+    public function isLandlord()
+    {
+        return $this->role === 'landlord';
+    }
+
+    /**
+     * Check if user is Tenant.
+     */
+    public function isTenant()
+    {
+        return $this->role === 'tenant';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Query Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeAdmins($query)
+    {
+        return $query->where('role', 'admin');
+    }
+
+    public function scopeLandlords($query)
+    {
+        return $query->where('role', 'landlord');
+    }
+
+    public function scopeTenants($query)
+    {
+        return $query->where('role', 'tenant');
     }
 
     /*
@@ -110,5 +164,41 @@ class User extends Authenticatable
     public function landlordBookings()
     {
         return $this->hasMany(Booking::class, 'landlord_id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enquiry Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Enquiries sent by the user.
+     */
+    public function sentEnquiries()
+    {
+        return $this->hasMany(Enquiry::class, 'sender_id');
+    }
+
+    /**
+     * Enquiries received by the user.
+     */
+    public function receivedEnquiries()
+    {
+        return $this->hasMany(Enquiry::class, 'receiver_id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notification Relationship
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * User has many notifications.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
     }
 }

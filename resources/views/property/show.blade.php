@@ -14,9 +14,8 @@
 
                     @if($property->image)
 
-                        <img src="{{ asset('uploads/properties/' . $property->image) }}" class="card-img-top"
+                        <img src="{{ asset('uploads/properties/' . $property->image) }}" loading="lazy" class="card-img-top"
                             style="height:450px;object-fit:cover;" alt="{{ $property->title }}">
-
                     @else
 
                         <img src="https://placehold.co/1200x450?text=No+Image" class="card-img-top"
@@ -166,12 +165,29 @@
 
                             </p>
                         </div>
+                        <div class="alert alert-light border">
+
+                            <h5 class="fw-bold">
+
+                                <i class="bi bi-person-circle me-2"></i>
+
+                                Property Owner
+
+                            </h5>
+
+                            <p class="mb-0">
+
+                                {{ $property->user->name }}
+
+                            </p>
+
+                        </div>
 
                         <hr>
 
                         @auth
 
-                            @if(auth()->id() != $property->user_id)
+                            @if(auth()->id() != $property->user_id && $property->status == 'Available')
 
                                 <div class="card border-0 shadow-sm mb-4">
 
@@ -185,25 +201,6 @@
 
                                         </h4>
 
-                                        @if(session('success'))
-
-                                            <div class="alert alert-success">
-
-                                                {{ session('success') }}
-
-                                            </div>
-
-                                        @endif
-
-                                        @if(session('error'))
-
-                                            <div class="alert alert-danger">
-
-                                                {{ session('error') }}
-
-                                            </div>
-
-                                        @endif
 
                                         @if($errors->any())
 
@@ -252,15 +249,15 @@
 
                                     </div>
 
-                                </div>
+                                  </div>
 
-                            @endif
+                                @endif
 
-                        @endauth
+                            @endauth
 
                         @auth
 
-                            @if(auth()->id() != $property->user_id)
+                            @if(auth()->id() != $property->user_id && $property->status == 'Available')
 
                                 <div class="card border-0 shadow-sm mb-4">
 
@@ -291,8 +288,7 @@
                                                     </label>
 
                                                     <input type="date" name="visit_date" class="form-control"
-                                                        min="{{ now()->toDateString() }}" required>
-
+                                                        value="{{ old('visit_date') }}" min="{{ now()->toDateString() }}" required>
                                                 </div>
 
                                                 <div class="col-md-6 mb-3">
@@ -303,8 +299,8 @@
 
                                                     </label>
 
-                                                    <input type="time" name="visit_time" class="form-control" required>
-
+                                                    <input type="time" name="visit_time" class="form-control"
+                                                        value="{{ old('visit_time') }}" required>
                                                 </div>
 
                                             </div>
@@ -318,7 +314,7 @@
                                                 </label>
 
                                                 <textarea name="message" rows="4" class="form-control"
-                                                    placeholder="Any special request..."></textarea>
+                                                    placeholder="Any special request...">{{ old('message') }}</textarea>
 
                                             </div>
 
@@ -345,7 +341,9 @@
                         <div class="d-flex flex-wrap gap-2">
 
                             <!-- Back Button -->
-                            <a href="{{ route('properties.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('properties.index') }}"
+                                class="btn btn-secondary"
+                                title="Back to Properties">
 
                                 <i class="bi bi-arrow-left me-1"></i>
 
@@ -356,7 +354,9 @@
                             @if(auth()->id() == $property->user_id)
 
                                 <!-- Edit -->
-                                <a href="{{ route('properties.edit', $property->id) }}" class="btn btn-warning">
+                                <a href="{{ route('properties.edit', $property->id) }}"
+                                        class="btn btn-warning"
+                                         title="Edit Property">
 
                                     <i class="bi bi-pencil-square me-1"></i>
 
@@ -370,8 +370,11 @@
                                     @csrf
                                     @method('DELETE')
 
-                                    <button type="submit" class="btn btn-danger"
-                                        onclick="return confirm('Are you sure you want to delete this property?')">
+                                    <button
+                                             type="submit"
+                                                class="btn btn-danger"
+                                                title="Delete Property"
+                                                onclick="return confirm('Are you sure you want to delete this property?')">
 
                                         <i class="bi bi-trash me-1"></i>
 
@@ -385,45 +388,54 @@
 
                             <!-- Wishlist -->
 
-                            @auth
+@auth
 
-                                @if($isWishlisted)
+    @if(auth()->id() != $property->user_id)
 
-                                    <form action="{{ route('wishlist.destroy', $property->id) }}" method="POST">
+        @if($isWishlisted)
 
-                                        @csrf
-                                        @method('DELETE')
+            <form action="{{ route('wishlist.destroy', $property->id) }}" method="POST">
 
-                                        <button type="submit" class="btn btn-outline-danger">
+                @csrf
+                @method('DELETE')
 
-                                            <i class="bi bi-heartbreak-fill me-1"></i>
+                <button
+                    type="submit"
+                    class="btn btn-outline-danger"
+                    title="Remove from Wishlist">
 
-                                            Remove Wishlist
+                    <i class="bi bi-heartbreak-fill me-1"></i>
 
-                                        </button>
+                    Remove Wishlist
 
-                                    </form>
+                </button>
 
-                                @else
+            </form>
 
-                                    <form action="{{ route('wishlist.store', $property->id) }}" method="POST">
+        @else
 
-                                        @csrf
+            <form action="{{ route('wishlist.store', $property->id) }}" method="POST">
 
-                                        <button type="submit" class="btn btn-outline-primary">
+                @csrf
 
-                                            <i class="bi bi-heart-fill me-1"></i>
+                <button
+                    type="submit"
+                    class="btn btn-outline-primary"
+                    title="Add to Wishlist">
 
-                                            Add Wishlist
+                    <i class="bi bi-heart-fill me-1"></i>
 
-                                        </button>
+                    Add Wishlist
 
+                </button>
 
-                                    </form>
+            </form>
 
-                                @endif
+        @endif
 
-                            @endauth
+    @endif
+
+@endauth
 
                         </div>
                     </div>

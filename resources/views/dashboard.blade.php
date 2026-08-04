@@ -126,6 +126,95 @@
             </div>
 
         </div>
+        <!-- Notification Statistics -->
+
+        <div class="row g-4 mt-1">
+
+            <!-- Total Notifications -->
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="card shadow border-0 h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-bell-fill display-4 text-primary"></i>
+
+                        <h5 class="mt-3">
+
+                            Total Notifications
+
+                        </h5>
+
+                        <h2 class="fw-bold">
+
+                            {{ $totalNotifications }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Unread Notifications -->
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="card shadow border-0 h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-bell display-4 text-warning"></i>
+
+                        <h5 class="mt-3">
+
+                            Unread
+
+                        </h5>
+
+                        <h2 class="fw-bold">
+
+                            {{ $unreadNotifications }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Read Notifications -->
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="card shadow border-0 h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-check-circle-fill display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+
+                            Read
+
+                        </h5>
+
+                        <h2 class="fw-bold">
+
+                            {{ $readNotifications }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
         <!-- Enquiry Statistics -->
 
         <div class="row g-4 mt-1">
@@ -237,7 +326,7 @@
                     Manage Properties
 
                 </a>
-                
+
                 <a href="{{ route('bookings.index') }}" class="btn btn-info me-2">
 
                     <i class="bi bi-calendar-check me-1"></i>

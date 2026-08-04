@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Property;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -12,14 +13,14 @@ class BookingController extends Controller
      * Display all booking requests for the logged-in landlord.
      */
     public function index()
-{
-    $bookings = Booking::with(['property', 'tenant'])
-        ->where('landlord_id', auth()->id())
-        ->latest()
-        ->get();
+    {
+        $bookings = Booking::with(['property', 'tenant'])
+            ->where('landlord_id', auth()->id())
+            ->latest()
+            ->get();
 
-    return view('booking.index', compact('bookings'));
-}
+        return view('booking.index', compact('bookings'));
+    }
 
     /**
      * Redirect create request.
@@ -40,13 +41,28 @@ class BookingController extends Controller
 
             'visit_date' => 'required|date|after_or_equal:today',
 
-            'visit_time' => 'required',
+            'visit_time' => 'required|date_format:H:i',
 
             'message' => 'nullable|string|max:500',
 
         ]);
 
         $property = Property::findOrFail($request->property_id);
+        $alreadyBooked = Booking::where('property_id', $property->id)
+            ->where('tenant_id', auth()->id())
+            ->where('visit_date', $request->visit_date)
+            ->where('visit_time', $request->visit_time)
+            ->whereIn('status', ['Pending', 'Approved'])
+            ->exists();
+
+        if ($alreadyBooked) {
+
+            return back()->with(
+                'error',
+                'You already have a booking request for this property on the selected date and time.'
+            );
+
+        }
 
         // Prevent landlord from booking own property
         if ($property->user_id == auth()->id()) {
@@ -58,7 +74,7 @@ class BookingController extends Controller
 
         }
 
-        Booking::create([
+        $booking = Booking::create([
 
             'property_id' => $property->id,
 
@@ -72,7 +88,29 @@ class BookingController extends Controller
 
             'message' => $request->message,
 
-            'status' => 'Pending',
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notify Landlord
+        |--------------------------------------------------------------------------
+        */
+
+        Notification::create([
+
+            'user_id' => $booking->tenant_id,
+
+            'title' => 'Booking ' . $request->status,
+
+            'message' => 'Your booking for "' .
+                $booking->property->title .
+                '" has been ' .
+                strtolower($request->status) . '.',
+
+            'type' => 'Booking',
+
+            'url' => route('tenant.bookings.show', $booking->id),
 
         ]);
 
@@ -127,6 +165,31 @@ class BookingController extends Controller
         $booking->update([
 
             'status' => $request->status,
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notify Tenant
+        |--------------------------------------------------------------------------
+        */
+
+        Notification::create([
+
+            'user_id' => $booking->tenant_id,
+
+            'title' => 'Booking ' . $request->status,
+
+            'message' => 'Your booking for "' .
+                $booking->property->title .
+                '" has been ' .
+                strtolower($request->status) . '.',
+
+            'type' => 'Booking',
+
+            'url' => route('tenant.bookings.show', $booking->id),
+
+            'is_read' => false,
 
         ]);
 

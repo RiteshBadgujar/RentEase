@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Enquiry;
 use App\Models\Property;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class EnquiryController extends Controller
@@ -26,21 +27,59 @@ class EnquiryController extends Controller
      */
     public function store(Request $request, Property $property)
     {
-        // User cannot send enquiry to own property
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Own Property Enquiry
+        |--------------------------------------------------------------------------
+        */
+
         if ($property->user_id == auth()->id()) {
 
             return back()->with(
                 'error',
                 'You cannot send an enquiry for your own property.'
             );
+
         }
 
-        // Validate request
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Duplicate Pending Enquiry
+        |--------------------------------------------------------------------------
+        */
+
+        $alreadyEnquired = Enquiry::where('property_id', $property->id)
+            ->where('sender_id', auth()->id())
+            ->where('status', 'Pending')
+            ->exists();
+
+        if ($alreadyEnquired) {
+
+            return back()->with(
+                'error',
+                'You already have a pending enquiry for this property.'
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
+
             'message' => 'required|string|min:10|max:1000',
+
         ]);
 
-        // Save enquiry
+        /*
+        |--------------------------------------------------------------------------
+        | Save Enquiry
+        |--------------------------------------------------------------------------
+        */
+
         Enquiry::create([
 
             'property_id' => $property->id,
@@ -51,13 +90,43 @@ class EnquiryController extends Controller
 
             'message' => $request->message,
 
-            'status' => 'Pending',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notify Landlord
+        |--------------------------------------------------------------------------
+        */
+
+        Notification::create([
+
+            'user_id' => $property->user_id,
+
+            'title' => 'New Property Enquiry',
+
+            'message' => auth()->user()->name .
+                ' sent an enquiry for "' .
+                $property->title .
+                '".',
+
+            'type' => 'Enquiry',
+
+            'url' => route('enquiries.index'),
 
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Success Response
+        |--------------------------------------------------------------------------
+        */
+
         return back()->with(
+
             'success',
+
             'Your enquiry has been sent successfully.'
+
         );
     }
 
@@ -66,17 +135,32 @@ class EnquiryController extends Controller
      */
     public function destroy(Enquiry $enquiry)
     {
-        // Only the receiver can delete the enquiry
+        /*
+        |--------------------------------------------------------------------------
+        | Authorization
+        |--------------------------------------------------------------------------
+        */
+
         if ($enquiry->receiver_id != auth()->id()) {
 
             abort(403);
+
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Enquiry
+        |--------------------------------------------------------------------------
+        */
 
         $enquiry->delete();
 
         return back()->with(
+
             'success',
+
             'Enquiry deleted successfully.'
+
         );
     }
 }

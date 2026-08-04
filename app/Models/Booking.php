@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
+    use HasFactory;
+
     /*
     |--------------------------------------------------------------------------
-    | Mass Assignable Fields
+    | Mass Assignable Attributes
     |--------------------------------------------------------------------------
     */
 
@@ -26,7 +29,31 @@ class Booking extends Model
 
         'message',
 
-        'status'
+        'status',
+
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Attributes
+    |--------------------------------------------------------------------------
+    */
+
+    protected $attributes = [
+
+        'status' => 'Pending',
+
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Attribute Casting
+    |--------------------------------------------------------------------------
+    */
+
+    protected $casts = [
+
+        'visit_date' => 'date',
 
     ];
 
@@ -36,6 +63,9 @@ class Booking extends Model
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Booking belongs to a Property.
+     */
     public function property()
     {
         return $this->belongsTo(Property::class);
@@ -47,6 +77,9 @@ class Booking extends Model
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Booking belongs to a Tenant.
+     */
     public function tenant()
     {
         return $this->belongsTo(User::class, 'tenant_id');
@@ -58,8 +91,49 @@ class Booking extends Model
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Booking belongs to a Landlord.
+     */
     public function landlord()
     {
         return $this->belongsTo(User::class, 'landlord_id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Query Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Pending bookings.
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'Pending');
+    }
+
+    /**
+     * Approved bookings.
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'Approved');
+    }
+
+    /**
+     * Rejected bookings.
+     */
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'Rejected');
+    }
+
+    /**
+     * Completed bookings.
+     */
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'Completed');
     }
 }

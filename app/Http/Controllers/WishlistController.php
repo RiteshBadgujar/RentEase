@@ -13,12 +13,15 @@ class WishlistController extends Controller
      */
     public function index()
     {
-        $wishlists = Wishlist::with('property')
+        $wishlists = Wishlist::with(['property.user'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
 
-        return view('wishlist.index', compact('wishlists'));
+        return view(
+            'wishlist.index',
+            compact('wishlists')
+        );
     }
 
     /**
@@ -26,14 +29,41 @@ class WishlistController extends Controller
      */
     public function store(Property $property)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Own Property Wishlist
+        |--------------------------------------------------------------------------
+        */
+
+        if ($property->user_id == auth()->id()) {
+
+            return back()->with(
+                'error',
+                'You cannot add your own property to the wishlist.'
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Add to Wishlist
+        |--------------------------------------------------------------------------
+        */
+
         Wishlist::firstOrCreate([
-            'user_id'     => auth()->id(),
+
+            'user_id' => auth()->id(),
+
             'property_id' => $property->id,
+
         ]);
 
         return back()->with(
+
             'success',
+
             'Property added to wishlist successfully.'
+
         );
     }
 
@@ -47,8 +77,11 @@ class WishlistController extends Controller
             ->delete();
 
         return back()->with(
+
             'success',
+
             'Property removed from wishlist successfully.'
+
         );
     }
 }

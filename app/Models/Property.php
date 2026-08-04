@@ -61,6 +61,18 @@ class Property extends Model
 
     /*
     |--------------------------------------------------------------------------
+    | Default Attributes
+    |--------------------------------------------------------------------------
+    */
+
+    protected $attributes = [
+
+        'status' => 'Available',
+
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
     | Attribute Casting
     |--------------------------------------------------------------------------
     */
@@ -82,7 +94,7 @@ class Property extends Model
     */
 
     /**
-     * Property belongs to a User (Owner)
+     * Property belongs to a User (Owner).
      */
     public function user()
     {
@@ -111,5 +123,43 @@ class Property extends Model
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the full property image URL.
+     */
+    public function getImageUrlAttribute()
+    {
+        return $this->image
+            ? asset('storage/' . $this->image)
+            : asset('images/no-image.png');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Query Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Scope only available properties.
+     */
+    public function scopeAvailable($query)
+    {
+        return $query->where('status', 'Available');
+    }
+
+    /**
+     * Scope only rented properties.
+     */
+    public function scopeRented($query)
+    {
+        return $query->where('status', 'Rented');
     }
 }
