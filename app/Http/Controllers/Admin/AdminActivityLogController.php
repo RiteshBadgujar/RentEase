@@ -13,8 +13,13 @@ class AdminActivityLogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ActivityLog::with('user')
-            ->latest();
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Log Query
+        |--------------------------------------------------------------------------
+        */
+
+        $query = ActivityLog::with('user')->latest();
 
         /*
         |--------------------------------------------------------------------------
@@ -24,33 +29,68 @@ class AdminActivityLogController extends Controller
 
         if ($request->filled('search')) {
 
-            $search = $request->search;
+            $search = trim($request->search);
 
             $query->where(function ($q) use ($search) {
 
                 $q->where('module', 'like', "%{$search}%")
-                  ->orWhere('action', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($user) use ($search) {
+                    ->orWhere('action', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($user) use ($search) {
 
-                      $user->where('name', 'like', "%{$search}%");
+                        $user->where('name', 'like', "%{$search}%");
 
-                  });
+                    });
 
             });
 
         }
 
-        $activityLogs = $query->paginate(10);
+        /*
+        |--------------------------------------------------------------------------
+        | Statistics
+        |--------------------------------------------------------------------------
+        */
+
+        $totalLogs = ActivityLog::count();
+
+        $todayLogs = ActivityLog::whereDate(
+            'created_at',
+            today()
+        )->count();
+
+        $activeUsers = ActivityLog::distinct('user_id')
+            ->count('user_id');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination
+        |--------------------------------------------------------------------------
+        */
+
+        $activityLogs = $query
+            ->paginate(10)
+            ->withQueryString();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'admin.activity-logs.index',
-            compact('activityLogs')
+            compact(
+                'activityLogs',
+                'totalLogs',
+                'todayLogs',
+                'activeUsers'
+            )
         );
     }
 
     /**
-     * Display a specific activity.
+     * Display activity details.
      */
     public function show(ActivityLog $activityLog)
     {
@@ -63,7 +103,7 @@ class AdminActivityLogController extends Controller
     }
 
     /**
-     * Delete an activity log.
+     * Delete activity log.
      */
     public function destroy(ActivityLog $activityLog)
     {

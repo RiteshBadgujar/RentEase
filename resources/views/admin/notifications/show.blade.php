@@ -1,201 +1,324 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Notification Details')
 
 @section('content')
 
-<div class="container py-5">
+    <div class="container-fluid py-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Header -->
 
-        <h2 class="fw-bold">
+        <div class="d-flex justify-content-between align-items-center mb-4">
 
-            <i class="bi bi-bell-fill text-primary me-2"></i>
+            <div>
 
-            Notification Details
+                <h2 class="fw-bold">
 
-        </h2>
+                    <i class="bi bi-bell-fill text-primary me-2"></i>
 
-        <a href="{{ route('admin.notifications.index') }}"
-           class="btn btn-secondary">
+                    Notification Details
 
-            <i class="bi bi-arrow-left me-2"></i>
+                </h2>
 
-            Back
+                <p class="text-muted mb-0">
 
-        </a>
+                    View complete notification information.
 
-    </div>
-
-    <div class="card shadow border-0 rounded-4">
-
-        <div class="card-body p-4">
-
-            <div class="row">
-
-                <div class="col-md-6">
-
-                    <h5 class="fw-bold">
-
-                        User Information
-
-                    </h5>
-
-                    <hr>
-
-                    <p>
-
-                        <strong>Name :</strong>
-
-                        {{ $notification->user->name ?? 'N/A' }}
-
-                    </p>
-
-                    <p>
-
-                        <strong>Email :</strong>
-
-                        {{ $notification->user->email ?? 'N/A' }}
-
-                    </p>
-
-                </div>
-
-                <div class="col-md-6">
-
-                    <h5 class="fw-bold">
-
-                        Notification Info
-
-                    </h5>
-
-                    <hr>
-
-                    <p>
-
-                        <strong>Type :</strong>
-
-                        {{ $notification->type }}
-
-                    </p>
-
-                    <p>
-
-                        <strong>Status :</strong>
-
-                        @if($notification->is_read)
-
-                            <span class="badge bg-success">
-
-                                Read
-
-                            </span>
-
-                        @else
-
-                            <span class="badge bg-warning text-dark">
-
-                                Unread
-
-                            </span>
-
-                        @endif
-
-                    </p>
-
-                    <p>
-
-                        <strong>Date :</strong>
-
-                        {{ $notification->created_at->format('d M Y h:i A') }}
-
-                    </p>
-
-                </div>
+                </p>
 
             </div>
 
-            <hr>
+            <a href="{{ route('admin.notifications.index') }}" class="btn btn-secondary">
 
-            <h5 class="fw-bold">
+                <i class="bi bi-arrow-left me-2"></i>
 
-                Notification Title
-
-            </h5>
-
-            <p>
-
-                {{ $notification->title }}
-
-            </p>
-
-            <hr>
-
-            <h5 class="fw-bold">
-
-                Message
-
-            </h5>
-
-            <div class="border rounded p-3 bg-light">
-
-                {{ $notification->message }}
-
-            </div>
-
-            @if(!empty($notification->url))
-
-                <hr>
-
-                <h5 class="fw-bold">
-
-                    Related Link
-
-                </h5>
-
-                <a href="{{ $notification->url }}"
-                   target="_blank"
-                   class="btn btn-primary">
-
-                    Open Link
-
-                </a>
-
-            @endif
-
-            <hr>
-
-            <a href="{{ route('admin.notifications.edit',$notification) }}"
-               class="btn btn-warning">
-
-                <i class="bi bi-pencil-square me-2"></i>
-
-                Edit
+                Back
 
             </a>
 
-            <form action="{{ route('admin.notifications.destroy',$notification) }}"
-                  method="POST"
-                  class="d-inline">
+        </div>
 
-                @csrf
-                @method('DELETE')
+        <div class="row">
 
-                <button class="btn btn-danger"
-                        onclick="return confirm('Delete notification?')">
+            <!-- User Card -->
 
-                    <i class="bi bi-trash me-2"></i>
+            <div class="col-lg-4 mb-4">
 
-                    Delete
+                <div class="card shadow-sm border-0 rounded-4">
 
-                </button>
+                    <div class="card-header bg-primary text-white">
 
-            </form>
+                        <h5 class="mb-0">
+
+                            <i class="bi bi-person-fill me-2"></i>
+
+                            User Information
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body text-center">
+
+                        <div class="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center mb-3"
+                            style="width:80px;height:80px;font-size:32px;">
+
+                            {{ strtoupper(substr($notification->user->name ?? 'N', 0, 1)) }}
+
+                        </div>
+
+                        <h5>
+
+                            {{ $notification->user->name ?? 'N/A' }}
+
+                        </h5>
+
+                        <p class="text-muted">
+
+                            {{ $notification->user->email ?? 'N/A' }}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Notification Info -->
+
+            <div class="col-lg-8 mb-4">
+
+                <div class="card shadow-sm border-0 rounded-4">
+
+                    <div class="card-header bg-dark text-white">
+
+                        <h5 class="mb-0">
+
+                            <i class="bi bi-info-circle me-2"></i>
+
+                            Notification Information
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <table class="table table-borderless">
+
+                            <tr>
+
+                                <th width="30%">
+
+                                    Notification ID
+
+                                </th>
+
+                                <td>
+
+                                    #{{ $notification->id }}
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+
+                                    Type
+
+                                </th>
+
+                                <td>
+
+                                    <span class="badge bg-info">
+
+                                        {{ ucfirst($notification->type) }}
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+
+                                    Status
+
+                                </th>
+
+                                <td>
+
+                                    @if($notification->is_read)
+
+                                        <span class="badge bg-success">
+
+                                            Read
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge bg-warning text-dark">
+
+                                            Unread
+
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+
+                                    Created
+
+                                </th>
+
+                                <td>
+
+                                    {{ $notification->created_at->format('d M Y h:i A') }}
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+
+                                    Last Updated
+
+                                </th>
+
+                                <td>
+
+                                    {{ $notification->updated_at->format('d M Y h:i A') }}
+
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4">
+
+            <div class="card-body">
+
+                <h5 class="fw-bold mb-3">
+
+                    <i class="bi bi-card-heading me-2"></i>
+
+                    Notification Title
+
+                </h5>
+
+                <div class="alert alert-primary">
+
+                    {{ $notification->title }}
+
+                </div>
+
+                <hr>
+
+                <h5 class="fw-bold mb-3">
+
+                    <i class="bi bi-chat-left-text me-2"></i>
+
+                    Message
+
+                </h5>
+
+                <div class="border rounded-3 bg-light p-4">
+
+                    {!! nl2br(e($notification->message)) !!}
+
+                </div>
+                @if(!empty($notification->url))
+
+                    <hr>
+
+                    <h5 class="fw-bold mb-3">
+
+                        <i class="bi bi-link-45deg me-2"></i>
+
+                        Related Link
+
+                    </h5>
+
+                    <a href="{{ $notification->url }}" target="_blank" class="btn btn-primary">
+
+                        <i class="bi bi-box-arrow-up-right me-2"></i>
+
+                        Open Link
+
+                    </a>
+
+                @endif
+
+                <hr class="my-4">
+
+                <div class="d-flex justify-content-between">
+
+                    <a href="{{ route('admin.notifications.index') }}" class="btn btn-secondary">
+
+                        <i class="bi bi-arrow-left me-2"></i>
+
+                        Back
+
+                    </a>
+
+                    <div>
+
+                        <a href="{{ route('admin.notifications.edit', $notification) }}" class="btn btn-warning me-2">
+
+                            <i class="bi bi-pencil-square me-2"></i>
+
+                            Edit Notification
+
+                        </a>
+
+                        <form action="{{ route('admin.notifications.destroy', $notification) }}" method="POST"
+                            class="delete-form d-inline">
+
+                            @csrf
+
+                            @method('DELETE')
+
+                            <button type="submit" class="btn btn-danger">
+
+                                <i class="bi bi-trash me-2"></i>
+
+                                Delete
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
     </div>
-
-</div>
 
 @endsection

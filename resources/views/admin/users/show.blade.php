@@ -1,27 +1,35 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'User Details')
 
 @section('content')
 
-<div class="container py-5">
+@php
+
+$badge = [
+    'admin' => 'danger',
+    'landlord' => 'success',
+    'tenant' => 'primary'
+];
+
+@endphp
+
+<div class="container-fluid">
 
     <div class="row">
 
-        <div class="col-lg-4">
+        <!-- Profile -->
 
-            <div class="card shadow border-0 rounded-4">
+        <div class="col-lg-4 mb-4">
+
+            <div class="card shadow-sm border-0 h-100">
 
                 <div class="card-body text-center">
 
-                    <div class="mb-3">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold mb-3"
+                         style="width:120px;height:120px;font-size:48px;">
 
-                        <div class="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center"
-                            style="width:120px;height:120px;font-size:45px;">
-
-                            {{ strtoupper(substr($user->name,0,1)) }}
-
-                        </div>
+                        {{ strtoupper(substr($user->name,0,1)) }}
 
                     </div>
 
@@ -37,31 +45,11 @@
 
                     </p>
 
-                    @if($user->role=='admin')
+                    <span class="badge bg-{{ $badge[$user->role] ?? 'secondary' }} fs-6">
 
-                        <span class="badge bg-danger px-3 py-2">
+                        {{ ucfirst($user->role) }}
 
-                            Admin
-
-                        </span>
-
-                    @elseif($user->role=='landlord')
-
-                        <span class="badge bg-success px-3 py-2">
-
-                            Landlord
-
-                        </span>
-
-                    @else
-
-                        <span class="badge bg-primary px-3 py-2">
-
-                            Tenant
-
-                        </span>
-
-                    @endif
+                    </span>
 
                 </div>
 
@@ -69,13 +57,17 @@
 
         </div>
 
+        <!-- Information -->
+
         <div class="col-lg-8">
 
-            <div class="card shadow border-0 rounded-4">
+            <div class="card shadow-sm border-0">
 
                 <div class="card-header bg-primary text-white">
 
                     <h4 class="mb-0">
+
+                        <i class="bi bi-person-vcard me-2"></i>
 
                         User Information
 
@@ -85,39 +77,79 @@
 
                 <div class="card-body">
 
-                    <div class="row g-4">
+                    <div class="row">
 
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-3">
+
+                            <strong>User ID</strong>
+
+                            <p class="mb-0">
+
+                                #{{ $user->id }}
+
+                            </p>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
 
                             <strong>Name</strong>
 
-                            <p>{{ $user->name }}</p>
+                            <p class="mb-0">
+
+                                {{ $user->name }}
+
+                            </p>
 
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-3">
 
                             <strong>Email</strong>
 
-                            <p>{{ $user->email }}</p>
+                            <p class="mb-0">
+
+                                {{ $user->email }}
+
+                            </p>
 
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-3">
 
                             <strong>Role</strong>
 
-                            <p>{{ ucfirst($user->role) }}</p>
+                            <p class="mb-0">
+
+                                <span class="badge bg-{{ $badge[$user->role] ?? 'secondary' }}">
+
+                                    {{ ucfirst($user->role) }}
+
+                                </span>
+
+                            </p>
 
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-3">
 
-                            <strong>Joined</strong>
+                            <strong>Joined On</strong>
 
-                            <p>
+                            <p class="mb-0">
 
-                                {{ $user->created_at->format('d M Y h:i A') }}
+                                {{ $user->created_at->format('d M Y') }}
+
+                            </p>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Created Time</strong>
+
+                            <p class="mb-0">
+
+                                {{ $user->created_at->format('h:i A') }}
 
                             </p>
 
@@ -129,19 +161,21 @@
 
             </div>
 
+            <!-- Statistics -->
+
             <div class="row mt-4">
 
-                <div class="col-md-4">
+                <div class="col-md-4 mb-3">
 
-                    <div class="card text-center shadow border-0">
+                    <div class="card border-0 shadow-sm text-center h-100">
 
                         <div class="card-body">
 
                             <i class="bi bi-buildings-fill display-5 text-primary"></i>
 
-                            <h2 class="mt-2">
+                            <h2 class="mt-3">
 
-                                {{ $user->properties()->count() }}
+                                {{ number_format($user->properties()->count()) }}
 
                             </h2>
 
@@ -157,17 +191,17 @@
 
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-4 mb-3">
 
-                    <div class="card text-center shadow border-0">
+                    <div class="card border-0 shadow-sm text-center h-100">
 
                         <div class="card-body">
 
                             <i class="bi bi-calendar-check-fill display-5 text-success"></i>
 
-                            <h2 class="mt-2">
+                            <h2 class="mt-3">
 
-                                {{ $user->tenantBookings()->count() }}
+                                {{ number_format($user->tenantBookings()->count()) }}
 
                             </h2>
 
@@ -183,17 +217,17 @@
 
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-4 mb-3">
 
-                    <div class="card text-center shadow border-0">
+                    <div class="card border-0 shadow-sm text-center h-100">
 
                         <div class="card-body">
 
                             <i class="bi bi-heart-fill display-5 text-danger"></i>
 
-                            <h2 class="mt-2">
+                            <h2 class="mt-3">
 
-                                {{ $user->wishlists()->count() }}
+                                {{ number_format($user->wishlists()->count()) }}
 
                             </h2>
 
@@ -211,10 +245,12 @@
 
             </div>
 
+            <!-- Actions -->
+
             <div class="mt-4">
 
-                <a href="{{ route('admin.users.edit',$user) }}"
-                    class="btn btn-warning">
+                <a href="{{ route('admin.users.edit', $user) }}"
+                   class="btn btn-warning">
 
                     <i class="bi bi-pencil-square me-2"></i>
 
@@ -222,8 +258,29 @@
 
                 </a>
 
+                @if(auth()->id() != $user->id)
+
+                <form action="{{ route('admin.users.destroy',$user) }}"
+                      method="POST"
+                      class="delete-form d-inline">
+
+                    @csrf
+                    @method('DELETE')
+
+                    <button class="btn btn-danger">
+
+                        <i class="bi bi-trash me-2"></i>
+
+                        Delete
+
+                    </button>
+
+                </form>
+
+                @endif
+
                 <a href="{{ route('admin.users.index') }}"
-                    class="btn btn-secondary">
+                   class="btn btn-secondary">
 
                     <i class="bi bi-arrow-left me-2"></i>
 

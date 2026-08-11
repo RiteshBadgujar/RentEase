@@ -11,17 +11,125 @@ class AdminBookingController extends Controller
     /**
      * Display all bookings.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::with([
+        /*
+        |--------------------------------------------------------------------------
+        | Booking Query
+        |--------------------------------------------------------------------------
+        */
+
+        $query = Booking::with([
             'tenant',
             'landlord',
             'property'
-        ])
-        ->latest()
-        ->paginate(10);
+        ]);
 
-        return view('admin.bookings.index', compact('bookings'));
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $query->where(function ($q) use ($request) {
+
+                $q->whereHas('tenant', function ($tenant) use ($request) {
+
+                    $tenant->where(
+                        'name',
+                        'like',
+                        '%' . $request->search . '%'
+                    );
+
+                })
+
+                ->orWhereHas('property', function ($property) use ($request) {
+
+                    $property->where(
+                        'title',
+                        'like',
+                        '%' . $request->search . '%'
+                    );
+
+                });
+
+            });
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('status')) {
+
+            $query->where(
+                'status',
+                $request->status
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Booking List
+        |--------------------------------------------------------------------------
+        */
+
+        $bookings = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Statistics
+        |--------------------------------------------------------------------------
+        */
+
+        $totalBookings = Booking::count();
+
+        $pendingBookings = Booking::where(
+            'status',
+            'Pending'
+        )->count();
+
+        $approvedBookings = Booking::where(
+            'status',
+            'Approved'
+        )->count();
+
+        $rejectedBookings = Booking::where(
+            'status',
+            'Rejected'
+        )->count();
+
+        $completedBookings = Booking::where(
+            'status',
+            'Completed'
+        )->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'admin.bookings.index',
+            compact(
+                'bookings',
+                'totalBookings',
+                'pendingBookings',
+                'approvedBookings',
+                'rejectedBookings',
+                'completedBookings'
+            )
+        );
     }
 
     /**
@@ -41,7 +149,7 @@ class AdminBookingController extends Controller
     }
 
     /**
-     * Display booking details.
+     * Display Booking Details.
      */
     public function show(Booking $booking)
     {
@@ -51,44 +159,90 @@ class AdminBookingController extends Controller
             'property'
         ]);
 
-        return view('admin.bookings.show', compact('booking'));
+        return view(
+            'admin.bookings.show',
+            compact('booking')
+        );
     }
 
     /**
-     * Show edit form.
+     * Show Edit Form.
      */
     public function edit(Booking $booking)
     {
-        return view('admin.bookings.edit', compact('booking'));
+        return view(
+            'admin.bookings.edit',
+            compact('booking')
+        );
     }
 
     /**
-     * Update booking.
+     * Update Booking.
      */
     public function update(Request $request, Booking $booking)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
+
             'status' => 'required|in:Pending,Approved,Rejected,Completed',
+
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Update Booking
+        |--------------------------------------------------------------------------
+        */
+
         $booking->update([
+
             'status' => $request->status,
+
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
 
         return redirect()
             ->route('admin.bookings.index')
-            ->with('success', 'Booking updated successfully.');
+            ->with(
+                'success',
+                'Booking updated successfully.'
+            );
     }
 
     /**
-     * Delete booking.
+     * Delete Booking.
      */
     public function destroy(Booking $booking)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Booking
+        |--------------------------------------------------------------------------
+        */
+
         $booking->delete();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
 
         return redirect()
             ->route('admin.bookings.index')
-            ->with('success', 'Booking deleted successfully.');
+            ->with(
+                'success',
+                'Booking deleted successfully.'
+            );
     }
 }

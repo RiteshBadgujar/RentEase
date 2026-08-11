@@ -3,87 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Models\Property;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
 
 class PropertyController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display all properties.
      */
     public function index(Request $request)
     {
         $query = Property::with('user');
 
-        // Search by Property Title
+        // Search filters
         if ($request->filled('title')) {
             $query->where('title', 'like', '%' . $request->title . '%');
         }
 
-        // Search by City
         if ($request->filled('city')) {
             $query->where('city', 'like', '%' . $request->city . '%');
         }
 
-        // Filter by Property Type
         if ($request->filled('property_type')) {
             $query->where('property_type', $request->property_type);
         }
 
-        // Filter by Purpose
         if ($request->filled('purpose')) {
             $query->where('purpose', $request->purpose);
         }
 
-        // Filter by Status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        // Minimum Price
+
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
 
-        // Maximum Price
         if ($request->filled('max_price')) {
             $query->where('price', '<=', $request->max_price);
         }
-        // Bedrooms
+
         if ($request->filled('bedrooms')) {
             $query->where('bedrooms', $request->bedrooms);
         }
-        // Bathrooms
+
         if ($request->filled('bathrooms')) {
             $query->where('bathrooms', $request->bathrooms);
         }
 
         // Sorting
-        if ($request->filled('sort')) {
+        switch ($request->sort) {
+            case 'price_low':
+                $query->orderBy('price', 'asc');
+                break;
 
-            switch ($request->sort) {
+            case 'price_high':
+                $query->orderBy('price', 'desc');
+                break;
 
-                case 'price_low':
-                    $query->orderBy('price');
-                    break;
+            case 'oldest':
+                $query->oldest();
+                break;
 
-                case 'price_high':
-                    $query->orderByDesc('price');
-                    break;
-
-                case 'oldest':
-                    $query->oldest();
-                    break;
-
-                default:
-                    $query->latest();
-                    break;
-            }
-
-        } else {
-
-            $query->latest();
-
+            default:
+                $query->latest();
+                break;
         }
 
         $properties = $query
@@ -94,265 +81,460 @@ class PropertyController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show create property form.
      */
     public function create()
     {
+        if (!auth()->user()->isLandlord()) {
+            abort(403, 'Only landlords can add properties.');
+        }
+
         return view('property.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Generate a unique property slug.
      */
-    /**
-     * Generate unique property slug.
-     */
-    private function generateSlug($title)
+    private function generateSlug(string $title, ?int $ignoreId = null): string
     {
-        $slug = Str::slug($title);
+        $baseSlug = Str::slug($title);
 
-        $count = Property::where('slug', 'LIKE', "{$slug}%")->count();
+        if ($baseSlug === '') {
+            $baseSlug = 'property';
+        }
 
-        return $count
-            ? "{$slug}-" . ($count + 1)
-            : $slug;
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (
+            Property::where('slug', $slug)
+                ->when(
+                    $ignoreId,
+                    fn ($query) => $query->where('id', '!=', $ignoreId)
+                )
+                ->exists()
+        ) {
+            $counter++;
+            $slug = $baseSlug . '-' . $counter;
+        }
+
+        return $slug;
     }
+
+    /**
+     * Store a newly created property.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|max:255',
-            'property_type' => 'required',
-            'purpose' => 'required',
-            'price' => 'required|numeric',
-            'deposit' => 'nullable|numeric',
-            'bedrooms' => 'required|integer',
-            'bathrooms' => 'required|integer',
-            'balconies' => 'nullable|integer',
-            'area' => 'required|numeric',
-            'furnishing' => 'required',
-            'parking' => 'required',
-            'address' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'pincode' => 'required',
-            'description' => 'required',
-            'status' => 'required',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        if (!auth()->user()->isLandlord()) {
+            abort(403, 'Only landlords can add properties.');
+        }
+
+        $validated = $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'property_type' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'purpose' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'price' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'deposit' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'bedrooms' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
+            'bathrooms' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
+            'balconies' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'area' => [
+                'required',
+                'numeric',
+                'min:1',
+            ],
+
+            'furnishing' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'parking' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'address' => [
+                'required',
+                'string',
+                'max:500',
+            ],
+
+            'city' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'state' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'pincode' => [
+                'required',
+                'digits:6',
+            ],
+
+            'description' => [
+                'required',
+                'string',
+                'min:20',
+                'max:5000',
+            ],
+
+            // IMPORTANT:
+            // Migration supports only Available and Rented.
+            'status' => [
+                'required',
+                'in:Available,Rented',
+            ],
+
+            'image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png',
+                'max:2048',
+            ],
         ]);
 
-        $imageName = null;
+        $imagePath = null;
 
         if ($request->hasFile('image')) {
-
-            $imageName = time() . '_' . $request->image->getClientOriginalName();
-
-            $request->image->move(
-                public_path('uploads/properties'),
-                $imageName
+            $imagePath = $request->file('image')->store(
+                'properties',
+                'public'
             );
         }
 
         Property::create([
-
             'user_id' => auth()->id(),
-
-            'title' => $request->title,
-
-            'slug' => $this->generateSlug($request->title),
-
-            'description' => $request->description,
-
-            'property_type' => $request->property_type,
-
-            'purpose' => $request->purpose,
-
-            'price' => $request->price,
-
-            'deposit' => $request->deposit,
-
-            'bedrooms' => $request->bedrooms,
-
-            'bathrooms' => $request->bathrooms,
-
-            'balconies' => $request->balconies,
-
-            'area' => $request->area,
-
-            'furnishing' => $request->furnishing,
-
-            'parking' => $request->parking,
-
-            'address' => $request->address,
-
-            'city' => $request->city,
-
-            'state' => $request->state,
-
-            'pincode' => $request->pincode,
-
-            'image' => $imageName,
-
-            'status' => $request->status,
-
+            'title' => $validated['title'],
+            'slug' => $this->generateSlug($validated['title']),
+            'description' => $validated['description'],
+            'property_type' => $validated['property_type'],
+            'purpose' => $validated['purpose'],
+            'price' => $validated['price'],
+            'deposit' => $validated['deposit'] ?? null,
+            'bedrooms' => $validated['bedrooms'],
+            'bathrooms' => $validated['bathrooms'],
+            'balconies' => $validated['balconies'] ?? 0,
+            'area' => $validated['area'],
+            'furnishing' => $validated['furnishing'],
+            'parking' => $request->boolean('parking'),
+            'address' => $validated['address'],
+            'city' => $validated['city'],
+            'state' => $validated['state'],
+            'pincode' => $validated['pincode'],
+            'image' => $imagePath,
+            'status' => $validated['status'],
         ]);
 
         return redirect()
             ->route('properties.index')
-            ->with('success', 'Property Added Successfully.');
+            ->with('success', 'Property added successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified property.
      */
     public function show(Property $property)
     {
+        $property->load('user');
+
         $isWishlisted = false;
 
         if (auth()->check()) {
-
-            $isWishlisted = \App\Models\Wishlist::where('user_id', auth()->id())
+            $isWishlisted = Wishlist::where('user_id', auth()->id())
                 ->where('property_id', $property->id)
                 ->exists();
-
         }
 
-        return view('property.show', compact(
-            'property',
-            'isWishlisted'
-        ));
+        $relatedProperties = Property::where(
+            'property_type',
+            $property->property_type
+        )
+            ->where('id', '!=', $property->id)
+            ->where('status', 'Available')
+            ->latest()
+            ->take(4)
+            ->get();
+
+        return view(
+            'property.show',
+            compact(
+                'property',
+                'isWishlisted',
+                'relatedProperties'
+            )
+        );
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show edit form.
      */
     public function edit(Property $property)
     {
-        if ($property->user_id !== auth()->id()) {
-
-            abort(403, 'Unauthorized Access.');
-
-        }
+        $this->authorizeOwner($property);
 
         return view('property.edit', compact('property'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update property.
      */
     public function update(Request $request, Property $property)
     {
-        if ($property->user_id !== auth()->id()) {
+        $this->authorizeOwner($property);
 
-            abort(403, 'Unauthorized Access.');
+        $validated = $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-        }
-        $request->validate([
-            'title' => 'required|max:255',
-            'property_type' => 'required',
-            'purpose' => 'required',
-            'price' => 'required|numeric',
-            'deposit' => 'nullable|numeric',
-            'bedrooms' => 'required|integer',
-            'bathrooms' => 'required|integer',
-            'balconies' => 'nullable|integer',
-            'area' => 'required|numeric',
-            'furnishing' => 'required',
-            'parking' => 'required',
-            'address' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'pincode' => 'required',
-            'description' => 'required',
-            'status' => 'required',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'property_type' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'purpose' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'price' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'deposit' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'bedrooms' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
+            'bathrooms' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
+            'balconies' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'area' => [
+                'required',
+                'numeric',
+                'min:1',
+            ],
+
+            'furnishing' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'parking' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'address' => [
+                'required',
+                'string',
+                'max:500',
+            ],
+
+            'city' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'state' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'pincode' => [
+                'required',
+                'digits:6',
+            ],
+
+            'description' => [
+                'required',
+                'string',
+                'min:20',
+                'max:5000',
+            ],
+
+            'status' => [
+                'required',
+                'in:Available,Rented',
+            ],
+
+            'image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png',
+                'max:2048',
+            ],
         ]);
 
-        $imageName = $property->image;
+        $oldImage = $property->image;
+        $newImage = $oldImage;
 
+        /*
+         * Store the new image FIRST.
+         * Only delete the old image after successful storage.
+         */
         if ($request->hasFile('image')) {
-
-            if (
-                $property->image &&
-                file_exists(public_path('uploads/properties/' . $property->image))
-            ) {
-                unlink(public_path('uploads/properties/' . $property->image));
-            }
-
-            $imageName = time() . '_' . $request->image->getClientOriginalName();
-
-            $request->image->move(
-                public_path('uploads/properties'),
-                $imageName
+            $newImage = $request->file('image')->store(
+                'properties',
+                'public'
             );
         }
 
-     $request->validate([
+        $slug = $property->slug;
 
-    'title' => 'required|string|max:255',
+        if ($property->title !== $validated['title']) {
+            $slug = $this->generateSlug(
+                $validated['title'],
+                $property->id
+            );
+        }
 
-    'property_type' => 'required|string|max:100',
+        $property->update([
+            'title' => $validated['title'],
+            'slug' => $slug,
+            'description' => $validated['description'],
+            'property_type' => $validated['property_type'],
+            'purpose' => $validated['purpose'],
+            'price' => $validated['price'],
+            'deposit' => $validated['deposit'] ?? null,
+            'bedrooms' => $validated['bedrooms'],
+            'bathrooms' => $validated['bathrooms'],
+            'balconies' => $validated['balconies'] ?? 0,
+            'area' => $validated['area'],
+            'furnishing' => $validated['furnishing'],
+            'parking' => $request->boolean('parking'),
+            'address' => $validated['address'],
+            'city' => $validated['city'],
+            'state' => $validated['state'],
+            'pincode' => $validated['pincode'],
+            'status' => $validated['status'],
+            'image' => $newImage,
+        ]);
 
-    'purpose' => 'required|string|max:100',
-
-    'price' => 'required|numeric|min:0',
-
-    'deposit' => 'nullable|numeric|min:0',
-
-    'bedrooms' => 'required|integer|min:0',
-
-    'bathrooms' => 'required|integer|min:0',
-
-    'balconies' => 'nullable|integer|min:0',
-
-    'area' => 'required|numeric|min:1',
-
-    'furnishing' => 'required|string|max:100',
-
-    'parking' => 'required|boolean',
-
-    'address' => 'required|string|max:500',
-
-    'city' => 'required|string|max:100',
-
-    'state' => 'required|string|max:100',
-
-    'pincode' => 'required|digits:6',
-
-    'description' => 'required|string|min:20|max:5000',
-
-    'status' => 'required|in:Available,Rented',
-
-    'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-
-]);
+        /*
+         * Delete old image only after successful update.
+         */
+        if (
+            $request->hasFile('image') &&
+            $oldImage &&
+            $oldImage !== $newImage &&
+            Storage::disk('public')->exists($oldImage)
+        ) {
+            Storage::disk('public')->delete($oldImage);
+        }
 
         return redirect()
             ->route('properties.index')
-            ->with('success', 'Property Updated Successfully.');
+            ->with('success', 'Property updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete property.
      */
     public function destroy(Property $property)
     {
-        if ($property->user_id !== auth()->id()) {
-
-            abort(403, 'Unauthorized Access.');
-
-        }
+        $this->authorizeOwner($property);
 
         if (
             $property->image &&
-            file_exists(public_path('uploads/properties/' . $property->image))
+            Storage::disk('public')->exists($property->image)
         ) {
-            unlink(public_path('uploads/properties/' . $property->image));
+            Storage::disk('public')->delete($property->image);
         }
 
         $property->delete();
 
         return redirect()
             ->route('properties.index')
-            ->with('success', 'Property Deleted Successfully.');
+            ->with('success', 'Property deleted successfully.');
+    }
+
+    /**
+     * Authorize property owner.
+     */
+    private function authorizeOwner(Property $property): void
+    {
+        $user = auth()->user();
+
+        if (!$user || !$user->isLandlord()) {
+            abort(403, 'Only landlords can manage properties.');
+        }
+
+        if ((int) $property->user_id !== (int) $user->id) {
+            abort(403, 'Unauthorized Access.');
+        }
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Enquiry;
-use App\Models\Property;
 use App\Models\Notification;
+use App\Models\Property;
 use Illuminate\Http\Request;
 
 class EnquiryController extends Controller
@@ -14,33 +14,80 @@ class EnquiryController extends Controller
      */
     public function index()
     {
-        $enquiries = Enquiry::with(['property', 'sender'])
-            ->where('receiver_id', auth()->id())
+        $enquiries = Enquiry::with([
+                'property',
+                'sender',
+            ])
+            ->where(
+                'receiver_id',
+                auth()->id()
+            )
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        return view('enquiry.index', compact('enquiries'));
+        return view(
+            'enquiry.index',
+            compact('enquiries')
+        );
     }
+
 
     /**
      * Store a newly created enquiry.
      */
-    public function store(Request $request, Property $property)
-    {
+    public function store(
+        Request $request,
+        Property $property
+    ) {
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate([
+
+            'message' => [
+                'required',
+                'string',
+                'min:10',
+                'max:1000',
+            ],
+
+        ]);
+
+
         /*
         |--------------------------------------------------------------------------
         | Prevent Own Property Enquiry
         |--------------------------------------------------------------------------
         */
 
-        if ($property->user_id == auth()->id()) {
+        if (
+            $property->user_id === auth()->id()
+        ) {
 
             return back()->with(
                 'error',
                 'You cannot send an enquiry for your own property.'
             );
-
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Property Availability
+        |--------------------------------------------------------------------------
+        */
+
+        if ($property->status !== 'Available') {
+
+            return back()->with(
+                'error',
+                'This property is currently not available for enquiry.'
+            );
+        }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -48,10 +95,20 @@ class EnquiryController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $alreadyEnquired = Enquiry::where('property_id', $property->id)
-            ->where('sender_id', auth()->id())
-            ->where('status', 'Pending')
+        $alreadyEnquired = Enquiry::where(
+                'property_id',
+                $property->id
+            )
+            ->where(
+                'sender_id',
+                auth()->id()
+            )
+            ->where(
+                'status',
+                'Pending'
+            )
             ->exists();
+
 
         if ($alreadyEnquired) {
 
@@ -59,28 +116,16 @@ class EnquiryController extends Controller
                 'error',
                 'You already have a pending enquiry for this property.'
             );
-
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validation
-        |--------------------------------------------------------------------------
-        */
-
-        $request->validate([
-
-            'message' => 'required|string|min:10|max:1000',
-
-        ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Save Enquiry
+        | Create Enquiry
         |--------------------------------------------------------------------------
         */
 
-        Enquiry::create([
+        $enquiry = Enquiry::create([
 
             'property_id' => $property->id,
 
@@ -88,9 +133,12 @@ class EnquiryController extends Controller
 
             'receiver_id' => $property->user_id,
 
-            'message' => $request->message,
+            'message' => $validated['message'],
+
+            'status' => 'Pending',
 
         ]);
+
 
         /*
         |--------------------------------------------------------------------------
@@ -104,16 +152,22 @@ class EnquiryController extends Controller
 
             'title' => 'New Property Enquiry',
 
-            'message' => auth()->user()->name .
+            'message' =>
+                auth()->user()->name .
                 ' sent an enquiry for "' .
                 $property->title .
                 '".',
 
             'type' => 'Enquiry',
 
-            'url' => route('enquiries.index'),
+            'url' => route(
+                'enquiries.index'
+            ),
+
+            'is_read' => false,
 
         ]);
+
 
         /*
         |--------------------------------------------------------------------------
@@ -122,30 +176,37 @@ class EnquiryController extends Controller
         */
 
         return back()->with(
-
             'success',
-
             'Your enquiry has been sent successfully.'
-
         );
     }
 
+
     /**
      * Delete an enquiry.
+     *
+     * Only the landlord who received the enquiry
+     * can delete it.
      */
-    public function destroy(Enquiry $enquiry)
-    {
+    public function destroy(
+        Enquiry $enquiry
+    ) {
         /*
         |--------------------------------------------------------------------------
         | Authorization
         |--------------------------------------------------------------------------
         */
 
-        if ($enquiry->receiver_id != auth()->id()) {
+        if (
+            auth()->id() !== $enquiry->receiver_id
+        ) {
 
-            abort(403);
-
+            abort(
+                403,
+                'Unauthorized Access.'
+            );
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -155,12 +216,18 @@ class EnquiryController extends Controller
 
         $enquiry->delete();
 
-        return back()->with(
 
-            'success',
+        /*
+        |--------------------------------------------------------------------------
+        | Success Response
+        |--------------------------------------------------------------------------
+        */
 
-            'Enquiry deleted successfully.'
-
-        );
+        return redirect()
+            ->route('enquiries.index')
+            ->with(
+                'success',
+                'Enquiry deleted successfully.'
+            );
     }
 }

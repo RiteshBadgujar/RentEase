@@ -6,17 +6,33 @@
 
 <div class="container py-5">
 
+    <!-- ==========================
+            Page Header
+    =========================== -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h2 class="fw-bold">
+        <div>
 
-            <i class="bi bi-chat-dots-fill text-primary me-2"></i>
+            <h2 class="fw-bold mb-1">
 
-            My Enquiries
+                <i class="bi bi-chat-dots-fill text-primary me-2"></i>
 
-        </h2>
+                My Enquiries
 
-        <a href="{{ route('dashboard') }}" class="btn btn-secondary">
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Manage enquiries received from tenants.
+
+            </p>
+
+        </div>
+
+        <a
+            href="{{ route('dashboard') }}"
+            class="btn btn-secondary">
 
             <i class="bi bi-arrow-left me-1"></i>
 
@@ -26,9 +42,18 @@
 
     </div>
 
+
+    <!-- ==========================
+            Success Message
+    =========================== -->
+
     @if(session('success'))
 
-        <div class="alert alert-success alert-dismissible fade show">
+        <div
+            class="alert alert-success alert-dismissible fade show"
+            role="alert">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
 
             {{ session('success') }}
 
@@ -42,37 +67,106 @@
 
     @endif
 
-    <div class="card shadow border-0">
+
+    <!-- ==========================
+            Error Message
+    =========================== -->
+
+    @if(session('error'))
+
+        <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            {{ session('error') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    @endif
+
+
+    <!-- ==========================
+            Enquiry List
+    =========================== -->
+
+    <div class="card shadow-lg border-0 rounded-4">
+
+        <div class="card-header bg-light py-3">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-list-ul me-2"></i>
+
+                Enquiry List
+
+            </h5>
+
+        </div>
+
 
         <div class="card-body">
 
+
             <div class="table-responsive">
 
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle mb-0">
+
+                    <!-- ==========================
+                            Table Header
+                    =========================== -->
 
                     <thead class="table-primary">
 
                         <tr>
 
-                            <th>#</th>
+                            <th width="60">
+                                #
+                            </th>
 
-                            <th>Property</th>
+                            <th>
+                                Property
+                            </th>
 
-                            <th>Tenant</th>
+                            <th>
+                                Tenant
+                            </th>
 
-                            <th>Email</th>
+                            <th>
+                                Email
+                            </th>
 
-                            <th>Message</th>
+                            <th>
+                                Message
+                            </th>
 
-                            <th>Status</th>
+                            <th>
+                                Status
+                            </th>
 
-                            <th>Date</th>
+                            <th>
+                                Date
+                            </th>
 
-                            <th width="120">Action</th>
+                            <th width="120">
+                                Action
+                            </th>
 
                         </tr>
 
                     </thead>
+
+
+                    <!-- ==========================
+                            Table Body
+                    =========================== -->
 
                     <tbody>
 
@@ -80,41 +174,87 @@
 
                             <tr>
 
-                                <td>
-
-                                    {{ $loop->iteration }}
-
-                                </td>
+                                <!-- Serial Number -->
 
                                 <td>
 
-                                    {{ $enquiry->property->title }}
+                                    {{ $enquiries->firstItem() + $loop->index }}
 
                                 </td>
+
+
+                                <!-- Property -->
 
                                 <td>
 
-                                    {{ $enquiry->sender->name }}
+                                    <strong>
+
+                                        {{ $enquiry->property->title }}
+
+                                    </strong>
 
                                 </td>
+
+
+                                <!-- Tenant -->
 
                                 <td>
 
-                                    {{ $enquiry->sender->email }}
+                                    <div class="d-flex align-items-center">
+
+                                        <i class="bi bi-person-circle text-primary me-2"></i>
+
+                                        <strong>
+
+                                            {{ $enquiry->sender->name }}
+
+                                        </strong>
+
+                                    </div>
 
                                 </td>
 
-                                <td style="max-width:300px;">
 
-                                    {{ $enquiry->message }}
+                                <!-- Email -->
+
+                                <td>
+
+                                    <a
+                                        href="mailto:{{ $enquiry->sender->email }}"
+                                        class="text-decoration-none">
+
+                                        {{ $enquiry->sender->email }}
+
+                                    </a>
 
                                 </td>
+
+
+                                <!-- Message -->
+
+                                <td style="max-width: 300px;">
+
+                                    <div
+                                        class="text-truncate"
+                                        style="max-width: 280px;"
+                                        title="{{ $enquiry->message }}">
+
+                                        {{ $enquiry->message }}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- Status -->
 
                                 <td>
 
                                     @if($enquiry->status == 'Pending')
 
                                         <span class="badge bg-warning text-dark">
+
+                                            <i class="bi bi-clock me-1"></i>
 
                                             Pending
 
@@ -124,7 +264,19 @@
 
                                         <span class="badge bg-success">
 
+                                            <i class="bi bi-check-circle me-1"></i>
+
                                             Replied
+
+                                        </span>
+
+                                    @elseif($enquiry->status == 'Closed')
+
+                                        <span class="badge bg-secondary">
+
+                                            <i class="bi bi-x-circle me-1"></i>
+
+                                            Closed
 
                                         </span>
 
@@ -132,7 +284,7 @@
 
                                         <span class="badge bg-secondary">
 
-                                            Closed
+                                            {{ $enquiry->status }}
 
                                         </span>
 
@@ -140,17 +292,34 @@
 
                                 </td>
 
+
+                                <!-- Date -->
+
                                 <td>
 
-                                    {{ $enquiry->created_at->format('d M Y') }}
+                                    <span class="text-nowrap">
+
+                                        {{ $enquiry->created_at->format('d M Y') }}
+
+                                    </span>
+
+                                    <small class="d-block text-muted">
+
+                                        {{ $enquiry->created_at->format('h:i A') }}
+
+                                    </small>
 
                                 </td>
+
+
+                                <!-- Action -->
 
                                 <td>
 
                                     <form
                                         action="{{ route('enquiries.destroy', $enquiry->id) }}"
-                                        method="POST">
+                                        method="POST"
+                                        class="d-inline">
 
                                         @csrf
 
@@ -159,7 +328,8 @@
                                         <button
                                             type="submit"
                                             class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Delete this enquiry?')">
+                                            title="Delete Enquiry"
+                                            onclick="return confirm('Are you sure you want to delete this enquiry?')">
 
                                             <i class="bi bi-trash"></i>
 
@@ -173,23 +343,39 @@
 
                         @empty
 
+                            <!-- ==========================
+                                    Empty State
+                            =========================== -->
+
                             <tr>
 
-                                <td colspan="8" class="text-center py-5">
+                                <td
+                                    colspan="8"
+                                    class="text-center py-5">
 
                                     <i class="bi bi-chat-left-text display-1 text-secondary"></i>
 
-                                    <h4 class="mt-3">
+                                    <h4 class="fw-bold mt-3">
 
                                         No Enquiries Found
 
                                     </h4>
 
-                                    <p class="text-muted">
+                                    <p class="text-muted mb-3">
 
                                         You haven't received any enquiries yet.
 
                                     </p>
+
+                                    <a
+                                        href="{{ route('properties.index') }}"
+                                        class="btn btn-primary">
+
+                                        <i class="bi bi-house-door me-2"></i>
+
+                                        View Properties
+
+                                    </a>
 
                                 </td>
 
@@ -202,6 +388,22 @@
                 </table>
 
             </div>
+
+
+            <!-- ==========================
+                    Pagination
+            =========================== -->
+
+            @if($enquiries->hasPages())
+
+                <div class="d-flex justify-content-center mt-4">
+
+                    {{ $enquiries->links() }}
+
+                </div>
+
+            @endif
+
 
         </div>
 

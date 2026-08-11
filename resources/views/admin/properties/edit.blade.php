@@ -1,30 +1,30 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Edit Property')
 
 @section('content')
 
-<div class="container py-5">
+<div class="container-fluid py-4">
 
     <div class="row justify-content-center">
 
         <div class="col-lg-10">
 
-            <div class="card border-0 shadow-lg rounded-4">
+            <div class="card shadow-sm border-0 rounded-4">
 
-                <div class="card-header bg-warning text-dark py-3">
+                <div class="card-header bg-warning">
 
-                    <h3 class="mb-0">
+                    <h4 class="mb-0">
 
                         <i class="bi bi-pencil-square me-2"></i>
 
                         Edit Property
 
-                    </h3>
+                    </h4>
 
                 </div>
 
-                <div class="card-body p-5">
+                <div class="card-body">
 
                     @if($errors->any())
 
@@ -44,138 +44,264 @@
 
                     @endif
 
-                    <form action="{{ route('admin.properties.update',$property) }}"
-                          method="POST"
-                          enctype="multipart/form-data">
+                    <form
+                        action="{{ route('admin.properties.update',$property) }}"
+                        method="POST"
+                        enctype="multipart/form-data">
 
                         @csrf
+
                         @method('PUT')
 
                         <div class="row">
 
-                            <div class="col-md-6 mb-4">
+                            <div class="col-md-4 text-center mb-4">
 
-                                <label class="form-label fw-bold">
+                                @if($property->image)
 
-                                    Property Title
+                                    <img
+                                        src="{{ asset('storage/'.$property->image) }}"
+                                        class="img-fluid rounded shadow"
+                                        style="height:220px;width:100%;object-fit:cover;">
 
-                                </label>
+                                @else
 
-                                <input
-                                    type="text"
-                                    name="title"
-                                    class="form-control"
-                                    value="{{ old('title',$property->title) }}"
-                                    required>
+                                    <div
+                                        class="bg-light rounded d-flex justify-content-center align-items-center"
+                                        style="height:220px;">
 
-                            </div>
+                                        <div>
 
-                            <div class="col-md-6 mb-4">
+                                            <i class="bi bi-image display-3 text-secondary"></i>
 
-                                <label class="form-label fw-bold">
+                                            <p class="text-muted mt-2">
 
-                                    Property Type
+                                                No Image
 
-                                </label>
+                                            </p>
 
-                                <input
-                                    type="text"
-                                    name="property_type"
-                                    class="form-control"
-                                    value="{{ old('property_type',$property->property_type) }}"
-                                    required>
+                                        </div>
 
-                            </div>
+                                    </div>
 
-                            <div class="col-md-6 mb-4">
-
-                                <label class="form-label fw-bold">
-
-                                    Price
-
-                                </label>
-
-                                <input
-                                    type="number"
-                                    name="price"
-                                    class="form-control"
-                                    value="{{ old('price',$property->price) }}"
-                                    required>
+                                @endif
 
                             </div>
 
-                            <div class="col-md-6 mb-4">
+                            <div class="col-md-8">
 
-                                <label class="form-label fw-bold">
+                                <div class="row">
 
-                                    Status
+                                    <div class="col-md-6 mb-3">
 
-                                </label>
+                                        <label class="form-label fw-bold">
 
-                                <select
-                                    name="status"
-                                    class="form-select">
+                                            Property ID
 
-                                    <option value="Available"
-                                        {{ $property->status=='Available' ? 'selected':'' }}>
+                                        </label>
 
-                                        Available
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            value="{{ $property->id }}"
+                                            readonly>
 
-                                    </option>
+                                    </div>
 
-                                    <option value="Rented"
-                                        {{ $property->status=='Rented' ? 'selected':'' }}>
+                                    <div class="col-md-6 mb-3">
 
-                                        Rented
+                                        <label class="form-label fw-bold">
 
-                                    </option>
+                                            Property Title
 
-                                    <option value="Pending"
-                                        {{ $property->status=='Pending' ? 'selected':'' }}>
+                                        </label>
 
-                                        Pending
+                                        <input
+                                            type="text"
+                                            name="title"
+                                            value="{{ old('title',$property->title) }}"
+                                            class="form-control @error('title') is-invalid @enderror"
+                                            required>
 
-                                    </option>
+                                        @error('title')
 
-                                </select>
+                                            <div class="invalid-feedback">
+
+                                                {{ $message }}
+
+                                            </div>
+
+                                        @enderror
+
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+
+                                        <label class="form-label fw-bold">
+
+                                            Property Type
+
+                                        </label>
+
+                                        <select
+                                            name="property_type"
+                                            class="form-select">
+
+                                            <option value="Apartment"
+                                                {{ old('property_type',$property->property_type)=='Apartment'?'selected':'' }}>
+
+                                                Apartment
+
+                                            </option>
+
+                                            <option value="House"
+                                                {{ old('property_type',$property->property_type)=='House'?'selected':'' }}>
+
+                                                House
+
+                                            </option>
+
+                                            <option value="Villa"
+                                                {{ old('property_type',$property->property_type)=='Villa'?'selected':'' }}>
+
+                                                Villa
+
+                                            </option>
+
+                                            <option value="PG"
+                                                {{ old('property_type',$property->property_type)=='PG'?'selected':'' }}>
+
+                                                PG
+
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+
+                                        <label class="form-label fw-bold">
+
+                                            Price (₹)
+
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            value="{{ old('price',$property->price) }}"
+                                            class="form-control @error('price') is-invalid @enderror"
+                                            required>
+
+                                        @error('price')
+
+                                            <div class="invalid-feedback">
+
+                                                {{ $message }}
+
+                                            </div>
+
+                                        @enderror
+
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+
+                                        <label class="form-label fw-bold">
+
+                                            Status
+
+                                        </label>
+
+                                        <select
+                                            name="status"
+                                            class="form-select">
+
+                                            <option value="Available"
+                                                {{ old('status',$property->status)=='Available' ? 'selected' : '' }}>
+
+                                                Available
+
+                                            </option>
+
+                                            <option value="Rented"
+                                                {{ old('status',$property->status)=='Rented' ? 'selected' : '' }}>
+
+                                                Rented
+
+                                            </option>
+
+                                            <option value="Pending"
+                                                {{ old('status',$property->status)=='Pending' ? 'selected' : '' }}>
+
+                                                Pending
+
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+
+                                        <label class="form-label fw-bold">
+
+                                            City
+
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            name="city"
+                                            value="{{ old('city',$property->city) }}"
+                                            class="form-control @error('city') is-invalid @enderror"
+                                            required>
+
+                                        @error('city')
+
+                                            <div class="invalid-feedback">
+
+                                                {{ $message }}
+
+                                            </div>
+
+                                        @enderror
+
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+
+                                        <label class="form-label fw-bold">
+
+                                            Address
+
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value="{{ old('address',$property->address) }}"
+                                            class="form-control @error('address') is-invalid @enderror"
+                                            required>
+
+                                        @error('address')
+
+                                            <div class="invalid-feedback">
+
+                                                {{ $message }}
+
+                                            </div>
+
+                                        @enderror
+
+                                    </div>
+
+                                </div>
 
                             </div>
 
-                            <div class="col-md-6 mb-4">
-
-                                <label class="form-label fw-bold">
-
-                                    City
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="city"
-                                    class="form-control"
-                                    value="{{ old('city',$property->city) }}"
-                                    required>
-
-                            </div>
-
-                            <div class="col-md-6 mb-4">
-
-                                <label class="form-label fw-bold">
-
-                                    Address
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="address"
-                                    class="form-control"
-                                    value="{{ old('address',$property->address) }}"
-                                    required>
-
-                            </div>
-
-                            <div class="col-12 mb-4">
+                            <div class="col-12 mb-3">
 
                                 <label class="form-label fw-bold">
 
@@ -186,8 +312,18 @@
                                 <textarea
                                     name="description"
                                     rows="5"
-                                    class="form-control"
+                                    class="form-control @error('description') is-invalid @enderror"
                                     required>{{ old('description',$property->description) }}</textarea>
+
+                                @error('description')
+
+                                    <div class="invalid-feedback">
+
+                                        {{ $message }}
+
+                                    </div>
+
+                                @enderror
 
                             </div>
 
@@ -195,36 +331,43 @@
 
                                 <label class="form-label fw-bold">
 
-                                    Property Image
+                                    Change Property Image
 
                                 </label>
 
                                 <input
                                     type="file"
                                     name="image"
-                                    class="form-control">
+                                    class="form-control"
+                                    accept="image/*">
+
+                                <small class="text-muted">
+
+                                    Leave empty to keep the current image.
+
+                                </small>
 
                             </div>
 
-                            <div class="col-md-6 mb-4">
+                            <div class="col-md-6 mb-4 d-flex align-items-end">
 
                                 @if($property->image)
 
                                     <img
                                         src="{{ asset('storage/'.$property->image) }}"
-                                        class="img-fluid rounded shadow"
-                                        style="max-height:180px;">
+                                        class="img-thumbnail shadow"
+                                        style="height:120px;object-fit:cover;">
 
                                 @endif
 
-                            </div>
-
-                        </div>
+                            </div>     
+                                                    <hr class="my-4">
 
                         <div class="d-flex justify-content-between">
 
-                            <a href="{{ route('admin.properties.index') }}"
-                               class="btn btn-secondary">
+                            <a
+                                href="{{ route('admin.properties.index') }}"
+                                class="btn btn-secondary">
 
                                 <i class="bi bi-arrow-left me-2"></i>
 
@@ -232,14 +375,29 @@
 
                             </a>
 
-                            <button
-                                class="btn btn-success">
+                            <div>
 
-                                <i class="bi bi-check-circle me-2"></i>
+                                <button
+                                    type="reset"
+                                    class="btn btn-outline-dark me-2">
 
-                                Update Property
+                                    <i class="bi bi-arrow-clockwise me-2"></i>
 
-                            </button>
+                                    Reset
+
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-success">
+
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+
+                                    Update Property
+
+                                </button>
+
+                            </div>
 
                         </div>
 

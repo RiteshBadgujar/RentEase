@@ -1,278 +1,797 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Reports & Analytics')
 
 @section('content')
 
-<div class="container-fluid py-4">
+    <div class="container-fluid py-4">
 
-    <!-- Header -->
+        <!-- Header -->
 
-    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h2 class="fw-bold">
+            <div>
 
-            <i class="bi bi-bar-chart-fill text-primary me-2"></i>
+                <h2 class="fw-bold">
 
-            Reports & Analytics Dashboard
+                    <i class="bi bi-bar-chart-fill text-primary me-2"></i>
 
-        </h2>
+                    Reports & Analytics Dashboard
 
-        <p class="text-muted">
+                </h2>
 
-            View complete system statistics and analytics.
+                <p class="text-muted mb-0">
 
-        </p>
+                    View complete system statistics and analytics.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Main Statistics -->
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-xl-2 col-md-4">
+
+                <div class="card shadow-sm border-0 text-center">
+
+                    <div class="card-body">
+
+                        <i class="bi bi-people-fill display-5 text-primary"></i>
+
+                        <h3 class="fw-bold mt-2">
+
+                            {{ $totalUsers }}
+
+                        </h3>
+
+                        <p class="mb-0">
+
+                            Users
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-xl-2 col-md-4">
+
+                <div class="card shadow-sm border-0 text-center">
+
+                    <div class="card-body">
+
+                        <i class="bi bi-house-door-fill display-5 text-success"></i>
+
+                        <h3 class="fw-bold mt-2">
+
+                            {{ $totalProperties }}
+
+                        </h3>
+
+                        <p class="mb-0">
+
+                            Properties
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-xl-2 col-md-4">
+
+                <div class="card shadow-sm border-0 text-center">
+
+                    <div class="card-body">
+
+                        <i class="bi bi-calendar-check-fill display-5 text-warning"></i>
+
+                        <h3 class="fw-bold mt-2">
+
+                            {{ $totalBookings }}
+
+                        </h3>
+
+                        <p class="mb-0">
+
+                            Bookings
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-xl-2 col-md-4">
+
+                <div class="card shadow-sm border-0 text-center">
+
+                    <div class="card-body">
+
+                        <i class="bi bi-chat-left-text-fill display-5 text-danger"></i>
+
+                        <h3 class="fw-bold mt-2">
+
+                            {{ $totalEnquiries }}
+
+                        </h3>
+
+                        <p class="mb-0">
+
+                            Enquiries
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-xl-2 col-md-4">
+
+                <div class="card shadow-sm border-0 text-center">
+
+                    <div class="card-body">
+
+                        <i class="bi bi-bell-fill display-5 text-info"></i>
+
+                        <h3 class="fw-bold mt-2">
+
+                            {{ $totalNotifications }}
+
+                        </h3>
+
+                        <p class="mb-0">
+
+                            Notifications
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-xl-2 col-md-4">
+
+                <div class="card shadow-sm border-0 text-center">
+
+                    <div class="card-body">
+
+                        <i class="bi bi-heart-fill display-5 text-secondary"></i>
+
+                        <h3 class="fw-bold mt-2">
+
+                            {{ $totalWishlist }}
+
+                        </h3>
+
+                        <p class="mb-0">
+
+                            Wishlist
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- User Role Statistics -->
+
+        <div class="row mb-5">
+
+            <div class="col-md-4">
+
+                <div class="card border-0 shadow-sm">
+
+                    <div class="card-body text-center">
+
+                        <h6 class="text-muted">
+
+                            Admins
+
+                        </h6>
+
+                        <h3 class="text-danger">
+
+                            {{ $totalAdmins }}
+
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="card border-0 shadow-sm">
+
+                    <div class="card-body text-center">
+
+                        <h6 class="text-muted">
+
+                            Landlords
+
+                        </h6>
+
+                        <h3 class="text-success">
+
+                            {{ $totalLandlords }}
+
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="card border-0 shadow-sm">
+
+                    <div class="card-body text-center">
+
+                        <h6 class="text-muted">
+
+                            Tenants
+
+                        </h6>
+
+                        <h3 class="text-primary">
+
+                            {{ $totalTenants }}
+
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Charts -->
+
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header fw-bold">
+
+                        Booking Status
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <canvas id="bookingChart"></canvas>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 mb-4">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header fw-bold">
+
+                        Property Status
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <canvas id="propertyChart"></canvas>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 mb-4">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header fw-bold">
+
+                        Enquiry Status
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <canvas id="enquiryChart"></canvas>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 mb-4">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header fw-bold">
+
+                        Notification Status
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <canvas id="notificationChart"></canvas>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Recent Users -->
+
+        <div class="card shadow-sm border-0 mt-4">
+
+            <div class="card-header fw-bold">
+
+                Recent Users
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                <th>Name</th>
+
+                                <th>Email</th>
+
+                                <th>Role</th>
+
+                                <th>Joined</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @forelse($recentUsers as $user)
+
+                                <tr>
+
+                                    <td>
+
+                                        {{ $user->name }}
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ $user->email }}
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-primary">
+
+                                            {{ ucfirst($user->role) }}
+
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ $user->created_at->format('d M Y') }}
+
+                                    </td>
+
+                                </tr>
+
+                            @empty
+
+                                <tr>
+
+                                    <td colspan="4" class="text-center">
+
+                                        No users found.
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Recent Properties -->
+
+        <div class="card shadow-sm border-0 mt-4">
+
+            <div class="card-header fw-bold">
+
+                Recent Properties
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                <th>Title</th>
+
+                                <th>City</th>
+
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @forelse($recentProperties as $property)
+
+                                <tr>
+
+                                    <td>
+
+                                        {{ $property->title }}
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ $property->city }}
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-success">
+
+                                            {{ $property->status }}
+
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            @empty
+
+                                <tr>
+
+                                    <td colspan="3" class="text-center">
+
+                                        No properties found.
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+        <!-- Recent Bookings -->
+
+        <div class="card shadow-sm border-0 mt-4">
+
+            <div class="card-header fw-bold">
+
+                Recent Bookings
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                <th>Tenant</th>
+
+                                <th>Property</th>
+
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @forelse($recentBookings as $booking)
+
+                                <tr>
+
+                                    <td>
+
+                                        {{ $booking->tenant->name ?? 'N/A' }}
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ $booking->property->title ?? 'N/A' }}
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-warning">
+
+                                            {{ $booking->status }}
+
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            @empty
+
+                                <tr>
+
+                                    <td colspan="3" class="text-center">
+
+                                        No bookings found.
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Recent Enquiries -->
+
+        <div class="card shadow-sm border-0 mt-4">
+
+            <div class="card-header fw-bold">
+
+                Recent Enquiries
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                <th>Sender</th>
+
+                                <th>Property</th>
+
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @forelse($recentEnquiries as $enquiry)
+
+                                <tr>
+
+                                    <td>
+
+                                        {{ $enquiry->sender->name ?? 'N/A' }}
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ $enquiry->property->title ?? 'N/A' }}
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-info">
+
+                                            {{ $enquiry->status }}
+
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            @empty
+
+                                <tr>
+
+                                    <td colspan="3" class="text-center">
+
+                                        No enquiries found.
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
 
     </div>
 
-    <!-- Statistics Cards -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <div class="row g-4">
+    <script>
 
-        <div class="col-lg-2 col-md-4">
+        new Chart(document.getElementById('bookingChart'), {
 
-            <div class="card shadow border-0 text-center">
+            type: 'doughnut',
 
-                <div class="card-body">
+            data: {
 
-                    <h3 class="text-primary">{{ $totalUsers }}</h3>
+                labels: ['Pending', 'Approved', 'Completed', 'Rejected'],
 
-                    <p class="mb-0">Users</p>
+                datasets: [{
 
-                </div>
+                    data: [
+                    {{ $pendingBookings }},
+                    {{ $approvedBookings }},
+                    {{ $completedBookings }},
+                        {{ $rejectedBookings }}
+                    ]
 
-            </div>
+                }]
 
-        </div>
+            }
 
-        <div class="col-lg-2 col-md-4">
+        });
 
-            <div class="card shadow border-0 text-center">
+        new Chart(document.getElementById('propertyChart'), {
 
-                <div class="card-body">
+            type: 'pie',
 
-                    <h3 class="text-success">{{ $totalProperties }}</h3>
+            data: {
 
-                    <p class="mb-0">Properties</p>
+                labels: ['Available', 'Rented', 'Pending'],
 
-                </div>
+                datasets: [{
 
-            </div>
+                    data: [
+                    {{ $availableProperties }},
+                    {{ $rentedProperties }},
+                        {{ $pendingProperties }}
+                    ]
 
-        </div>
+                }]
 
-        <div class="col-lg-2 col-md-4">
+            }
 
-            <div class="card shadow border-0 text-center">
+        });
 
-                <div class="card-body">
+        new Chart(document.getElementById('enquiryChart'), {
 
-                    <h3 class="text-warning">{{ $totalBookings }}</h3>
+            type: 'bar',
 
-                    <p class="mb-0">Bookings</p>
+            data: {
 
-                </div>
+                labels: ['Pending', 'Replied', 'Closed'],
 
-            </div>
+                datasets: [{
 
-        </div>
+                    data: [
+                    {{ $pendingEnquiries }},
+                    {{ $repliedEnquiries }},
+                        {{ $closedEnquiries }}
+                    ]
 
-        <div class="col-lg-2 col-md-4">
+                }]
 
-            <div class="card shadow border-0 text-center">
+            }
 
-                <div class="card-body">
+        });
 
-                    <h3 class="text-danger">{{ $totalEnquiries }}</h3>
+        new Chart(document.getElementById('notificationChart'), {
 
-                    <p class="mb-0">Enquiries</p>
+            type: 'polarArea',
 
-                </div>
+            data: {
 
-            </div>
+                labels: ['Read', 'Unread'],
 
-        </div>
+                datasets: [{
 
-        <div class="col-lg-2 col-md-4">
+                    data: [
+                    {{ $readNotifications }},
+                        {{ $unreadNotifications }}
+                    ]
 
-            <div class="card shadow border-0 text-center">
+                }]
 
-                <div class="card-body">
+            }
 
-                    <h3 class="text-info">{{ $totalNotifications }}</h3>
+        });
 
-                    <p class="mb-0">Notifications</p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-lg-2 col-md-4">
-
-            <div class="card shadow border-0 text-center">
-
-                <div class="card-body">
-
-                    <h3 class="text-secondary">{{ $totalWishlist }}</h3>
-
-                    <p class="mb-0">Wishlist</p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Charts -->
-
-    <div class="row mt-5">
-
-        <div class="col-lg-6">
-
-            <div class="card shadow border-0">
-
-                <div class="card-header fw-bold">
-
-                    Booking Status
-
-                </div>
-
-                <div class="card-body">
-
-                    <canvas id="bookingChart"></canvas>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-lg-6">
-
-            <div class="card shadow border-0">
-
-                <div class="card-header fw-bold">
-
-                    Property Status
-
-                </div>
-
-                <div class="card-body">
-
-                    <canvas id="propertyChart"></canvas>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Recent Users -->
-
-    <div class="card shadow border-0 mt-5">
-
-        <div class="card-header fw-bold">
-
-            Recent Users
-
-        </div>
-
-        <div class="card-body">
-
-            <table class="table table-hover">
-
-                <thead>
-
-                <tr>
-
-                    <th>Name</th>
-
-                    <th>Email</th>
-
-                    <th>Role</th>
-
-                </tr>
-
-                </thead>
-
-                <tbody>
-
-                @foreach($recentUsers as $user)
-
-                    <tr>
-
-                        <td>{{ $user->name }}</td>
-
-                        <td>{{ $user->email }}</td>
-
-                        <td>{{ ucfirst($user->role) }}</td>
-
-                    </tr>
-
-                @endforeach
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-</div>
-
-<!-- ChartJS -->
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-
-new Chart(document.getElementById('bookingChart'),{
-
-    type:'doughnut',
-
-    data:{
-
-        labels:['Pending','Approved','Completed'],
-
-        datasets:[{
-
-            data:[
-                {{ $pendingBookings }},
-                {{ $approvedBookings }},
-                {{ $completedBookings }}
-            ]
-        }]
-    }
-
-});
-
-new Chart(document.getElementById('propertyChart'),{
-
-    type:'pie',
-
-    data:{
-
-        labels:['Available','Rented'],
-
-        datasets:[{
-
-            data:[
-                {{ $availableProperties }},
-                {{ $rentedProperties }}
-            ]
-        }]
-    }
-
-});
-
-</script>
+    </script>
 
 @endsection

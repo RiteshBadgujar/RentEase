@@ -16,20 +16,14 @@ class Notification extends Model
     */
 
     protected $fillable = [
-
         'user_id',
-
         'title',
-
         'message',
-
         'type',
-
         'url',
-
         'is_read',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -38,10 +32,9 @@ class Notification extends Model
     */
 
     protected $attributes = [
-
         'is_read' => false,
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -50,10 +43,9 @@ class Notification extends Model
     */
 
     protected $casts = [
-
         'is_read' => 'boolean',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -66,8 +58,12 @@ class Notification extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(
+            User::class,
+            'user_id'
+        );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -80,16 +76,24 @@ class Notification extends Model
      */
     public function scopeUnread($query)
     {
-        return $query->where('is_read', false);
+        return $query->where(
+            'is_read',
+            false
+        );
     }
+
 
     /**
      * Scope read notifications.
      */
     public function scopeRead($query)
     {
-        return $query->where('is_read', true);
+        return $query->where(
+            'is_read',
+            true
+        );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -98,14 +102,29 @@ class Notification extends Model
     */
 
     /**
-     * Mark the notification as read.
+     * Mark notification as read.
      */
-    public function markAsRead()
+    public function markAsRead(): void
     {
-        $this->update([
+        if (!$this->is_read) {
 
-            'is_read' => true,
+            $this->update([
+                'is_read' => true,
+            ]);
+        }
+    }
 
-        ]);
+
+    /**
+     * Mark notification as unread.
+     */
+    public function markAsUnread(): void
+    {
+        if ($this->is_read) {
+
+            $this->update([
+                'is_read' => false,
+            ]);
+        }
     }
 }

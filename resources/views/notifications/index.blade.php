@@ -6,83 +6,216 @@
 
 <div class="container py-5">
 
+    <!-- ==========================
+            Page Header
+    =========================== -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h2 class="fw-bold">
+        <div>
 
-            <i class="bi bi-bell-fill text-warning me-2"></i>
+            <h2 class="fw-bold mb-1">
 
-            Notifications
+                <i class="bi bi-bell-fill text-warning me-2"></i>
 
-        </h2>
+                Notifications
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                View and manage your notifications.
+
+            </p>
+
+        </div>
 
     </div>
 
-    <div class="card shadow border-0">
+
+    <!-- ==========================
+            Success Message
+    =========================== -->
+
+    @if(session('success'))
+
+        <div
+            class="alert alert-success alert-dismissible fade show"
+            role="alert">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
+
+            {{ session('success') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    @endif
+
+
+    <!-- ==========================
+            Error Message
+    =========================== -->
+
+    @if(session('error'))
+
+        <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            {{ session('error') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    @endif
+
+
+    <!-- ==========================
+            Notification Card
+    =========================== -->
+
+    <div class="card shadow-lg border-0 rounded-4">
+
+        <div class="card-header bg-light py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <h5 class="mb-0">
+
+                    <i class="bi bi-list-ul me-2"></i>
+
+                    Notification List
+
+                </h5>
+
+                <span class="badge bg-primary">
+
+                    {{ $notifications->total() }}
+
+                    {{ $notifications->total() == 1 ? 'Notification' : 'Notifications' }}
+
+                </span>
+
+            </div>
+
+        </div>
+
 
         <div class="card-body">
 
+            <!-- ==========================
+                    Notification Table
+            =========================== -->
+
             <div class="table-responsive">
 
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle mb-0">
 
                     <thead class="table-light">
 
                         <tr>
 
-                            <th>#</th>
+                            <th width="60">
+                                #
+                            </th>
 
-                            <th>Title</th>
+                            <th>
+                                Title
+                            </th>
 
-                            <th>Message</th>
+                            <th>
+                                Message
+                            </th>
 
-                            <th>Type</th>
+                            <th>
+                                Type
+                            </th>
 
-                            <th>Status</th>
+                            <th>
+                                Status
+                            </th>
 
-                            <th>Date</th>
+                            <th>
+                                Date
+                            </th>
 
-                            <th width="140">Action</th>
+                            <th width="140">
+                                Action
+                            </th>
 
                         </tr>
 
                     </thead>
 
+
                     <tbody>
 
                         @forelse($notifications as $notification)
 
-                            <tr class="{{ !$notification->is_read ? 'table-warning' : '' }}">
+                            <tr
+                                class="{{ !$notification->is_read ? 'table-warning' : '' }}">
+
+                                <!-- Serial Number -->
 
                                 <td>
 
-                                    @if(method_exists($notifications, 'firstItem'))
-
-                                        {{ $notifications->firstItem() + $loop->index }}
-
-                                    @else
-
-                                        {{ $loop->iteration }}
-
-                                    @endif
+                                    {{ $notifications->firstItem() + $loop->index }}
 
                                 </td>
+
+
+                                <!-- Title -->
 
                                 <td>
 
-                                    <strong>{{ $notification->title }}</strong>
+                                    <strong>
+
+                                        {{ $notification->title }}
+
+                                    </strong>
 
                                 </td>
 
-                                <td>
 
-                                    {{ \Illuminate\Support\Str::limit($notification->message, 50) }}
+                                <!-- Message -->
+
+                                <td style="max-width: 300px;">
+
+                                    <div
+                                        class="text-truncate"
+                                        style="max-width: 280px;"
+                                        title="{{ $notification->message }}">
+
+                                        {{ \Illuminate\Support\Str::limit(
+                                            $notification->message,
+                                            70
+                                        ) }}
+
+                                    </div>
 
                                 </td>
+
+
+                                <!-- Type -->
 
                                 <td>
 
                                     <span class="badge bg-info">
+
+                                        <i class="bi bi-tag me-1"></i>
 
                                         {{ $notification->type }}
 
@@ -90,11 +223,16 @@
 
                                 </td>
 
+
+                                <!-- Status -->
+
                                 <td>
 
                                     @if($notification->is_read)
 
                                         <span class="badge bg-success">
+
+                                            <i class="bi bi-check-circle me-1"></i>
 
                                             Read
 
@@ -104,6 +242,8 @@
 
                                         <span class="badge bg-warning text-dark">
 
+                                            <i class="bi bi-circle-fill me-1"></i>
+
                                             Unread
 
                                         </span>
@@ -112,17 +252,24 @@
 
                                 </td>
 
+
+                                <!-- Date -->
+
                                 <td>
 
-                                    <small>
+                                    <span class="text-nowrap">
 
-                                        {{ $notification->created_at->format('d M Y h:i A') }}
+                                        {{ $notification->created_at->format('d M Y') }}
+
+                                    </span>
+
+                                    <small class="d-block text-muted">
+
+                                        {{ $notification->created_at->format('h:i A') }}
 
                                     </small>
 
-                                    <br>
-
-                                    <small class="text-muted">
+                                    <small class="d-block text-muted">
 
                                         {{ $notification->created_at->diffForHumans() }}
 
@@ -130,7 +277,12 @@
 
                                 </td>
 
+
+                                <!-- Actions -->
+
                                 <td>
+
+                                    <!-- View -->
 
                                     <a
                                         href="{{ route('notifications.show', $notification->id) }}"
@@ -140,6 +292,9 @@
                                         <i class="bi bi-eye"></i>
 
                                     </a>
+
+
+                                    <!-- Delete -->
 
                                     <form
                                         action="{{ route('notifications.destroy', $notification->id) }}"
@@ -154,7 +309,7 @@
                                             type="submit"
                                             class="btn btn-danger btn-sm"
                                             title="Delete Notification"
-                                            onclick="return confirm('Delete this notification?')">
+                                            onclick="return confirm('Are you sure you want to delete this notification?')">
 
                                             <i class="bi bi-trash"></i>
 
@@ -168,27 +323,39 @@
 
                         @empty
 
+                            <!-- ==========================
+                                    Empty State
+                            =========================== -->
+
                             <tr>
 
-                                <td colspan="7">
+                                <td
+                                    colspan="7"
+                                    class="text-center py-5">
 
-                                    <div class="text-center py-5">
+                                    <i class="bi bi-bell-slash display-1 text-secondary"></i>
 
-                                        <i class="bi bi-bell-slash display-1 text-secondary"></i>
+                                    <h5 class="fw-bold mt-3">
 
-                                        <h5 class="mt-3">
+                                        No Notifications Found
 
-                                            No Notifications Found
+                                    </h5>
 
-                                        </h5>
+                                    <p class="text-muted mb-3">
 
-                                        <p class="text-muted mb-0">
+                                        You're all caught up.
 
-                                            You're all caught up.
+                                    </p>
 
-                                        </p>
+                                    <a
+                                        href="{{ route('dashboard') }}"
+                                        class="btn btn-primary">
 
-                                    </div>
+                                        <i class="bi bi-speedometer2 me-2"></i>
+
+                                        Back to Dashboard
+
+                                    </a>
 
                                 </td>
 
@@ -202,9 +369,14 @@
 
             </div>
 
-            @if(method_exists($notifications, 'links'))
 
-                <div class="mt-4">
+            <!-- ==========================
+                    Pagination
+            =========================== -->
+
+            @if($notifications->hasPages())
+
+                <div class="d-flex justify-content-center mt-4">
 
                     {{ $notifications->links() }}
 

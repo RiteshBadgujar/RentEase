@@ -1,30 +1,40 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Edit User')
 
 @section('content')
 
-<div class="container py-5">
+@php
+
+$badge = [
+    'admin' => 'danger',
+    'landlord' => 'success',
+    'tenant' => 'primary'
+];
+
+@endphp
+
+<div class="container-fluid">
 
     <div class="row justify-content-center">
 
         <div class="col-lg-8">
 
-            <div class="card border-0 shadow-lg rounded-4">
+            <div class="card shadow-sm border-0">
 
-                <div class="card-header bg-warning text-dark py-3">
+                <div class="card-header bg-warning">
 
-                    <h3 class="mb-0">
+                    <h4 class="mb-0">
 
                         <i class="bi bi-pencil-square me-2"></i>
 
                         Edit User
 
-                    </h3>
+                    </h4>
 
                 </div>
 
-                <div class="card-body p-5">
+                <div class="card-body">
 
                     @if($errors->any())
 
@@ -44,87 +54,153 @@
 
                     @endif
 
-                    <form action="{{ route('admin.users.update', $user) }}"
-                          method="POST">
+                    <div class="text-center mb-4">
+
+                        <div class="rounded-circle bg-primary text-white fw-bold d-inline-flex align-items-center justify-content-center"
+                             style="width:90px;height:90px;font-size:34px;">
+
+                            {{ strtoupper(substr($user->name,0,1)) }}
+
+                        </div>
+
+                        <h4 class="mt-3">
+
+                            {{ $user->name }}
+
+                        </h4>
+
+                        <span class="badge bg-{{ $badge[$user->role] ?? 'secondary' }}">
+
+                            {{ ucfirst($user->role) }}
+
+                        </span>
+
+                    </div>
+
+                    <form
+                        action="{{ route('admin.users.update',$user) }}"
+                        method="POST">
 
                         @csrf
                         @method('PUT')
 
-                        <div class="mb-4">
+                        <div class="row">
 
-                            <label class="form-label fw-semibold">
+                            <div class="col-md-6 mb-3">
 
-                                Full Name
+                                <label class="form-label">
 
-                            </label>
+                                    User ID
 
-                            <input
-                                type="text"
-                                name="name"
-                                class="form-control form-control-lg"
-                                value="{{ old('name', $user->name) }}"
-                                required>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    value="{{ $user->id }}"
+                                    readonly>
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Full Name
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value="{{ old('name',$user->name) }}"
+                                    class="form-control @error('name') is-invalid @enderror"
+                                    required>
+
+                                @error('name')
+
+                                    <div class="invalid-feedback">
+
+                                        {{ $message }}
+
+                                    </div>
+
+                                @enderror
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Email Address
+
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    autocomplete="email"
+                                    value="{{ old('email',$user->email) }}"
+                                    class="form-control @error('email') is-invalid @enderror"
+                                    required>
+
+                                @error('email')
+
+                                    <div class="invalid-feedback">
+
+                                        {{ $message }}
+
+                                    </div>
+
+                                @enderror
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Role
+
+                                </label>
+
+                                <select
+                                    name="role"
+                                    class="form-select">
+
+                                    <option value="admin"
+                                        {{ old('role',$user->role)=='admin'?'selected':'' }}>
+
+                                        Admin
+
+                                    </option>
+
+                                    <option value="landlord"
+                                        {{ old('role',$user->role)=='landlord'?'selected':'' }}>
+
+                                        Landlord
+
+                                    </option>
+
+                                    <option value="tenant"
+                                        {{ old('role',$user->role)=='tenant'?'selected':'' }}>
+
+                                        Tenant
+
+                                    </option>
+
+                                </select>
+
+                            </div>
 
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mt-4 d-flex justify-content-between">
 
-                            <label class="form-label fw-semibold">
-
-                                Email Address
-
-                            </label>
-
-                            <input
-                                type="email"
-                                name="email"
-                                class="form-control form-control-lg"
-                                value="{{ old('email', $user->email) }}"
-                                required>
-
-                        </div>
-
-                        <div class="mb-4">
-
-                            <label class="form-label fw-semibold">
-
-                                User Role
-
-                            </label>
-
-                            <select
-                                name="role"
-                                class="form-select form-select-lg">
-
-                                <option value="admin"
-                                    {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>
-
-                                    Admin
-
-                                </option>
-
-                                <option value="landlord"
-                                    {{ old('role', $user->role) == 'landlord' ? 'selected' : '' }}>
-
-                                    Landlord
-
-                                </option>
-
-                                <option value="tenant"
-                                    {{ old('role', $user->role) == 'tenant' ? 'selected' : '' }}>
-
-                                    Tenant
-
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-
-                            <a href="{{ route('admin.users.index') }}"
-                               class="btn btn-secondary btn-lg">
+                            <a
+                                href="{{ route('admin.users.index') }}"
+                                class="btn btn-secondary">
 
                                 <i class="bi bi-arrow-left me-2"></i>
 
@@ -132,15 +208,29 @@
 
                             </a>
 
-                            <button
-                                type="submit"
-                                class="btn btn-success btn-lg">
+                            <div>
 
-                                <i class="bi bi-check-circle me-2"></i>
+                                <button
+                                    type="reset"
+                                    class="btn btn-outline-secondary">
 
-                                Update User
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i>
 
-                            </button>
+                                    Reset
+
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-success">
+
+                                    <i class="bi bi-check-circle me-2"></i>
+
+                                    Update User
+
+                                </button>
+
+                            </div>
 
                         </div>
 

@@ -1,171 +1,207 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Edit Notification')
 
 @section('content')
 
-<div class="container py-5">
+    <div class="container-fluid py-4">
 
-    <div class="row justify-content-center">
+        <div class="row justify-content-center">
 
-        <div class="col-lg-8">
+            <div class="col-lg-8">
 
-            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card shadow-sm border-0 rounded-4">
 
-                <div class="card-header bg-warning text-dark">
+                    <div class="card-header bg-warning">
 
-                    <h3 class="mb-0">
+                        <h4 class="mb-0">
 
-                        <i class="bi bi-pencil-square me-2"></i>
+                            <i class="bi bi-pencil-square me-2"></i>
 
-                        Edit Notification
+                            Edit Notification
 
-                    </h3>
+                        </h4>
 
-                </div>
+                    </div>
 
-                <div class="card-body">
+                    <div class="card-body">
 
-                    @if($errors->any())
+                        @if($errors->any())
 
-                        <div class="alert alert-danger">
+                            <div class="alert alert-danger">
 
-                            <ul class="mb-0">
+                                <ul class="mb-0">
 
-                                @foreach($errors->all() as $error)
+                                    @foreach($errors->all() as $error)
 
-                                    <li>{{ $error }}</li>
+                                        <li>{{ $error }}</li>
 
-                                @endforeach
+                                    @endforeach
 
-                            </ul>
+                                </ul>
 
-                        </div>
+                            </div>
 
-                    @endif
+                        @endif
 
-                    <form action="{{ route('admin.notifications.update',$notification) }}"
-                          method="POST">
+                        <form action="{{ route('admin.notifications.update', $notification) }}" method="POST">
 
-                        @csrf
-                        @method('PUT')
+                            @csrf
 
-                        <div class="mb-4">
+                            @method('PUT')
 
-                            <label class="form-label fw-bold">
+                            <div class="row">
 
-                                User
+                                <div class="col-md-6 mb-3">
 
-                            </label>
+                                    <label class="form-label fw-bold">
 
-                            <input
-                                type="text"
-                                class="form-control"
-                                value="{{ $notification->user->name ?? 'N/A' }}"
-                                readonly>
+                                        Notification ID
 
-                        </div>
+                                    </label>
 
-                        <div class="mb-4">
+                                    <input type="text" class="form-control" value="#{{ $notification->id }}" readonly>
 
-                            <label class="form-label fw-bold">
+                                </div>
 
-                                Title
+                                <div class="col-md-6 mb-3">
 
-                            </label>
+                                    <label class="form-label fw-bold">
 
-                            <input
-                                type="text"
-                                class="form-control"
-                                value="{{ $notification->title }}"
-                                readonly>
+                                        Created Date
 
-                        </div>
+                                    </label>
 
-                        <div class="mb-4">
+                                    <input type="text" class="form-control"
+                                        value="{{ $notification->created_at->format('d M Y') }}" readonly>
 
-                            <label class="form-label fw-bold">
+                                </div>
 
-                                Type
+                                <div class="col-md-6 mb-3">
 
-                            </label>
+                                    <label class="form-label fw-bold">
 
-                            <input
-                                type="text"
-                                class="form-control"
-                                value="{{ $notification->type }}"
-                                readonly>
+                                        User
 
-                        </div>
+                                    </label>
 
-                        <div class="mb-4">
+                                    <input type="text" class="form-control" value="{{ $notification->user->name ?? 'N/A' }}"
+                                        readonly>
 
-                            <label class="form-label fw-bold">
+                                </div>
 
-                                Message
+                                <div class="col-md-6 mb-3">
 
-                            </label>
+                                    <label class="form-label fw-bold">
 
-                            <textarea
-                                class="form-control"
-                                rows="5"
-                                readonly>{{ $notification->message }}</textarea>
+                                        Type
 
-                        </div>
+                                    </label>
 
-                        <div class="mb-4">
+                                    <input type="text" class="form-control" value="{{ ucfirst($notification->type) }}"
+                                        readonly>
 
-                            <label class="form-label fw-bold">
+                                </div>
 
-                                Status
+                                <div class="col-12 mb-3">
 
-                            </label>
+                                    <label class="form-label fw-bold">
 
-                            <select
-                                name="is_read"
-                                class="form-select">
+                                        Title
 
-                                <option value="0"
-                                    {{ !$notification->is_read ? 'selected' : '' }}>
+                                    </label>
 
-                                    Unread
+                                    <input type="text" class="form-control" value="{{ $notification->title }}" readonly>
 
-                                </option>
+                                </div>
 
-                                <option value="1"
-                                    {{ $notification->is_read ? 'selected' : '' }}>
+                                <div class="col-12 mb-4">
 
-                                    Read
+                                    <label class="form-label fw-bold">
 
-                                </option>
+                                        Message
 
-                            </select>
+                                    </label>
 
-                        </div>
+                                    <textarea class="form-control" rows="5" readonly>{{ $notification->message }}</textarea>
 
-                        <div class="d-flex justify-content-between">
+                                </div>
+                                <div class="col-md-12 mb-4">
 
-                            <a href="{{ route('admin.notifications.index') }}"
-                               class="btn btn-secondary">
+                                    <label class="form-label fw-bold">
 
-                                <i class="bi bi-arrow-left me-2"></i>
+                                        Status
 
-                                Back
+                                    </label>
 
-                            </a>
+                                    <select name="is_read" class="form-select @error('is_read') is-invalid @enderror"
+                                        required>
 
-                            <button
-                                class="btn btn-success">
+                                        <option value="0" {{ old('is_read', $notification->is_read) == 0 ? 'selected' : '' }}>
 
-                                <i class="bi bi-check-circle me-2"></i>
+                                            Unread
 
-                                Update Notification
+                                        </option>
 
-                            </button>
+                                        <option value="1" {{ old('is_read', $notification->is_read) == 1 ? 'selected' : '' }}>
 
-                        </div>
+                                            Read
 
-                    </form>
+                                        </option>
+
+                                    </select>
+
+                                    @error('is_read')
+
+                                        <div class="invalid-feedback">
+
+                                            {{ $message }}
+
+                                        </div>
+
+                                    @enderror
+
+                                </div>
+
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex justify-content-between">
+
+                                <a href="{{ route('admin.notifications.index') }}" class="btn btn-secondary">
+
+                                    <i class="bi bi-arrow-left me-2"></i>
+
+                                    Back
+
+                                </a>
+
+                                <div>
+
+                                    <button type="reset" class="btn btn-outline-dark me-2">
+
+                                        <i class="bi bi-arrow-clockwise me-2"></i>
+
+                                        Reset
+
+                                    </button>
+
+                                    <button type="submit" class="btn btn-success">
+
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+
+                                        Update Notification
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
+                    </div>
 
                 </div>
 
@@ -174,7 +210,5 @@
         </div>
 
     </div>
-
-</div>
 
 @endsection

@@ -9,20 +9,32 @@ class Wishlist extends Model
 {
     use HasFactory;
 
-    /**
-     * Mass assignable attributes.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignable Attributes
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'user_id',
         'property_id',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     /**
      * Get the user that owns the wishlist item.
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(
+            User::class,
+            'user_id'
+        );
     }
 
     /**
@@ -30,6 +42,9 @@ class Wishlist extends Model
      */
     public function property()
     {
-        return $this->belongsTo(Property::class);
+        return $this->belongsTo(
+            Property::class,
+            'property_id'
+        );
     }
 }

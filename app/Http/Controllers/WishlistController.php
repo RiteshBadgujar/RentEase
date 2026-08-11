@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Property;
 use App\Models\Wishlist;
-use Illuminate\Http\Request;
 
 class WishlistController extends Controller
 {
@@ -13,10 +12,15 @@ class WishlistController extends Controller
      */
     public function index()
     {
-        $wishlists = Wishlist::with(['property.user'])
-            ->where('user_id', auth()->id())
+        $wishlists = Wishlist::with([
+                'property.user'
+            ])
+            ->where(
+                'user_id',
+                auth()->id()
+            )
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return view(
             'wishlist.index',
@@ -41,7 +45,6 @@ class WishlistController extends Controller
                 'error',
                 'You cannot add your own property to the wishlist.'
             );
-
         }
 
         /*
@@ -51,19 +54,19 @@ class WishlistController extends Controller
         */
 
         Wishlist::firstOrCreate([
-
             'user_id' => auth()->id(),
-
             'property_id' => $property->id,
-
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Success Response
+        |--------------------------------------------------------------------------
+        */
+
         return back()->with(
-
             'success',
-
             'Property added to wishlist successfully.'
-
         );
     }
 
@@ -72,16 +75,31 @@ class WishlistController extends Controller
      */
     public function destroy(Property $property)
     {
-        Wishlist::where('user_id', auth()->id())
-            ->where('property_id', $property->id)
+        /*
+        |--------------------------------------------------------------------------
+        | Remove Only Current User's Wishlist Item
+        |--------------------------------------------------------------------------
+        */
+
+        Wishlist::where(
+                'user_id',
+                auth()->id()
+            )
+            ->where(
+                'property_id',
+                $property->id
+            )
             ->delete();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Success Response
+        |--------------------------------------------------------------------------
+        */
+
         return back()->with(
-
             'success',
-
             'Property removed from wishlist successfully.'
-
         );
     }
 }

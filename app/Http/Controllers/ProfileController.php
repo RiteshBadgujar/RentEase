@@ -21,39 +21,138 @@ class ProfileController extends Controller
         ]);
     }
 
+
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+    public function update(
+        ProfileUpdateRequest $request
+    ): RedirectResponse {
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user = $request->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update User Information
+        |--------------------------------------------------------------------------
+        */
+
+        $user->fill(
+            $request->validated()
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reset Email Verification
+        |--------------------------------------------------------------------------
+        |
+        | If the email address changes, the user must verify
+        | the new email address again.
+        |
+        */
+
+        if ($user->isDirty('email')) {
+
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        /*
+        |--------------------------------------------------------------------------
+        | Save User
+        |--------------------------------------------------------------------------
+        */
+
+        $user->save();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+
+        return Redirect::route(
+            'profile.edit'
+        )->with(
+            'status',
+            'profile-updated'
+        );
     }
+
 
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
+    public function destroy(
+        Request $request
+    ): RedirectResponse {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Current Password
+        |--------------------------------------------------------------------------
+        */
+
+        $request->validateWithBag(
+            'userDeletion',
+            [
+                'password' => [
+                    'required',
+                    'current_password',
+                ],
+            ]
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get Authenticated User
+        |--------------------------------------------------------------------------
+        */
 
         $user = $request->user();
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Logout
+        |--------------------------------------------------------------------------
+        */
+
         Auth::logout();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete User
+        |--------------------------------------------------------------------------
+        |
+        | Related records configured with cascadeOnDelete()
+        | will also be removed by the database.
+        |
+        */
 
         $user->delete();
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Invalidate Session
+        |--------------------------------------------------------------------------
+        */
+
         $request->session()->invalidate();
+
         $request->session()->regenerateToken();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
 
         return Redirect::to('/');
     }

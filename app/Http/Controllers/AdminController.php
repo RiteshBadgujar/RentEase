@@ -7,7 +7,8 @@ use App\Models\Property;
 use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Notification;
-use Illuminate\Http\Request;
+use App\Models\ActivityLog;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -18,20 +19,41 @@ class AdminController extends Controller
     {
         /*
         |--------------------------------------------------------------------------
+        | Admin Authorization
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !auth()->check() ||
+            auth()->user()->role !== 'admin'
+        ) {
+            abort(403, 'Unauthorized Access.');
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
         | User Statistics
         |--------------------------------------------------------------------------
         */
 
         $totalUsers = User::count();
 
-        $totalAdmins = User::where('role', 'admin')
-            ->count();
+        $totalAdmins = User::where(
+            'role',
+            'admin'
+        )->count();
 
-        $totalLandlords = User::where('role', 'landlord')
-            ->count();
+        $totalLandlords = User::where(
+            'role',
+            'landlord'
+        )->count();
 
-        $totalTenants = User::where('role', 'tenant')
-            ->count();
+        $totalTenants = User::where(
+            'role',
+            'tenant'
+        )->count();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -50,6 +72,7 @@ class AdminController extends Controller
             'status',
             'Rented'
         )->count();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -74,6 +97,7 @@ class AdminController extends Controller
             'Completed'
         )->count();
 
+
         /*
         |--------------------------------------------------------------------------
         | Enquiry Statistics
@@ -92,6 +116,7 @@ class AdminController extends Controller
             'Replied'
         )->count();
 
+
         /*
         |--------------------------------------------------------------------------
         | Notification Statistics
@@ -105,22 +130,24 @@ class AdminController extends Controller
             false
         )->count();
 
+
         /*
         |--------------------------------------------------------------------------
         | Recent Users
         |--------------------------------------------------------------------------
         */
 
-        $recentUsers = User::select(
+        $recentUsers = User::select([
                 'id',
                 'name',
                 'email',
                 'role',
-                'created_at'
-            )
+                'created_at',
+            ])
             ->latest()
             ->take(5)
             ->get();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -128,10 +155,13 @@ class AdminController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $recentProperties = Property::with('user')
+        $recentProperties = Property::with([
+                'user',
+            ])
             ->latest()
             ->take(5)
             ->get();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -141,58 +171,93 @@ class AdminController extends Controller
 
         $recentBookings = Booking::with([
                 'tenant:id,name',
-                'property:id,title'
+                'property:id,title',
             ])
             ->latest()
             ->take(5)
             ->get();
 
+
         /*
         |--------------------------------------------------------------------------
-        | Return Dashboard View
+        | Monthly Booking Analytics
         |--------------------------------------------------------------------------
         */
 
-        return view('admin.dashboard', compact(
+        $monthlyBookings = Booking::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->whereYear(
+                'created_at',
+                now()->year
+            )
+            ->groupBy(
+                DB::raw('MONTH(created_at)')
+            )
+            ->orderBy(
+                DB::raw('MONTH(created_at)')
+            )
+            ->get();
 
-            'totalUsers',
 
-            'totalAdmins',
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Activities
+        |--------------------------------------------------------------------------
+        */
 
-            'totalLandlords',
+        $recentActivities = ActivityLog::with([
+                'user',
+            ])
+            ->latest()
+            ->take(10)
+            ->get();
 
-            'totalTenants',
 
-            'totalProperties',
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Notifications
+        |--------------------------------------------------------------------------
+        */
 
-            'availableProperties',
+        $recentNotifications = Notification::latest()
+            ->take(5)
+            ->get();
 
-            'rentedProperties',
 
-            'totalBookings',
+        /*
+        |--------------------------------------------------------------------------
+        | Return Admin Dashboard
+        |--------------------------------------------------------------------------
+        */
 
-            'pendingBookings',
-
-            'approvedBookings',
-
-            'completedBookings',
-
-            'totalEnquiries',
-
-            'pendingEnquiries',
-
-            'repliedEnquiries',
-
-            'totalNotifications',
-
-            'unreadNotifications',
-
-            'recentUsers',
-
-            'recentProperties',
-
-            'recentBookings'
-
-        ));
+        return view(
+            'admin.dashboard',
+            compact(
+                'totalUsers',
+                'totalAdmins',
+                'totalLandlords',
+                'totalTenants',
+                'totalProperties',
+                'availableProperties',
+                'rentedProperties',
+                'totalBookings',
+                'pendingBookings',
+                'approvedBookings',
+                'completedBookings',
+                'totalEnquiries',
+                'pendingEnquiries',
+                'repliedEnquiries',
+                'totalNotifications',
+                'unreadNotifications',
+                'recentUsers',
+                'recentProperties',
+                'recentBookings',
+                'monthlyBookings',
+                'recentActivities',
+                'recentNotifications'
+            )
+        );
     }
 }

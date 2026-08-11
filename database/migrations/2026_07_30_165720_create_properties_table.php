@@ -16,8 +16,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('user_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+                ->constrained()
+                ->cascadeOnDelete();
 
             $table->string('title');
             $table->string('slug')->unique();
@@ -49,11 +49,11 @@ return new class extends Migration
 
             $table->enum('status', [
                 'Available',
-                'Rented'
+                'Rented',
+                'Pending'
             ])->default('Available');
 
             $table->timestamps();
-
         });
     }
 

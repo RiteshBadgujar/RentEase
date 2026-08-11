@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use Illuminate\Http\Request;
 
 class TenantBookingController extends Controller
 {
@@ -12,43 +11,117 @@ class TenantBookingController extends Controller
      */
     public function index()
     {
-        $bookings = Booking::with(['property', 'landlord'])
+        $bookings = Booking::with([
+                'property',
+                'landlord',
+            ])
             ->where('tenant_id', auth()->id())
             ->latest()
             ->get();
 
-        return view('tenant-bookings.index', compact('bookings'));
+        return view(
+            'tenant-bookings.index',
+            compact('bookings')
+        );
     }
+
 
     /**
      * Display a single booking.
      */
     public function show(Booking $booking)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Authorization
+        |--------------------------------------------------------------------------
+        */
+
         if ($booking->tenant_id != auth()->id()) {
-            abort(403);
+
+            abort(
+                403,
+                'Unauthorized Access.'
+            );
         }
 
-        return view('tenant-bookings.show', compact('booking'));
+
+        /*
+        |--------------------------------------------------------------------------
+        | Load Relationships
+        |--------------------------------------------------------------------------
+        */
+
+        $booking->load([
+            'property',
+            'landlord',
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'tenant-bookings.show',
+            compact('booking')
+        );
     }
+
 
     /**
      * Cancel a booking.
+     *
+     * Only Pending bookings can be cancelled by the tenant.
      */
     public function destroy(Booking $booking)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Authorization
+        |--------------------------------------------------------------------------
+        */
+
         if ($booking->tenant_id != auth()->id()) {
-            abort(403);
+
+            abort(
+                403,
+                'Unauthorized Access.'
+            );
         }
 
-        if ($booking->status != 'Pending') {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status Check
+        |--------------------------------------------------------------------------
+        */
+
+        if ($booking->status !== 'Pending') {
+
             return back()->with(
                 'error',
                 'Only pending bookings can be cancelled.'
             );
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Booking
+        |--------------------------------------------------------------------------
+        */
+
         $booking->delete();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Success Response
+        |--------------------------------------------------------------------------
+        */
 
         return back()->with(
             'success',

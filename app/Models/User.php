@@ -6,12 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-use App\Models\Property;
-use App\Models\Wishlist;
-use App\Models\Booking;
-use App\Models\Notification;
-use App\Models\Enquiry;
-
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -23,16 +17,11 @@ class User extends Authenticatable
     */
 
     protected $fillable = [
-
         'name',
-
         'email',
-
-        'role',
-
         'password',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -41,12 +30,10 @@ class User extends Authenticatable
     */
 
     protected $hidden = [
-
         'password',
-
         'remember_token',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -57,13 +44,11 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-
             'email_verified_at' => 'datetime',
-
             'password' => 'hashed',
-
         ];
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -74,26 +59,29 @@ class User extends Authenticatable
     /**
      * Check if user is Admin.
      */
-    public function isAdmin()
+    public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
+
     /**
      * Check if user is Landlord.
      */
-    public function isLandlord()
+    public function isLandlord(): bool
     {
         return $this->role === 'landlord';
     }
 
+
     /**
      * Check if user is Tenant.
      */
-    public function isTenant()
+    public function isTenant(): bool
     {
         return $this->role === 'tenant';
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -101,20 +89,32 @@ class User extends Authenticatable
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Scope admin users.
+     */
     public function scopeAdmins($query)
     {
         return $query->where('role', 'admin');
     }
 
+
+    /**
+     * Scope landlord users.
+     */
     public function scopeLandlords($query)
     {
         return $query->where('role', 'landlord');
     }
 
+
+    /**
+     * Scope tenant users.
+     */
     public function scopeTenants($query)
     {
         return $query->where('role', 'tenant');
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -130,6 +130,7 @@ class User extends Authenticatable
         return $this->hasMany(Property::class);
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | Wishlist Relationship
@@ -144,6 +145,7 @@ class User extends Authenticatable
         return $this->hasMany(Wishlist::class);
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | Booking Relationships
@@ -151,20 +153,28 @@ class User extends Authenticatable
     */
 
     /**
-     * Bookings created by the user (Tenant).
+     * Bookings created by the user as Tenant.
      */
     public function tenantBookings()
     {
-        return $this->hasMany(Booking::class, 'tenant_id');
+        return $this->hasMany(
+            Booking::class,
+            'tenant_id'
+        );
     }
 
+
     /**
-     * Bookings received by the user (Landlord).
+     * Bookings received by the user as Landlord.
      */
     public function landlordBookings()
     {
-        return $this->hasMany(Booking::class, 'landlord_id');
+        return $this->hasMany(
+            Booking::class,
+            'landlord_id'
+        );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -177,16 +187,24 @@ class User extends Authenticatable
      */
     public function sentEnquiries()
     {
-        return $this->hasMany(Enquiry::class, 'sender_id');
+        return $this->hasMany(
+            Enquiry::class,
+            'sender_id'
+        );
     }
+
 
     /**
      * Enquiries received by the user.
      */
     public function receivedEnquiries()
     {
-        return $this->hasMany(Enquiry::class, 'receiver_id');
+        return $this->hasMany(
+            Enquiry::class,
+            'receiver_id'
+        );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -199,13 +217,25 @@ class User extends Authenticatable
      */
     public function notifications()
     {
-        return $this->hasMany(Notification::class);
+        return $this->hasMany(
+            Notification::class
+        );
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Activity Log Relationship
+    |--------------------------------------------------------------------------
+    */
+
     /**
-     * Activity Logs
+     * User has many activity logs.
      */
     public function activityLogs()
     {
-        return $this->hasMany(ActivityLog::class);
+        return $this->hasMany(
+            ActivityLog::class
+        );
     }
 }

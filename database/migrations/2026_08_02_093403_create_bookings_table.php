@@ -22,7 +22,7 @@ return new class extends Migration
             */
 
             $table->foreignId('property_id')
-                ->constrained()
+                ->constrained('properties')
                 ->cascadeOnDelete();
 
             $table->foreignId('tenant_id')
@@ -32,6 +32,7 @@ return new class extends Migration
             $table->foreignId('landlord_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
+
 
             /*
             |--------------------------------------------------------------------------
@@ -45,6 +46,7 @@ return new class extends Migration
 
             $table->text('message')->nullable();
 
+
             /*
             |--------------------------------------------------------------------------
             | Booking Status
@@ -55,8 +57,9 @@ return new class extends Migration
                 'Pending',
                 'Approved',
                 'Rejected',
-                'Completed'
+                'Completed',
             ])->default('Pending');
+
 
             /*
             |--------------------------------------------------------------------------
@@ -67,6 +70,7 @@ return new class extends Migration
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

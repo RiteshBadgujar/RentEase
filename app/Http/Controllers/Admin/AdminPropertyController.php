@@ -1,15 +1,32 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
 use App\Models\Property;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class AdminPropertyController extends Controller
 {
+    /**
+     * Display all properties.
+     */
     public function index(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Property Query
+        |--------------------------------------------------------------------------
+        */
+
         $query = Property::with('user');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('search')) {
 
@@ -23,6 +40,12 @@ class AdminPropertyController extends Controller
 
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Property Type Filter
+        |--------------------------------------------------------------------------
+        */
+
         if ($request->filled('property_type')) {
 
             $query->where(
@@ -31,6 +54,12 @@ class AdminPropertyController extends Controller
             );
 
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status Filter
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('status')) {
 
@@ -41,10 +70,21 @@ class AdminPropertyController extends Controller
 
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Properties
+        |--------------------------------------------------------------------------
+        */
+
         $properties = $query
             ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard Statistics
+        |--------------------------------------------------------------------------
+        */
 
         $totalProperties = Property::count();
 
@@ -63,6 +103,12 @@ class AdminPropertyController extends Controller
             'Pending'
         )->count();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
+
         return view(
             'admin.properties.index',
             compact(
@@ -75,23 +121,37 @@ class AdminPropertyController extends Controller
         );
     }
 
+    /**
+     * Not Used.
+     */
     public function create()
     {
         abort(404);
     }
 
+    /**
+     * Not Used.
+     */
     public function store(Request $request)
     {
         abort(404);
     }
 
+    /**
+     * Display Property Details.
+     */
     public function show(Property $property)
     {
         $property->load([
-            'user',
+
+            'user:id,name,email',
+
             'bookings',
+
             'wishlists',
-            'enquiries',
+
+            'enquiries'
+
         ]);
 
         return view(
@@ -100,48 +160,75 @@ class AdminPropertyController extends Controller
         );
     }
 
-    public function edit(string $id)
+    /**
+     * Edit Property.
+     */
+    public function edit(Property $property)
     {
-        //
+        return view(
+            'admin.properties.edit',
+            compact('property')
+        );
     }
 
+    /**
+     * Update Property.
+     */
     public function update(Request $request, Property $property)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
 
-            'title' => 'required|string|max:255',
+            'title'           => 'required|string|max:255',
 
-            'description' => 'required',
+            'description'     => 'required|string',
 
-            'price' => 'required|numeric|min:0',
+            'price'           => 'required|numeric|min:0',
 
-            'property_type' => 'required|string|max:100',
+            'property_type'   => 'required|string|max:100',
 
-            'status' => 'required|in:Available,Rented,Pending',
+            'status'          => 'required|in:Available,Rented,Pending',
 
-            'address' => 'required|string|max:255',
+            'address'         => 'required|string|max:255',
 
-            'city' => 'required|string|max:100',
+            'city'            => 'required|string|max:100',
 
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Property
+        |--------------------------------------------------------------------------
+        */
 
         $property->update([
 
-            'title' => $request->title,
+            'title'           => $request->title,
 
-            'description' => $request->description,
+            'description'     => $request->description,
 
-            'price' => $request->price,
+            'price'           => $request->price,
 
-            'property_type' => $request->property_type,
+            'property_type'   => $request->property_type,
 
-            'status' => $request->status,
+            'status'          => $request->status,
 
-            'address' => $request->address,
+            'address'         => $request->address,
 
-            'city' => $request->city,
+            'city'            => $request->city,
 
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
 
         return redirect()
             ->route('admin.properties.index')
@@ -151,9 +238,39 @@ class AdminPropertyController extends Controller
             );
     }
 
+    /**
+     * Delete Property.
+     */
     public function destroy(Property $property)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Image
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !empty($property->image) &&
+            Storage::disk('public')->exists($property->image)
+        ) {
+
+            Storage::disk('public')->delete($property->image);
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Property
+        |--------------------------------------------------------------------------
+        */
+
         $property->delete();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
 
         return redirect()
             ->route('admin.properties.index')

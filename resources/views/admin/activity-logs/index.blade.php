@@ -1,175 +1,368 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Activity Logs')
 
 @section('content')
 
-<div class="container-fluid py-4">
+    <div class="container-fluid py-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Header -->
 
-        <h2 class="fw-bold">
-            Activity Logs
-        </h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <form method="GET"
-              action="{{ route('admin.activity-logs.index') }}"
-              class="d-flex">
+            <div>
 
-            <input
-                type="text"
-                name="search"
-                class="form-control me-2"
-                placeholder="Search..."
-                value="{{ request('search') }}">
+                <h2 class="fw-bold">
 
-            <button
-                class="btn btn-primary">
-                Search
-            </button>
+                    <i class="bi bi-clock-history text-primary me-2"></i>
 
-        </form>
+                    Activity Logs
 
-    </div>
+                </h2>
 
-    @if(session('success'))
+                <p class="text-muted mb-0">
 
-        <div class="alert alert-success">
+                    Monitor all system activities performed by users.
 
-            {{ session('success') }}
+                </p>
+
+            </div>
 
         </div>
 
-    @endif
+        <!-- Statistics -->
 
-    <div class="card shadow">
+        <div class="row g-4 mb-4">
 
-        <div class="card-body">
+            <div class="col-lg-4">
 
-            <table class="table table-hover align-middle">
+                <div class="card border-0 shadow-sm">
 
-                <thead>
+                    <div class="card-body text-center">
 
-                    <tr>
+                        <i class="bi bi-list-check display-5 text-primary"></i>
 
-                        <th>#</th>
+                        <h3 class="fw-bold mt-2">
 
-                        <th>User</th>
+                            {{ $totalLogs }}
 
-                        <th>Module</th>
+                        </h3>
 
-                        <th>Action</th>
+                        <p class="mb-0">
 
-                        <th>Description</th>
+                            Total Activities
 
-                        <th>Date</th>
+                        </p>
 
-                        <th width="150">Action</th>
+                    </div>
 
-                    </tr>
+                </div>
 
-                </thead>
+            </div>
 
-                <tbody>
+            <div class="col-lg-4">
 
-                @forelse($activityLogs as $log)
+                <div class="card border-0 shadow-sm">
 
-                    <tr>
+                    <div class="card-body text-center">
 
-                        <td>{{ $log->id }}</td>
+                        <i class="bi bi-calendar-day display-5 text-success"></i>
 
-                        <td>{{ $log->user->name ?? 'Unknown' }}</td>
+                        <h3 class="fw-bold mt-2">
 
-                        <td>
+                            {{ $todayLogs }}
 
-                            <span class="badge bg-info">
+                        </h3>
 
-                                {{ $log->module }}
+                        <p class="mb-0">
 
-                            </span>
+                            Today's Activities
 
-                        </td>
+                        </p>
 
-                        <td>
+                    </div>
 
-                            <span class="badge bg-success">
+                </div>
 
-                                {{ $log->action }}
+            </div>
 
-                            </span>
+            <div class="col-lg-4">
 
-                        </td>
+                <div class="card border-0 shadow-sm">
 
-                        <td>
+                    <div class="card-body text-center">
 
-                            {{ $log->description }}
+                        <i class="bi bi-people-fill display-5 text-warning"></i>
 
-                        </td>
+                        <h3 class="fw-bold mt-2">
 
-                        <td>
+                            {{ $activeUsers }}
 
-                            {{ $log->created_at->format('d M Y h:i A') }}
+                        </h3>
 
-                        </td>
+                        <p class="mb-0">
 
-                        <td>
+                            Active Users
 
-                            <a
-                                href="{{ route('admin.activity-logs.show',$log) }}"
-                                class="btn btn-sm btn-primary">
+                        </p>
 
-                                View
+                    </div>
 
-                            </a>
+                </div>
 
-                            <form
-                                action="{{ route('admin.activity-logs.destroy',$log) }}"
-                                method="POST"
-                                class="d-inline">
+            </div>
 
-                                @csrf
+        </div>
 
-                                @method('DELETE')
+        <!-- Search -->
 
-                                <button
-                                    class="btn btn-sm btn-danger"
-                                    onclick="return confirm('Delete this log?')">
+        <div class="card border-0 shadow-sm mb-4">
 
-                                    Delete
+            <div class="card-body">
 
-                                </button>
+                <form action="{{ route('admin.activity-logs.index') }}" method="GET">
 
-                            </form>
+                    <div class="row">
 
-                        </td>
+                        <div class="col-md-10">
 
-                    </tr>
+                            <input type="text" name="search" class="form-control"
+                                placeholder="Search by module, action, description or user..."
+                                value="{{ request('search') }}">
 
-                @empty
+                        </div>
 
-                    <tr>
+                        <div class="col-md-2 d-grid">
 
-                        <td colspan="7"
-                            class="text-center">
+                            <button class="btn btn-primary">
 
-                            No activity found.
+                                <i class="bi bi-search me-2"></i>
 
-                        </td>
+                                Search
 
-                    </tr>
+                            </button>
 
-                @endforelse
+                        </div>
 
-                </tbody>
+                    </div>
 
-            </table>
+                </form>
 
-            {{ $activityLogs->links() }}
+            </div>
+
+        </div>
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover table-bordered align-middle datatable">
+
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                <th>ID</th>
+
+                                <th>User</th>
+
+                                <th>Module</th>
+
+                                <th>Action</th>
+
+                                <th>Description</th>
+
+                                <th>Date</th>
+
+                                <th width="170">
+
+                                    Actions
+
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                            @forelse($activityLogs as $log)
+
+                                @php
+
+                                    $badge = [
+
+                                        'Create' => 'success',
+
+                                        'Update' => 'warning',
+
+                                        'Delete' => 'danger',
+
+                                        'Login' => 'primary',
+
+                                        'Logout' => 'secondary',
+
+                                        'View' => 'info',
+
+                                    ];
+
+                                @endphp
+
+                                <tr>
+
+                                    <td>
+
+                                        {{ $log->id }}
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="d-flex align-items-center">
+
+                                            <div class="rounded-circle bg-primary text-white fw-bold d-flex justify-content-center align-items-center me-3"
+                                                style="width:40px;height:40px;">
+
+                                                {{ strtoupper(substr($log->user->name ?? 'U', 0, 1)) }}
+
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+
+                                                    {{ $log->user->name ?? 'Unknown User' }}
+
+                                                </strong>
+
+                                                <br>
+
+                                                <small class="text-muted">
+
+                                                    ID #{{ $log->user_id }}
+
+                                                </small>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-info">
+
+                                            {{ ucfirst($log->module) }}
+
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-{{ $badge[$log->action] ?? 'dark' }}">
+
+                                            {{ ucfirst($log->action) }}
+
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ \Illuminate\Support\Str::limit($log->description, 60) }}
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ $log->created_at->format('d M Y') }}
+
+                                        <br>
+
+                                        <small class="text-muted">
+
+                                            {{ $log->created_at->format('h:i A') }}
+
+                                        </small>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="btn-group">
+
+                                            <a href="{{ route('admin.activity-logs.show', $log) }}" class="btn btn-info btn-sm"
+                                                title="View">
+
+                                                <i class="bi bi-eye"></i>
+
+                                            </a>
+
+                                            <form action="{{ route('admin.activity-logs.destroy', $log) }}" method="POST"
+                                                class="delete-form d-inline">
+
+                                                @csrf
+
+                                                @method('DELETE')
+
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+
+                                                    <i class="bi bi-trash"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            @empty
+
+                                <tr>
+
+                                    <td colspan="7" class="text-center py-5">
+
+                                        <i class="bi bi-clock-history display-1 text-secondary"></i>
+
+                                        <h4 class="mt-3">
+
+                                            No Activity Logs Found
+
+                                        </h4>
+
+                                        <p class="text-muted mb-0">
+
+                                            There are currently no activity logs available.
+
+                                        </p>
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="mt-4">
+
+                    {{ $activityLogs->withQueryString()->links() }}
+
+                </div>
+
+            </div>
 
         </div>
 
     </div>
-
-</div>
 
 @endsection

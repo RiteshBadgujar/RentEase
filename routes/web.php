@@ -20,6 +20,8 @@ use App\Http\Controllers\Admin\AdminEnquiryController;
 use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminActivityLogController;
+use App\Http\Controllers\Admin\AdminSettingController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -30,9 +32,10 @@ use App\Http\Controllers\Admin\AdminActivityLogController;
 Route::get('/', [HomeController::class, 'index'])
     ->name('home');
 
+
 /*
 |--------------------------------------------------------------------------
-| Protected Routes
+| Authenticated User Routes
 |--------------------------------------------------------------------------
 */
 
@@ -47,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
+
     /*
     |--------------------------------------------------------------------------
     | Property Management
@@ -54,6 +58,7 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::resource('properties', PropertyController::class);
+
 
     /*
     |--------------------------------------------------------------------------
@@ -70,6 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/wishlist/{property}', [WishlistController::class, 'destroy'])
         ->name('wishlist.destroy');
 
+
     /*
     |--------------------------------------------------------------------------
     | Enquiry System
@@ -84,6 +90,7 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/enquiries/{enquiry}', [EnquiryController::class, 'destroy'])
         ->name('enquiries.destroy');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -106,6 +113,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])
         ->name('bookings.destroy');
 
+
     /*
     |--------------------------------------------------------------------------
     | Tenant Booking History
@@ -120,6 +128,7 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/my-bookings/{booking}', [TenantBookingController::class, 'destroy'])
         ->name('tenant.bookings.destroy');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -139,6 +148,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])
         ->name('notifications.destroy');
 
+
     /*
     |--------------------------------------------------------------------------
     | User Profile
@@ -153,19 +163,26 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
-
 });
+
 
 /*
 |--------------------------------------------------------------------------
 | Admin Routes
 |--------------------------------------------------------------------------
+|
+| Every route below requires:
+|
+| 1. Authentication
+| 2. Admin role
+|
 */
 
 Route::middleware([
     'auth',
     'admin',
-])->prefix('admin')
+])
+    ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
@@ -178,6 +195,7 @@ Route::middleware([
         Route::get('/', [AdminController::class, 'index'])
             ->name('dashboard');
 
+
         /*
         |--------------------------------------------------------------------------
         | User Management
@@ -187,8 +205,9 @@ Route::middleware([
         Route::resource('users', AdminUserController::class)
             ->except([
                 'create',
-                'store'
+                'store',
             ]);
+
 
         /*
         |--------------------------------------------------------------------------
@@ -199,35 +218,90 @@ Route::middleware([
         Route::resource('properties', AdminPropertyController::class)
             ->except([
                 'create',
-                'store'
+                'store',
             ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Booking Management
+        |--------------------------------------------------------------------------
+        */
 
         Route::resource('bookings', AdminBookingController::class)
             ->except([
                 'create',
-                'store'
+                'store',
             ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enquiry Management
+        |--------------------------------------------------------------------------
+        */
+
         Route::resource('enquiries', AdminEnquiryController::class)
             ->except([
                 'create',
-                'store'
+                'store',
             ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notification Management
+        |--------------------------------------------------------------------------
+        */
 
         Route::resource('notifications', AdminNotificationController::class)
             ->except([
                 'create',
-                'store'
+                'store',
             ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reports
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/reports', [AdminReportController::class, 'index'])
             ->name('reports.index');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Logs
+        |--------------------------------------------------------------------------
+        */
+
         Route::resource('activity-logs', AdminActivityLogController::class)
             ->except([
                 'create',
-                'store'
+                'store',
             ]);
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Settings
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/settings', [AdminSettingController::class, 'index'])
+            ->name('settings.index');
+
+        Route::put('/settings', [AdminSettingController::class, 'update'])
+            ->name('settings.update');
     });
+
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes
+|--------------------------------------------------------------------------
+*/
 
 require __DIR__ . '/auth.php';

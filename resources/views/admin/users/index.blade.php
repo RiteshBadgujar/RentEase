@@ -1,157 +1,54 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'User Management')
 
 @section('content')
 
-<div class="container py-5">
+<div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="card shadow-sm border-0">
 
-        <div>
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
 
-            <h2 class="fw-bold">
+            <div>
 
-                <i class="bi bi-people-fill text-primary me-2"></i>
+                <h4 class="fw-bold mb-1">
 
-                User Management
+                    <i class="bi bi-people-fill text-primary me-2"></i>
 
-            </h2>
+                    User Management
 
-            <p class="text-muted mb-0">
+                </h4>
 
-                Manage all registered users.
+                <small class="text-muted">
 
-            </p>
+                    Manage all registered users from one place.
 
-        </div>
+                </small>
 
-    </div>
+            </div>
 
-    {{-- Success Message --}}
+            <span class="badge bg-primary fs-6">
 
-    @if(session('success'))
+                {{ $users->count() }} Users
 
-        <div class="alert alert-success alert-dismissible fade show">
-
-            {{ session('success') }}
-
-            <button class="btn-close" data-bs-dismiss="alert"></button>
+            </span>
 
         </div>
-
-    @endif
-
-    {{-- Error Message --}}
-
-    @if(session('error'))
-
-        <div class="alert alert-danger alert-dismissible fade show">
-
-            {{ session('error') }}
-
-            <button class="btn-close" data-bs-dismiss="alert"></button>
-
-        </div>
-
-    @endif
-
-    {{-- Search & Filter --}}
-
-    <div class="card shadow border-0 mb-4">
-
-        <div class="card-body">
-
-            <form method="GET"
-                  action="{{ route('admin.users.index') }}">
-
-                <div class="row g-3">
-
-                    <div class="col-md-5">
-
-                        <input
-                            type="text"
-                            name="search"
-                            class="form-control"
-                            placeholder="Search name or email..."
-                            value="{{ request('search') }}">
-
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <select
-                            name="role"
-                            class="form-select">
-
-                            <option value="">
-
-                                All Roles
-
-                            </option>
-
-                            <option value="admin"
-                                {{ request('role')=='admin' ? 'selected' : '' }}>
-
-                                Admin
-
-                            </option>
-
-                            <option value="landlord"
-                                {{ request('role')=='landlord' ? 'selected' : '' }}>
-
-                                Landlord
-
-                            </option>
-
-                            <option value="tenant"
-                                {{ request('role')=='tenant' ? 'selected' : '' }}>
-
-                                Tenant
-
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="col-md-3 d-grid">
-
-                        <button class="btn btn-primary">
-
-                            <i class="bi bi-search me-2"></i>
-
-                            Search
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
-
-    {{-- Users Table --}}
-
-    <div class="card shadow border-0">
 
         <div class="card-body">
 
             <div class="table-responsive">
 
-                <table class="table table-hover align-middle">
+                <table class="table table-hover table-bordered align-middle datatable">
 
-                    <thead class="table-primary">
+                    <thead class="table-dark">
 
                         <tr>
 
-                            <th>#</th>
+                            <th>ID</th>
 
-                            <th>Name</th>
+                            <th>User</th>
 
                             <th>Email</th>
 
@@ -159,11 +56,7 @@
 
                             <th>Joined</th>
 
-                            <th width="180">
-
-                                Action
-
-                            </th>
+                            <th width="190">Actions</th>
 
                         </tr>
 
@@ -173,21 +66,57 @@
 
                         @forelse($users as $user)
 
+                            @php
+
+                                $badge = [
+
+                                    'admin' => 'danger',
+
+                                    'landlord' => 'success',
+
+                                    'tenant' => 'primary'
+
+                                ];
+
+                            @endphp
+
                             <tr>
 
                                 <td>
 
-                                    {{ $users->firstItem() + $loop->index }}
+                                    {{ $user->id }}
 
                                 </td>
 
                                 <td>
 
-                                    <strong>
+                                    <div class="d-flex align-items-center">
 
-                                        {{ $user->name }}
+                                        <div
+                                            class="rounded-circle bg-primary text-white fw-bold d-flex justify-content-center align-items-center me-3"
+                                            style="width:40px;height:40px;">
 
-                                    </strong>
+                                            {{ strtoupper(substr($user->name,0,1)) }}
+
+                                        </div>
+
+                                        <div>
+
+                                            <div class="fw-bold">
+
+                                                {{ $user->name }}
+
+                                            </div>
+
+                                            <small class="text-muted">
+
+                                                User #{{ $user->id }}
+
+                                            </small>
+
+                                        </div>
+
+                                    </div>
 
                                 </td>
 
@@ -199,31 +128,11 @@
 
                                 <td>
 
-                                    @if($user->role=='admin')
+                                    <span class="badge bg-{{ $badge[$user->role] ?? 'secondary' }}">
 
-                                        <span class="badge bg-danger">
+                                        {{ ucfirst($user->role) }}
 
-                                            Admin
-
-                                        </span>
-
-                                    @elseif($user->role=='landlord')
-
-                                        <span class="badge bg-success">
-
-                                            Landlord
-
-                                        </span>
-
-                                    @else
-
-                                        <span class="badge bg-primary">
-
-                                            Tenant
-
-                                        </span>
-
-                                    @endif
+                                    </span>
 
                                 </td>
 
@@ -235,37 +144,61 @@
 
                                 <td>
 
-                                    <a href="{{ route('admin.users.show',$user) }}"
-                                       class="btn btn-info btn-sm">
+                                    <div class="btn-group" role="group">
 
-                                        <i class="bi bi-eye"></i>
+                                        <a
+                                            href="{{ route('admin.users.show', $user) }}"
+                                            class="btn btn-info btn-sm"
+                                            title="View">
 
-                                    </a>
+                                            <i class="bi bi-eye"></i>
 
-                                    <a href="{{ route('admin.users.edit',$user) }}"
-                                       class="btn btn-warning btn-sm">
+                                        </a>
 
-                                        <i class="bi bi-pencil-square"></i>
+                                        <a
+                                            href="{{ route('admin.users.edit', $user) }}"
+                                            class="btn btn-warning btn-sm"
+                                            title="Edit">
 
-                                    </a>
+                                            <i class="bi bi-pencil-square"></i>
 
-                                    <form
-                                        action="{{ route('admin.users.destroy',$user) }}"
-                                        method="POST"
-                                        class="d-inline">
+                                        </a>
 
-                                        @csrf
-                                        @method('DELETE')
+                                        @if(auth()->id() != $user->id)
 
-                                        <button
-                                            class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Delete this user?')">
+                                            <form
+                                                action="{{ route('admin.users.destroy', $user) }}"
+                                                method="POST"
+                                                class="delete-form d-inline">
 
-                                            <i class="bi bi-trash"></i>
+                                                @csrf
+                                                @method('DELETE')
 
-                                        </button>
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger btn-sm"
+                                                    title="Delete">
 
-                                    </form>
+                                                    <i class="bi bi-trash"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        @else
+
+                                            <button
+                                                class="btn btn-secondary btn-sm"
+                                                disabled
+                                                title="Current User">
+
+                                                <i class="bi bi-lock-fill"></i>
+
+                                            </button>
+
+                                        @endif
+
+                                    </div>
 
                                 </td>
 
@@ -275,14 +208,19 @@
 
                             <tr>
 
-                                <td colspan="6"
-                                    class="text-center py-5">
+                                <td colspan="6" class="text-center py-5">
 
-                                    <i class="bi bi-people display-5 text-muted"></i>
+                                    <i class="bi bi-people display-1 text-secondary"></i>
 
-                                    <p class="mt-3 mb-0">
+                                    <h4 class="mt-3">
 
-                                        No users found.
+                                        No Registered Users
+
+                                    </h4>
+
+                                    <p class="text-muted">
+
+                                        There are currently no users available.
 
                                     </p>
 
@@ -295,12 +233,6 @@
                     </tbody>
 
                 </table>
-
-            </div>
-
-            <div class="mt-4">
-
-                {{ $users->links() }}
 
             </div>
 

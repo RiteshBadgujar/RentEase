@@ -3,18 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
     /**
      * Display all notifications for the logged-in user.
      */
-    public function index()
+    public function index(): View
     {
-        $notifications = Notification::where('user_id', auth()->id())
+        $notifications = Notification::where(
+                'user_id',
+                auth()->id()
+            )
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return view(
             'notifications.index',
@@ -22,51 +27,55 @@ class NotificationController extends Controller
         );
     }
 
+
     /**
-     * Redirect create request.
+     * Notifications are created automatically.
      */
-    public function create()
+    public function create(): RedirectResponse
     {
         return redirect()->back();
     }
 
+
     /**
-     * Store notification.
-     * (Notifications are created automatically by the system.)
+     * Manual notification creation is disabled.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         return redirect()->back();
     }
+
 
     /**
      * Display a notification and mark it as read.
      */
-    public function show(Notification $notification)
-    {
+    public function show(
+        Notification $notification
+    ): View {
+
         /*
         |--------------------------------------------------------------------------
         | Authorization
         |--------------------------------------------------------------------------
         */
 
-        if ($notification->user_id != auth()->id()) {
+        $this->authorizeNotification($notification);
 
-            abort(403);
-
-        }
 
         /*
         |--------------------------------------------------------------------------
-        | Mark Notification as Read
+        | Mark As Read
         |--------------------------------------------------------------------------
         */
 
-        if (!$notification->is_read) {
+        $notification->markAsRead();
 
-            $notification->markAsRead();
 
-        }
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'notifications.show',
@@ -74,83 +83,113 @@ class NotificationController extends Controller
         );
     }
 
+
     /**
-     * Redirect edit request.
+     * Notifications do not have an edit form.
      */
-    public function edit(Notification $notification)
-    {
+    public function edit(
+        Notification $notification
+    ): RedirectResponse {
+
+        $this->authorizeNotification($notification);
+
         return redirect()->back();
     }
+
 
     /**
      * Mark notification as read.
      */
-    public function update(Request $request, Notification $notification)
-    {
+    public function update(
+        Request $request,
+        Notification $notification
+    ): RedirectResponse {
+
         /*
         |--------------------------------------------------------------------------
         | Authorization
         |--------------------------------------------------------------------------
         */
 
-        if ($notification->user_id != auth()->id()) {
+        $this->authorizeNotification($notification);
 
-            abort(403);
-
-        }
 
         /*
         |--------------------------------------------------------------------------
-        | Mark Notification as Read
+        | Mark As Read
         |--------------------------------------------------------------------------
         */
 
-        if (!$notification->is_read) {
+        $notification->markAsRead();
 
-            $notification->markAsRead();
 
-        }
+        /*
+        |--------------------------------------------------------------------------
+        | Success Response
+        |--------------------------------------------------------------------------
+        */
 
         return back()->with(
-
             'success',
-
             'Notification marked as read.'
-
         );
     }
+
 
     /**
      * Delete notification.
      */
-    public function destroy(Notification $notification)
-    {
+    public function destroy(
+        Notification $notification
+    ): RedirectResponse {
+
         /*
         |--------------------------------------------------------------------------
         | Authorization
         |--------------------------------------------------------------------------
         */
 
-        if ($notification->user_id != auth()->id()) {
+        $this->authorizeNotification($notification);
 
-            abort(403);
-
-        }
 
         /*
         |--------------------------------------------------------------------------
-        | Delete Notification
+        | Delete
         |--------------------------------------------------------------------------
         */
 
         $notification->delete();
 
-        return back()->with(
 
-            'success',
+        /*
+        |--------------------------------------------------------------------------
+        | Success Response
+        |--------------------------------------------------------------------------
+        */
 
-            'Notification deleted successfully.'
+        return redirect()
+            ->route('notifications.index')
+            ->with(
+                'success',
+                'Notification deleted successfully.'
+            );
+    }
 
-        );
+
+    /**
+     * Ensure the notification belongs to the logged-in user.
+     */
+    private function authorizeNotification(
+        Notification $notification
+    ): void {
+
+        if (
+            $notification->user_id !== auth()->id()
+        ) {
+            abort(
+                403,
+                'Unauthorized Access.'
+            );
+        }
     }
 }

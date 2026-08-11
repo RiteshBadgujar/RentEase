@@ -6,58 +6,117 @@
 
 <div class="container py-5">
 
+    {{-- =========================================================
+        Page Header
+    ========================================================== --}}
+
     <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h2 class="fw-bold">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-house-door-fill text-primary me-2"></i>
+                Property Management
+            </h2>
 
-            Property Management
+            <p class="text-muted mb-0">
+                Browse, search and manage properties.
+            </p>
+        </div>
 
-        </h2>
-
-        <a
-            href="{{ route('properties.create') }}"
-            class="btn btn-primary">
-
-            <i class="bi bi-plus-circle"></i>
-
-            Add Property
-
-        </a>
+        @auth
+            @if(auth()->user()->isLandlord())
+                <a
+                    href="{{ route('properties.create') }}"
+                    class="btn btn-primary"
+                >
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add Property
+                </a>
+            @endif
+        @endauth
 
     </div>
 
-    <!-- Search & Filter -->
 
-    <div class="card shadow border-0 mb-4">
+    {{-- =========================================================
+        Success Message
+    ========================================================== --}}
 
-        <div class="card-header bg-light">
+    @if(session('success'))
+
+        <div
+            class="alert alert-success alert-dismissible fade show"
+            role="alert"
+        >
+            <i class="bi bi-check-circle-fill me-2"></i>
+
+            {{ session('success') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+
+    @endif
+
+
+    {{-- =========================================================
+        Error Message
+    ========================================================== --}}
+
+    @if(session('error'))
+
+        <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert"
+        >
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            {{ session('error') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+
+    @endif
+
+
+    {{-- =========================================================
+        Search & Filters
+    ========================================================== --}}
+
+    <div class="card shadow border-0 rounded-4 mb-4">
+
+        <div class="card-header bg-light py-3">
 
             <h5 class="mb-0">
-
                 <i class="bi bi-search me-2"></i>
-
                 Search Properties
-
             </h5>
 
         </div>
+
 
         <div class="card-body">
 
             <form
                 action="{{ route('properties.index') }}"
-                method="GET">
+                method="GET"
+            >
 
-                <div class="row">
+                <div class="row g-3">
 
-                    <!-- Property Title -->
+                    {{-- Property Title --}}
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-lg-3 col-md-6">
 
                         <label class="form-label">
-
                             Property Title
-
                         </label>
 
                         <input
@@ -65,18 +124,18 @@
                             name="title"
                             value="{{ request('title') }}"
                             class="form-control"
-                            placeholder="Property Title">
+                            placeholder="Search by title"
+                        >
 
                     </div>
 
-                    <!-- City -->
 
-                    <div class="col-md-2 mb-3">
+                    {{-- City --}}
+
+                    <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
-
                             City
-
                         </label>
 
                         <input
@@ -84,83 +143,104 @@
                             name="city"
                             value="{{ request('city') }}"
                             class="form-control"
-                            placeholder="City">
+                            placeholder="City"
+                        >
 
                     </div>
 
-                    <!-- Property Type -->
 
-                    <div class="col-md-2 mb-3">
+                    {{-- Property Type --}}
+
+                    <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
-
-                            Type
-
+                            Property Type
                         </label>
 
                         <select
                             name="property_type"
-                            class="form-select">
+                            class="form-select"
+                        >
 
-                            <option value="">All</option>
+                            <option value="">
+                                All
+                            </option>
 
-                            <option value="Apartment"
-                                {{ request('property_type') == 'Apartment' ? 'selected' : '' }}>
+                            <option
+                                value="Apartment"
+                                {{ request('property_type') == 'Apartment' ? 'selected' : '' }}
+                            >
                                 Apartment
                             </option>
 
-                            <option value="Villa"
-                                {{ request('property_type') == 'Villa' ? 'selected' : '' }}>
-                                Villa
-                            </option>
-
-                            <option value="House"
-                                {{ request('property_type') == 'House' ? 'selected' : '' }}>
+                            <option
+                                value="House"
+                                {{ request('property_type') == 'House' ? 'selected' : '' }}
+                            >
                                 House
                             </option>
 
-                            <option value="Office"
-                                {{ request('property_type') == 'Office' ? 'selected' : '' }}>
+                            <option
+                                value="Villa"
+                                {{ request('property_type') == 'Villa' ? 'selected' : '' }}
+                            >
+                                Villa
+                            </option>
+
+                            <option
+                                value="PG"
+                                {{ request('property_type') == 'PG' ? 'selected' : '' }}
+                            >
+                                PG
+                            </option>
+
+                            <option
+                                value="Office"
+                                {{ request('property_type') == 'Office' ? 'selected' : '' }}
+                            >
                                 Office
                             </option>
 
-                            <option value="Shop"
-                                {{ request('property_type') == 'Shop' ? 'selected' : '' }}>
-                                Shop
-                            </option>
-
-                            <option value="Land"
-                                {{ request('property_type') == 'Land' ? 'selected' : '' }}>
-                                Land
+                            <option
+                                value="Commercial"
+                                {{ request('property_type') == 'Commercial' ? 'selected' : '' }}
+                            >
+                                Commercial
                             </option>
 
                         </select>
 
                     </div>
 
-                    <!-- Purpose -->
 
-                    <div class="col-md-2 mb-3">
+                    {{-- Purpose --}}
+
+                    <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
-
                             Purpose
-
                         </label>
 
                         <select
                             name="purpose"
-                            class="form-select">
+                            class="form-select"
+                        >
 
-                            <option value="">All</option>
+                            <option value="">
+                                All
+                            </option>
 
-                            <option value="Rent"
-                                {{ request('purpose') == 'Rent' ? 'selected' : '' }}>
+                            <option
+                                value="Rent"
+                                {{ request('purpose') == 'Rent' ? 'selected' : '' }}
+                            >
                                 Rent
                             </option>
 
-                            <option value="Sale"
-                                {{ request('purpose') == 'Sale' ? 'selected' : '' }}>
+                            <option
+                                value="Sale"
+                                {{ request('purpose') == 'Sale' ? 'selected' : '' }}
+                            >
                                 Sale
                             </option>
 
@@ -168,29 +248,42 @@
 
                     </div>
 
-                    <!-- Status -->
 
-                    <div class="col-md-3 mb-3">
+                    {{-- Status --}}
+
+                    <div class="col-lg-3 col-md-6">
 
                         <label class="form-label">
-
                             Status
-
                         </label>
 
                         <select
                             name="status"
-                            class="form-select">
+                            class="form-select"
+                        >
 
-                            <option value="">All</option>
+                            <option value="">
+                                All
+                            </option>
 
-                            <option value="Available"
-                                {{ request('status') == 'Available' ? 'selected' : '' }}>
+                            <option
+                                value="Available"
+                                {{ request('status') == 'Available' ? 'selected' : '' }}
+                            >
                                 Available
                             </option>
 
-                            <option value="Rented"
-                                {{ request('status') == 'Rented' ? 'selected' : '' }}>
+                            <option
+                                value="Pending"
+                                {{ request('status') == 'Pending' ? 'selected' : '' }}
+                            >
+                                Pending
+                            </option>
+
+                            <option
+                                value="Rented"
+                                {{ request('status') == 'Rented' ? 'selected' : '' }}
+                            >
                                 Rented
                             </option>
 
@@ -198,14 +291,13 @@
 
                     </div>
 
-                    <!-- Minimum Price -->
 
-                    <div class="col-md-2 mb-3">
+                    {{-- Minimum Price --}}
+
+                    <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
-
                             Min Price
-
                         </label>
 
                         <input
@@ -213,18 +305,19 @@
                             name="min_price"
                             value="{{ request('min_price') }}"
                             class="form-control"
-                            placeholder="10000">
+                            min="0"
+                            placeholder="Minimum"
+                        >
 
                     </div>
 
-                    <!-- Maximum Price -->
 
-                    <div class="col-md-2 mb-3">
+                    {{-- Maximum Price --}}
+
+                    <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
-
                             Max Price
-
                         </label>
 
                         <input
@@ -232,34 +325,37 @@
                             name="max_price"
                             value="{{ request('max_price') }}"
                             class="form-control"
-                            placeholder="50000">
+                            min="0"
+                            placeholder="Maximum"
+                        >
 
                     </div>
 
-                    <!-- Bedrooms -->
 
-                    <div class="col-md-2 mb-3">
+                    {{-- Bedrooms --}}
+
+                    <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
-
                             Bedrooms
-
                         </label>
 
                         <select
                             name="bedrooms"
-                            class="form-select">
+                            class="form-select"
+                        >
 
-                            <option value="">All</option>
+                            <option value="">
+                                All
+                            </option>
 
                             @for($i = 1; $i <= 10; $i++)
 
                                 <option
                                     value="{{ $i }}"
-                                    {{ request('bedrooms') == $i ? 'selected' : '' }}>
-
+                                    {{ request('bedrooms') == $i ? 'selected' : '' }}
+                                >
                                     {{ $i }}
-
                                 </option>
 
                             @endfor
@@ -268,30 +364,31 @@
 
                     </div>
 
-                    <!-- Bathrooms -->
 
-                    <div class="col-md-2 mb-3">
+                    {{-- Bathrooms --}}
+
+                    <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
-
                             Bathrooms
-
                         </label>
 
                         <select
                             name="bathrooms"
-                            class="form-select">
+                            class="form-select"
+                        >
 
-                            <option value="">All</option>
+                            <option value="">
+                                All
+                            </option>
 
                             @for($i = 1; $i <= 10; $i++)
 
                                 <option
                                     value="{{ $i }}"
-                                    {{ request('bathrooms') == $i ? 'selected' : '' }}>
-
+                                    {{ request('bathrooms') == $i ? 'selected' : '' }}
+                                >
                                     {{ $i }}
-
                                 </option>
 
                             @endfor
@@ -300,34 +397,45 @@
 
                     </div>
 
-                    <!-- Sort -->
 
-                    <div class="col-md-3 mb-3">
+                    {{-- Sort --}}
+
+                    <div class="col-lg-4 col-md-6">
 
                         <label class="form-label">
-
                             Sort By
-
                         </label>
 
                         <select
                             name="sort"
-                            class="form-select">
+                            class="form-select"
+                        >
 
-                            <option value="">Latest</option>
+                            <option
+                                value=""
+                                {{ !request('sort') ? 'selected' : '' }}
+                            >
+                                Latest
+                            </option>
 
-                            <option value="price_low"
-                                {{ request('sort') == 'price_low' ? 'selected' : '' }}>
+                            <option
+                                value="price_low"
+                                {{ request('sort') == 'price_low' ? 'selected' : '' }}
+                            >
                                 Price: Low to High
                             </option>
 
-                            <option value="price_high"
-                                {{ request('sort') == 'price_high' ? 'selected' : '' }}>
+                            <option
+                                value="price_high"
+                                {{ request('sort') == 'price_high' ? 'selected' : '' }}
+                            >
                                 Price: High to Low
                             </option>
 
-                            <option value="oldest"
-                                {{ request('sort') == 'oldest' ? 'selected' : '' }}>
+                            <option
+                                value="oldest"
+                                {{ request('sort') == 'oldest' ? 'selected' : '' }}
+                            >
                                 Oldest
                             </option>
 
@@ -337,22 +445,25 @@
 
                 </div>
 
-                <div class="text-end">
+
+                {{-- Filter Buttons --}}
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
 
                     <a
                         href="{{ route('properties.index') }}"
-                        class="btn btn-secondary">
-
+                        class="btn btn-secondary"
+                    >
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
                         Reset
-
                     </a>
 
                     <button
                         type="submit"
-                        class="btn btn-primary">
-
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-search me-2"></i>
                         Search
-
                     </button>
 
                 </div>
@@ -362,233 +473,457 @@
         </div>
 
     </div>
-<div class="card shadow border-0">
 
-    <div class="card-body">
 
-        <div class="table-responsive">
+    {{-- =========================================================
+        Property List
+    ========================================================== --}}
 
-            <table class="table table-hover align-middle">
+    <div class="card shadow border-0 rounded-4">
 
-                <thead class="table-primary">
+        <div class="card-header bg-light py-3">
 
-                    <tr>
+            <div class="d-flex justify-content-between align-items-center">
 
-                        <th>#</th>
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Property List
+                </h5>
 
-                        <th>Image</th>
+                <span class="badge bg-primary">
 
-                        <th>Title</th>
+                    {{ $properties->total() }}
 
-                        <th>Type</th>
+                    {{ $properties->total() == 1 ? 'Property' : 'Properties' }}
 
-                        <th>Purpose</th>
+                </span>
 
-                        <th>City</th>
+            </div>
 
-                        <th>Price</th>
+        </div>
 
-                        <th>Status</th>
 
-                        <th width="260">Actions</th>
+        <div class="card-body">
 
-                    </tr>
+            <div class="table-responsive">
 
-                </thead>
+                <table class="table table-hover align-middle">
 
-                <tbody>
-
-                    @forelse($properties as $property)
+                    <thead class="table-primary">
 
                         <tr>
 
-                            <td>
+                            <th width="80">
+                                Image
+                            </th>
 
-                                {{ $properties->firstItem() + $loop->index }}
+                            <th>
+                                Title
+                            </th>
 
-                            </td>
+                            <th>
+                                Owner
+                            </th>
 
-                            <td>
+                            <th>
+                                City
+                            </th>
 
-                                @if(!empty($property->image))
+                            <th>
+                                Type
+                            </th>
 
-                                    <img
-                                        src="{{ asset('uploads/properties/' . $property->image) }}"
-                                        width="80"
-                                        height="60"
-                                        class="rounded shadow"
-                                        style="object-fit:cover;"
-                                        alt="{{ $property->title }}">
+                            <th>
+                                Purpose
+                            </th>
 
-                                @else
+                            <th>
+                                Price
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th width="190">
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @forelse($properties as $property)
+
+                            <tr>
+
+                                {{-- Image --}}
+
+                                <td>
+
+                                    @if($property->image)
+
+                                        <img
+                                            src="{{ $property->image_url }}"
+                                            class="rounded"
+                                            width="70"
+                                            height="70"
+                                            style="object-fit: cover;"
+                                            alt="{{ $property->title }}"
+                                        >
+
+                                    @else
+
+                                        <div
+                                            class="bg-light rounded d-flex align-items-center justify-content-center"
+                                            style="width: 70px; height: 70px;"
+                                        >
+                                            <i class="bi bi-house-door text-secondary fs-3"></i>
+                                        </div>
+
+                                    @endif
+
+                                </td>
+
+
+                                {{-- Title --}}
+
+                                <td>
+
+                                    <strong>
+                                        {{ $property->title }}
+                                    </strong>
+
+                                </td>
+
+
+                                {{-- Owner --}}
+
+                                <td>
+
+                                    @if($property->user)
+
+                                        {{ $property->user->name }}
+
+                                    @else
+
+                                        <span class="text-muted">
+                                            Unknown
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+
+                                {{-- City --}}
+
+                                <td>
+                                    {{ $property->city }}
+                                </td>
+
+
+                                {{-- Type --}}
+
+                                <td>
+
+                                    <span class="badge bg-info">
+                                        {{ $property->property_type }}
+                                    </span>
+
+                                </td>
+
+
+                                {{-- Purpose --}}
+
+                                <td>
 
                                     <span class="badge bg-secondary">
-
-                                        No Image
-
+                                        {{ $property->purpose }}
                                     </span>
 
-                                @endif
+                                </td>
 
-                            </td>
 
-                            <td>
+                                {{-- Price --}}
 
-                                <strong>
+                                <td>
 
-                                    {{ $property->title }}
+                                    <strong class="text-success">
+                                        ₹{{ number_format((float) $property->price, 2) }}
+                                    </strong>
 
-                                </strong>
+                                </td>
 
-                            </td>
 
-                            <td>
+                                {{-- Status --}}
 
-                                {{ $property->property_type }}
+                                <td>
 
-                            </td>
+                                    @if($property->status == 'Available')
 
-                            <td>
+                                        <span class="badge bg-success">
+                                            Available
+                                        </span>
 
-                                {{ $property->purpose }}
+                                    @elseif($property->status == 'Pending')
 
-                            </td>
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
 
-                            <td>
+                                    @elseif($property->status == 'Rented')
 
-                                {{ $property->city }}
+                                        <span class="badge bg-danger">
+                                            Rented
+                                        </span>
 
-                            </td>
+                                    @else
 
-                            <td>
+                                        <span class="badge bg-secondary">
+                                            {{ $property->status }}
+                                        </span>
 
-                                ₹{{ number_format($property->price) }}
+                                    @endif
 
-                            </td>
+                                </td>
 
-                            <td>
 
-                                @if($property->status == 'Available')
+                                {{-- Actions --}}
 
-                                    <span class="badge bg-success">
+                                <td>
 
-                                        Available
-
-                                    </span>
-
-                                @else
-
-                                    <span class="badge bg-danger">
-
-                                        Rented
-
-                                    </span>
-
-                                @endif
-
-                            </td>
-
-                            <td>
-
-                                <!-- View -->
-
-                                <a
-                                    href="{{ route('properties.show', $property->id) }}"
-                                    class="btn btn-info btn-sm">
-
-                                    <i class="bi bi-eye"></i>
-
-                                </a>
-
-                                @if(auth()->id() == $property->user_id)
-
-                                    <!-- Edit -->
+                                    {{-- View --}}
 
                                     <a
-                                        href="{{ route('properties.edit', $property->id) }}"
-                                        class="btn btn-warning btn-sm">
-
-                                        <i class="bi bi-pencil-square"></i>
-
+                                        href="{{ route('properties.show', $property) }}"
+                                        class="btn btn-info btn-sm"
+                                        title="View Property"
+                                    >
+                                        <i class="bi bi-eye"></i>
                                     </a>
 
-                                    <!-- Delete -->
 
-                                    <form
-                                        action="{{ route('properties.destroy', $property->id) }}"
-                                        method="POST"
-                                        class="d-inline">
+                                    @auth
 
-                                        @csrf
+                                        @if(auth()->id() === $property->user_id)
 
-                                        @method('DELETE')
+                                            {{-- Edit --}}
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Are you sure you want to delete this property?')">
+                                            <a
+                                                href="{{ route('properties.edit', $property) }}"
+                                                class="btn btn-warning btn-sm"
+                                                title="Edit Property"
+                                            >
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
 
-                                            <i class="bi bi-trash"></i>
 
-                                        </button>
+                                            {{-- Delete --}}
 
-                                    </form>
+                                            <form
+                                                action="{{ route('properties.destroy', $property) }}"
+                                                method="POST"
+                                                class="d-inline"
+                                            >
 
-                                @endif
+                                                @csrf
 
-                            </td>
+                                                @method('DELETE')
 
-                        </tr>
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger btn-sm"
+                                                    title="Delete Property"
+                                                    onclick="return confirm('Are you sure you want to delete this property?')"
+                                                >
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
 
-                    @empty
+                                            </form>
 
-                        <tr>
+                                        @endif
 
-                            <td colspan="9" class="text-center py-5">
+                                    @endauth
 
-                                <i class="bi bi-house display-1 text-secondary"></i>
+                                </td>
 
-                                <h4 class="mt-3">
+                            </tr>
 
-                                    No Properties Found
+                        @empty
 
-                                </h4>
+                            {{-- Empty State --}}
 
-                                <p class="text-muted">
+                            <tr>
 
-                                    Try changing your search filters or add a new property.
+                                <td
+                                    colspan="9"
+                                    class="text-center py-5"
+                                >
 
-                                </p>
+                                    <i class="bi bi-house-x display-1 text-secondary"></i>
 
-                                <a
-                                    href="{{ route('properties.create') }}"
-                                    class="btn btn-primary">
+                                    <h4 class="fw-bold mt-3">
+                                        No Properties Found
+                                    </h4>
 
-                                    Add Property
+                                    <p class="text-muted">
+                                        No properties match your current search criteria.
+                                    </p>
 
-                                </a>
+                                    <a
+                                        href="{{ route('properties.index') }}"
+                                        class="btn btn-primary mt-2"
+                                    >
+                                        <i class="bi bi-arrow-clockwise me-2"></i>
+                                        Reset Filters
+                                    </a>
 
-                            </td>
+                                </td>
 
-                        </tr>
+                            </tr>
 
-                    @endforelse
+                        @endforelse
 
-                </tbody>
+                    </tbody>
 
-            </table>
+                </table>
+
+            </div>
+
+
+            {{-- =================================================
+                Pagination
+            ================================================== --}}
+
+            @if($properties->hasPages())
+
+                <div class="d-flex justify-content-center mt-4">
+
+                    {{ $properties->links() }}
+
+                </div>
+
+            @endif
 
         </div>
 
     </div>
 
-</div>
 
-<!-- Pagination -->
+    {{-- =========================================================
+        Quick Actions
+    ========================================================== --}}
 
-<div class="d-flex justify-content-center mt-4">
+    @auth
 
-    {{ $properties->links() }}
+        @if(auth()->user()->isLandlord())
+
+            <div class="row mt-5">
+
+                {{-- Add Property --}}
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body text-center">
+
+                            <i class="bi bi-plus-circle-fill display-4 text-primary"></i>
+
+                            <h5 class="mt-3">
+                                Add New Property
+                            </h5>
+
+                            <p class="text-muted">
+                                Publish a new property for rent or sale.
+                            </p>
+
+                            <a
+                                href="{{ route('properties.create') }}"
+                                class="btn btn-primary"
+                            >
+                                Add Property
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Browse Properties --}}
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body text-center">
+
+                            <i class="bi bi-search display-4 text-success"></i>
+
+                            <h5 class="mt-3">
+                                Browse Properties
+                            </h5>
+
+                            <p class="text-muted">
+                                Search and view available properties.
+                            </p>
+
+                            <a
+                                href="{{ route('properties.index') }}"
+                                class="btn btn-success"
+                            >
+                                View List
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Refresh --}}
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body text-center">
+
+                            <i class="bi bi-arrow-repeat display-4 text-warning"></i>
+
+                            <h5 class="mt-3">
+                                Refresh
+                            </h5>
+
+                            <p class="text-muted">
+                                Reload the latest property information.
+                            </p>
+
+                            <a
+                                href="{{ route('properties.index') }}"
+                                class="btn btn-warning"
+                            >
+                                Refresh
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        @endif
+
+    @endauth
 
 </div>
 

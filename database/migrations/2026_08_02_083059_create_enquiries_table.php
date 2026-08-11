@@ -23,18 +23,19 @@ return new class extends Migration
 
             // Property receiving the enquiry
             $table->foreignId('property_id')
-                ->constrained()
+                ->constrained('properties')
                 ->cascadeOnDelete();
 
-            // User who sends the enquiry (Tenant)
+            // User who sends the enquiry
             $table->foreignId('sender_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
 
-            // Property owner receiving the enquiry (Landlord)
+            // Property owner receiving the enquiry
             $table->foreignId('receiver_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
+
 
             /*
             |--------------------------------------------------------------------------
@@ -47,13 +48,20 @@ return new class extends Migration
             $table->enum('status', [
                 'Pending',
                 'Replied',
-                'Closed'
+                'Closed',
             ])->default('Pending');
 
-            $table->timestamps();
 
+            /*
+            |--------------------------------------------------------------------------
+            | Timestamps
+            |--------------------------------------------------------------------------
+            */
+
+            $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

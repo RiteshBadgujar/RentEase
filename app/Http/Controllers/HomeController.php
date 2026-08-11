@@ -14,11 +14,19 @@ class HomeController extends Controller
     {
         /*
         |--------------------------------------------------------------------------
+        | Property Status
+        |--------------------------------------------------------------------------
+        */
+
+        $status = 'Available';
+
+        /*
+        |--------------------------------------------------------------------------
         | Hero Statistics
         |--------------------------------------------------------------------------
         */
 
-        $totalProperties = Property::where('status', 'Available')
+        $totalProperties = Property::where('status', $status)
             ->count();
 
         $totalUsers = User::count();
@@ -33,7 +41,31 @@ class HomeController extends Controller
         */
 
         $featuredProperties = Property::with('user')
-            ->where('status', 'Available')
+            ->where('status', $status)
+            ->latest()
+            ->take(6)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Latest Properties
+        |--------------------------------------------------------------------------
+        */
+
+        $latestProperties = Property::with('user')
+            ->where('status', $status)
+            ->latest()
+            ->take(8)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Featured Landlords
+        |--------------------------------------------------------------------------
+        */
+
+        $featuredLandlords = User::has('properties')
+            ->withCount('properties')
             ->latest()
             ->take(6)
             ->get();
@@ -44,7 +76,7 @@ class HomeController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $categoryCounts = Property::where('status', 'Available')
+        $categoryCounts = Property::where('status', $status)
             ->select('property_type')
             ->selectRaw('COUNT(*) as total')
             ->groupBy('property_type')
@@ -53,37 +85,37 @@ class HomeController extends Controller
         $categories = [
 
             [
-                'icon' => 'bi-buildings-fill',
+                'icon'  => 'bi-buildings-fill',
                 'title' => 'Apartment',
                 'count' => $categoryCounts['Apartment'] ?? 0,
             ],
 
             [
-                'icon' => 'bi-house-door-fill',
+                'icon'  => 'bi-house-door-fill',
                 'title' => 'House',
                 'count' => $categoryCounts['House'] ?? 0,
             ],
 
             [
-                'icon' => 'bi-bank',
+                'icon'  => 'bi-bank',
                 'title' => 'Villa',
                 'count' => $categoryCounts['Villa'] ?? 0,
             ],
 
             [
-                'icon' => 'bi-door-open-fill',
+                'icon'  => 'bi-door-open-fill',
                 'title' => 'PG',
                 'count' => $categoryCounts['PG'] ?? 0,
             ],
 
             [
-                'icon' => 'bi-building',
+                'icon'  => 'bi-building',
                 'title' => 'Office',
                 'count' => $categoryCounts['Office'] ?? 0,
             ],
 
             [
-                'icon' => 'bi-shop',
+                'icon'  => 'bi-shop',
                 'title' => 'Commercial',
                 'count' => $categoryCounts['Commercial'] ?? 0,
             ],
@@ -96,16 +128,17 @@ class HomeController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $cities = Property::where('status', 'Available')
+        $cities = Property::where('status', $status)
             ->select('city')
             ->selectRaw('COUNT(*) as total')
             ->groupBy('city')
-            ->orderBy('city')
+            ->orderByDesc('total')
+            ->take(8)
             ->get();
 
         /*
         |--------------------------------------------------------------------------
-        | Return Homepage
+        | Return View
         |--------------------------------------------------------------------------
         */
 
@@ -116,6 +149,9 @@ class HomeController extends Controller
             'totalLandlords',
 
             'featuredProperties',
+            'latestProperties',
+
+            'featuredLandlords',
 
             'categories',
 

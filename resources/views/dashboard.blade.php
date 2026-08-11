@@ -115,10 +115,9 @@
                             Total Value
                         </h5>
 
-                        <h5 class="fw-bold">
+                        <h4 class="fw-bold text-success">
                             ₹{{ number_format($totalValue) }}
-                        </h5>
-
+                        </h4>
                     </div>
 
                 </div>
@@ -205,6 +204,115 @@
                         <h2 class="fw-bold">
 
                             {{ $readNotifications }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        <!-- Booking Statistics -->
+
+        <div class="row g-4 mt-1">
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="card shadow border-0 h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-calendar-check-fill display-4 text-primary"></i>
+
+                        <h5 class="mt-3">
+
+                            Total Bookings
+
+                        </h5>
+
+                        <h2 class="fw-bold">
+
+                            {{ $totalBookings }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="card shadow border-0 h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-hourglass-split display-4 text-warning"></i>
+
+                        <h5 class="mt-3">
+
+                            Pending
+
+                        </h5>
+
+                        <h2 class="fw-bold">
+
+                            {{ $pendingBookings }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="card shadow border-0 h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-check-circle-fill display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+
+                            Approved
+
+                        </h5>
+
+                        <h2 class="fw-bold">
+
+                            {{ $approvedBookings }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="card shadow border-0 h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-award-fill display-4 text-info"></i>
+
+                        <h5 class="mt-3">
+
+                            Completed
+
+                        </h5>
+
+                        <h2 class="fw-bold">
+
+                            {{ $completedBookings }}
 
                         </h2>
 
@@ -428,23 +536,25 @@
 
                                     <td>
 
-                                        @if($property->status == 'Available')
+      @if($property->status == 'Available')
 
-                                            <span class="badge bg-success">
+    <span class="badge bg-success">
+        Available
+    </span>
 
-                                                Available
+@elseif($property->status == 'Pending')
 
-                                            </span>
+    <span class="badge bg-warning text-dark">
+        Pending
+    </span>
 
-                                        @else
+@else
 
-                                            <span class="badge bg-danger">
+    <span class="badge bg-danger">
+        Rented
+    </span>
 
-                                                Rented
-
-                                            </span>
-
-                                        @endif
+@endif
 
                                     </td>
 

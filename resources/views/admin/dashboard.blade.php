@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Admin Dashboard')
 
@@ -476,6 +476,49 @@
     </div>
 
 </div>
+<div class="row mt-5">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow">
+
+            <div class="card-header">
+
+                Monthly Bookings
+
+            </div>
+
+            <div class="card-body">
+
+                <canvas id="bookingChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card shadow">
+
+            <div class="card-header">
+
+                Property Status
+
+            </div>
+
+            <div class="card-body">
+
+                <canvas id="propertyChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 <!-- Recent Users -->
 
@@ -879,5 +922,158 @@
     </div>
 
 </div>
+<div class="card shadow border-0 mt-5">
 
+    <div class="card-header bg-dark text-white">
+
+        <h5>
+
+            Recent Activities
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table">
+
+            <thead>
+
+                <tr>
+
+                    <th>User</th>
+
+                    <th>Module</th>
+
+                    <th>Action</th>
+
+                    <th>Date</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            @forelse($recentActivities as $activity)
+
+                <tr>
+
+                    <td>{{ optional($activity->user)->name }}</td>
+
+                    <td>{{ $activity->module }}</td>
+
+                    <td>{{ $activity->action }}</td>
+
+                    <td>{{ $activity->created_at->diffForHumans() }}</td>
+
+                </tr>
+
+            @empty
+
+                <tr>
+
+                    <td colspan="4">
+
+                        No Activity Found
+
+                    </td>
+
+                </tr>
+
+            @endforelse
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const bookingCtx = document.getElementById('bookingChart');
+
+new Chart(bookingCtx, {
+
+    type: 'bar',
+
+    data: {
+
+        labels: [
+
+            @foreach($monthlyBookings as $booking)
+
+                '{{ DateTime::createFromFormat('!m', $booking->month)->format('M') }}',
+
+            @endforeach
+
+        ],
+
+        datasets: [{
+
+            label: 'Bookings',
+
+            data: [
+
+                @foreach($monthlyBookings as $booking)
+
+                    {{ $booking->total }},
+
+                @endforeach
+
+            ],
+
+            backgroundColor: '#0d6efd'
+
+        }]
+
+    }
+
+});
+
+const propertyCtx = document.getElementById('propertyChart');
+
+new Chart(propertyCtx, {
+
+    type: 'doughnut',
+
+    data: {
+
+        labels: [
+
+            'Available',
+
+            'Rented'
+
+        ],
+
+        datasets: [{
+
+            data: [
+
+                {{ $availableProperties }},
+
+                {{ $rentedProperties }}
+
+            ],
+
+            backgroundColor: [
+
+                '#198754',
+
+                '#dc3545'
+
+            ]
+
+        }]
+
+    }
+
+});
+
+</script>
 @endsection

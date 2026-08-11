@@ -6,31 +6,54 @@
 
 <div class="container py-5">
 
+    <!-- ==========================
+            Page Header
+    =========================== -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h2 class="fw-bold">
+        <div>
 
-            <i class="bi bi-heart-fill text-danger me-2"></i>
+            <h2 class="fw-bold mb-1">
 
-            My Wishlist
+                <i class="bi bi-heart-fill text-danger me-2"></i>
 
-        </h2>
+                My Wishlist
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Properties you have saved for later.
+
+            </p>
+
+        </div>
 
         <a
             href="{{ route('properties.index') }}"
             class="btn btn-primary">
 
-            <i class="bi bi-arrow-left me-1"></i>
+            <i class="bi bi-search me-1"></i>
 
-            Back to Properties
+            Browse Properties
 
         </a>
 
     </div>
 
+
+    <!-- ==========================
+            Success Message
+    =========================== -->
+
     @if(session('success'))
 
-        <div class="alert alert-success alert-dismissible fade show">
+        <div
+            class="alert alert-success alert-dismissible fade show"
+            role="alert">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
 
             {{ session('success') }}
 
@@ -44,197 +67,348 @@
 
     @endif
 
-    <div class="card shadow border-0">
+
+    <!-- ==========================
+            Error Message
+    =========================== -->
+
+    @if(session('error'))
+
+        <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            {{ session('error') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    @endif
+
+
+    <!-- ==========================
+            Wishlist Card
+    =========================== -->
+
+    <div class="card shadow-lg border-0 rounded-4">
+
+        <div class="card-header bg-light py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <h5 class="mb-0">
+
+                    <i class="bi bi-heart me-2 text-danger"></i>
+
+                    Saved Properties
+
+                </h5>
+
+                <span class="badge bg-danger">
+
+                    {{ $wishlists->total() }}
+
+                    {{ $wishlists->total() == 1 ? 'Property' : 'Properties' }}
+
+                </span>
+
+            </div>
+
+        </div>
+
 
         <div class="card-body">
 
-            <div class="table-responsive">
+            <!-- ==========================
+                    Property Grid
+            =========================== -->
 
-                <table class="table table-hover align-middle">
+            @forelse($wishlists as $wishlist)
 
-                    <thead class="table-primary">
+                @php
 
-                        <tr>
+                    $property = $wishlist->property;
 
-                            <th>#</th>
+                @endphp
 
-                            <th>Image</th>
+                @if($property)
 
-                            <th>Title</th>
+                    <div class="card mb-4 border shadow-sm">
 
-                            <th>Type</th>
+                        <div class="row g-0">
 
-                            <th>City</th>
+                            <!-- Property Image -->
 
-                            <th>Price</th>
+                            <div class="col-md-4">
 
-                            <th>Status</th>
+                                @if($property->image)
 
-                            <th width="180">Actions</th>
+                                    <img
+                                        src="{{ asset('storage/' . $property->image) }}"
+                                        class="img-fluid rounded-start w-100"
+                                        style="height: 240px; object-fit: cover;"
+                                        alt="{{ $property->title }}">
 
-                        </tr>
+                                @else
 
-                    </thead>
+                                    <div
+                                        class="bg-light d-flex align-items-center justify-content-center rounded-start"
+                                        style="height: 240px;">
 
-                    <tbody>
+                                        <i class="bi bi-house-door display-3 text-secondary"></i>
 
-                        @forelse($wishlists as $wishlist)
+                                    </div>
 
-                            @if(!$wishlist->property)
+                                @endif
 
-                                @continue
+                            </div>
 
-                            @endif
 
-                            <tr>
+                            <!-- Property Details -->
 
-                                <td>
+                            <div class="col-md-8">
 
-                                    {{ $loop->iteration }}
+                                <div class="card-body h-100 d-flex flex-column">
 
-                                </td>
+                                    <div class="d-flex justify-content-between align-items-start">
 
-                                <td>
+                                        <div>
 
-                                    @if($wishlist->property && $wishlist->property->image)
+                                            <h4 class="card-title fw-bold mb-2">
 
-                                        <img
-                                            src="{{ asset('uploads/properties/'.$wishlist->property->image) }}"
-                                            width="80"
-                                            class="rounded shadow"
-                                            alt="{{ $wishlist->property->title }}">
+                                                {{ $property->title }}
 
-                                    @else
+                                            </h4>
 
-                                        <span class="badge bg-secondary">
+                                            <p class="text-muted mb-2">
 
-                                            No Image
+                                                <i class="bi bi-geo-alt-fill me-1"></i>
 
-                                        </span>
+                                                {{ $property->city }},
+                                                {{ $property->state }}
+
+                                            </p>
+
+                                        </div>
+
+                                        @if($property->status == 'Available')
+
+                                            <span class="badge bg-success">
+
+                                                Available
+
+                                            </span>
+
+                                        @else
+
+                                            <span class="badge bg-secondary">
+
+                                                {{ $property->status }}
+
+                                            </span>
+
+                                        @endif
+
+                                    </div>
+
+
+                                    <!-- Property Information -->
+
+                                    <div class="row mt-2">
+
+                                        <div class="col-sm-6 mb-2">
+
+                                            <i class="bi bi-house me-1 text-primary"></i>
+
+                                            <strong>Type:</strong>
+
+                                            {{ $property->property_type }}
+
+                                        </div>
+
+                                        <div class="col-sm-6 mb-2">
+
+                                            <i class="bi bi-tag me-1 text-primary"></i>
+
+                                            <strong>Purpose:</strong>
+
+                                            {{ $property->purpose }}
+
+                                        </div>
+
+                                        <div class="col-sm-6 mb-2">
+
+                                            <i class="bi bi-door-open me-1 text-primary"></i>
+
+                                            <strong>Bedrooms:</strong>
+
+                                            {{ $property->bedrooms ?? 'N/A' }}
+
+                                        </div>
+
+                                        <div class="col-sm-6 mb-2">
+
+                                            <i class="bi bi-bounding-box me-1 text-primary"></i>
+
+                                            <strong>Area:</strong>
+
+                                            {{ $property->area ?? 'N/A' }}
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- Price -->
+
+                                    <div class="mt-2">
+
+                                        <h4 class="fw-bold text-primary mb-1">
+
+                                            ₹{{ number_format((float) $property->price) }}
+
+                                        </h4>
+
+                                        @if($property->purpose === 'Rent')
+
+                                            <small class="text-muted">
+
+                                                per month
+
+                                            </small>
+
+                                        @endif
+
+                                    </div>
+
+
+                                    <!-- Owner -->
+
+                                    @if($property->user)
+
+                                        <p class="text-muted mt-2 mb-3">
+
+                                            <i class="bi bi-person-fill me-1"></i>
+
+                                            Owner:
+
+                                            <strong>
+
+                                                {{ $property->user->name }}
+
+                                            </strong>
+
+                                        </p>
 
                                     @endif
 
-                                </td>
 
-                                <td>
+                                    <!-- Actions -->
 
-                                    {{ $wishlist->property->title }}
+                                    <div class="mt-auto pt-3">
 
-                                </td>
+                                        <a
+                                            href="{{ route('properties.show', $property->id) }}"
+                                            class="btn btn-primary btn-sm">
 
-                                <td>
+                                            <i class="bi bi-eye me-1"></i>
 
-                                    {{ $wishlist->property->property_type }}
+                                            View Property
 
-                                </td>
+                                        </a>
 
-                                <td>
 
-                                    {{ $wishlist->property->city }}
+                                        <form
+                                            action="{{ route('wishlist.destroy', $property->id) }}"
+                                            method="POST"
+                                            class="d-inline">
 
-                                </td>
+                                            @csrf
 
-                                <td>
+                                            @method('DELETE')
 
-                                    ₹{{ number_format($wishlist->property->price) }}
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Remove this property from your wishlist?')">
 
-                                </td>
+                                                <i class="bi bi-heartbreak me-1"></i>
 
-                                <td>
+                                                Remove
 
-                                    @if($wishlist->property->status == 'Available')
+                                            </button>
 
-                                        <span class="badge bg-success">
+                                        </form>
 
-                                            Available
+                                    </div>
 
-                                        </span>
+                                </div>
 
-                                    @else
+                            </div>
 
-                                        <span class="badge bg-danger">
+                        </div>
 
-                                            Rented
+                    </div>
 
-                                        </span>
+                @endif
 
-                                    @endif
+            @empty
 
-                                </td>
+                <!-- ==========================
+                        Empty State
+                =========================== -->
 
-                                <td>
+                <div class="text-center py-5">
 
-                                    <a
-                                        href="{{ route('properties.show', $wishlist->property->id) }}"
-                                        class="btn btn-info btn-sm">
+                    <i class="bi bi-heart display-1 text-secondary"></i>
 
-                                        <i class="bi bi-eye"></i>
+                    <h4 class="fw-bold mt-3">
 
-                                    </a>
+                        Your Wishlist is Empty
 
-                                    <form
-                                        action="{{ route('wishlist.destroy', $wishlist->property->id) }}"
-                                        method="POST"
-                                        class="d-inline">
+                    </h4>
 
-                                        @csrf
+                    <p class="text-muted mb-4">
 
-                                        @method('DELETE')
+                        You haven't saved any properties yet.
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Remove from wishlist?')">
+                    </p>
 
-                                            <i class="bi bi-trash"></i>
+                    <a
+                        href="{{ route('properties.index') }}"
+                        class="btn btn-primary">
 
-                                        </button>
+                        <i class="bi bi-search me-2"></i>
 
-                                    </form>
+                        Browse Properties
 
-                                </td>
+                    </a>
 
-                            </tr>
+                </div>
 
-                        @empty
+            @endforelse
 
-                            <tr>
 
-                                <td colspan="8" class="text-center py-5">
+            <!-- ==========================
+                    Pagination
+            =========================== -->
 
-                                    <i class="bi bi-heart display-1 text-secondary"></i>
+            @if($wishlists->hasPages())
 
-                                    <h4 class="mt-3">
+                <div class="d-flex justify-content-center mt-4">
 
-                                        Your Wishlist is Empty
+                    {{ $wishlists->links() }}
 
-                                    </h4>
+                </div>
 
-                                    <p class="text-muted">
-
-                                        Browse properties and add your favorite properties.
-
-                                    </p>
-
-                                    <a
-                                        href="{{ route('properties.index') }}"
-                                        class="btn btn-primary">
-
-                                        Browse Properties
-
-                                    </a>
-
-                                </td>
-
-                            </tr>
-
-                        @endforelse
-
-                    </tbody>
-
-                </table>
-
-            </div>
+            @endif
 
         </div>
 

@@ -16,22 +16,15 @@ class Booking extends Model
     */
 
     protected $fillable = [
-
         'property_id',
-
         'tenant_id',
-
         'landlord_id',
-
         'visit_date',
-
         'visit_time',
-
         'message',
-
         'status',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -40,10 +33,9 @@ class Booking extends Model
     */
 
     protected $attributes = [
-
         'status' => 'Pending',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -52,14 +44,13 @@ class Booking extends Model
     */
 
     protected $casts = [
-
         'visit_date' => 'date',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
-    | Property Relationship
+    | Relationships
     |--------------------------------------------------------------------------
     */
 
@@ -68,36 +59,36 @@ class Booking extends Model
      */
     public function property()
     {
-        return $this->belongsTo(Property::class);
+        return $this->belongsTo(
+            Property::class,
+            'property_id'
+        );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Tenant Relationship
-    |--------------------------------------------------------------------------
-    */
 
     /**
      * Booking belongs to a Tenant.
      */
     public function tenant()
     {
-        return $this->belongsTo(User::class, 'tenant_id');
+        return $this->belongsTo(
+            User::class,
+            'tenant_id'
+        );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Landlord Relationship
-    |--------------------------------------------------------------------------
-    */
 
     /**
      * Booking belongs to a Landlord.
      */
     public function landlord()
     {
-        return $this->belongsTo(User::class, 'landlord_id');
+        return $this->belongsTo(
+            User::class,
+            'landlord_id'
+        );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -106,34 +97,49 @@ class Booking extends Model
     */
 
     /**
-     * Pending bookings.
+     * Scope pending bookings.
      */
     public function scopePending($query)
     {
-        return $query->where('status', 'Pending');
+        return $query->where(
+            'status',
+            'Pending'
+        );
     }
 
+
     /**
-     * Approved bookings.
+     * Scope approved bookings.
      */
     public function scopeApproved($query)
     {
-        return $query->where('status', 'Approved');
+        return $query->where(
+            'status',
+            'Approved'
+        );
     }
 
+
     /**
-     * Rejected bookings.
+     * Scope rejected bookings.
      */
     public function scopeRejected($query)
     {
-        return $query->where('status', 'Rejected');
+        return $query->where(
+            'status',
+            'Rejected'
+        );
     }
 
+
     /**
-     * Completed bookings.
+     * Scope completed bookings.
      */
     public function scopeCompleted($query)
     {
-        return $query->where('status', 'Completed');
+        return $query->where(
+            'status',
+            'Completed'
+        );
     }
 }

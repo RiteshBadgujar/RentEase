@@ -2,34 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Notification;
 use App\Models\Property;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    /**
+     * Display the Landlord Dashboard.
+     */
     public function index()
     {
         /*
         |--------------------------------------------------------------------------
-        | Property Statistics (Current Landlord)
+        | Current User
         |--------------------------------------------------------------------------
         */
 
-        $totalProperties = Property::where('user_id', auth()->id())
-            ->count();
+        $userId = auth()->id();
 
-        $availableProperties = Property::where('user_id', auth()->id())
-            ->where('status', 'Available')
-            ->count();
+        /*
+        |--------------------------------------------------------------------------
+        | Property Statistics
+        |--------------------------------------------------------------------------
+        */
 
-        $rentedProperties = Property::where('user_id', auth()->id())
-            ->where('status', 'Rented')
-            ->count();
+        $propertyStats = Property::where('user_id', $userId)
+            ->selectRaw("
+                COUNT(*) as total_properties,
+                SUM(CASE WHEN status = 'Available' THEN 1 ELSE 0 END) as available_properties,
+                SUM(CASE WHEN status = 'Rented' THEN 1 ELSE 0 END) as rented_properties,
+                COALESCE(SUM(price), 0) as total_value
+            ")
+            ->first();
 
-        $totalValue = Property::where('user_id', auth()->id())
-            ->sum('price');
+        $totalProperties = (int) $propertyStats->total_properties;
+
+        $availableProperties = (int) $propertyStats->available_properties;
+
+        $rentedProperties = (int) $propertyStats->rented_properties;
+
+        $totalValue = (float) $propertyStats->total_value;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Booking Statistics
+        |--------------------------------------------------------------------------
+        */
+
+        $bookingStats = Booking::where('landlord_id', $userId)
+            ->selectRaw("
+                COUNT(*) as total_bookings,
+                SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending_bookings,
+                SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END) as approved_bookings,
+                SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed_bookings
+            ")
+            ->first();
+
+        $totalBookings = (int) $bookingStats->total_bookings;
+
+        $pendingBookings = (int) $bookingStats->pending_bookings;
+
+        $approvedBookings = (int) $bookingStats->approved_bookings;
+
+        $completedBookings = (int) $bookingStats->completed_bookings;
 
         /*
         |--------------------------------------------------------------------------
@@ -37,15 +74,23 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalEnquiries = Enquiry::where('receiver_id', auth()->id())
+        $totalEnquiries = Enquiry::where(
+            'receiver_id',
+            $userId
+        )->count();
+
+        $pendingEnquiries = Enquiry::where(
+            'receiver_id',
+            $userId
+        )
+            ->where('status', 'Pending')
             ->count();
 
-        $pendingEnquiries = Enquiry::where('receiver_id', auth()->id())
-            ->pending()
-            ->count();
-
-        $repliedEnquiries = Enquiry::where('receiver_id', auth()->id())
-            ->replied()
+        $repliedEnquiries = Enquiry::where(
+            'receiver_id',
+            $userId
+        )
+            ->where('status', 'Replied')
             ->count();
 
         /*
@@ -54,16 +99,25 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalNotifications = Notification::where('user_id', auth()->id())
-            ->count();
+        $notificationStats = Notification::where(
+            'user_id',
+            $userId
+        )
+            ->selectRaw("
+                COUNT(*) as total_notifications,
+                SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as unread_notifications,
+                SUM(CASE WHEN is_read = 1 THEN 1 ELSE 0 END) as read_notifications
+            ")
+            ->first();
 
-        $unreadNotifications = Notification::where('user_id', auth()->id())
-            ->unread()
-            ->count();
+        $totalNotifications =
+            (int) $notificationStats->total_notifications;
 
-        $readNotifications = Notification::where('user_id', auth()->id())
-            ->read()
-            ->count();
+        $unreadNotifications =
+            (int) $notificationStats->unread_notifications;
+
+        $readNotifications =
+            (int) $notificationStats->read_notifications;
 
         /*
         |--------------------------------------------------------------------------
@@ -71,28 +125,90 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $recentProperties = Property::where('user_id', auth()->id())
+        $recentProperties = Property::where(
+            'user_id',
+            $userId
+        )
             ->latest()
             ->take(5)
             ->get();
 
-        return view('dashboard', compact(
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Bookings
+        |--------------------------------------------------------------------------
+        */
 
-            'totalProperties',
-            'availableProperties',
-            'rentedProperties',
-            'totalValue',
+        $recentBookings = Booking::with([
+            'tenant',
+            'property'
+        ])
+            ->where('landlord_id', $userId)
+            ->latest()
+            ->take(5)
+            ->get();
 
-            'totalEnquiries',
-            'pendingEnquiries',
-            'repliedEnquiries',
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Enquiries
+        |--------------------------------------------------------------------------
+        */
 
-            'totalNotifications',
-            'unreadNotifications',
-            'readNotifications',
+        $recentEnquiries = Enquiry::with([
+            'sender',
+            'property'
+        ])
+            ->where('receiver_id', $userId)
+            ->latest()
+            ->take(5)
+            ->get();
 
-            'recentProperties'
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Notifications
+        |--------------------------------------------------------------------------
+        */
 
-        ));
+        $recentNotifications = Notification::where(
+            'user_id',
+            $userId
+        )
+            ->latest()
+            ->take(5)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return Dashboard
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'dashboard',
+            compact(
+                'totalProperties',
+                'availableProperties',
+                'rentedProperties',
+                'totalValue',
+
+                'totalBookings',
+                'pendingBookings',
+                'approvedBookings',
+                'completedBookings',
+
+                'totalEnquiries',
+                'pendingEnquiries',
+                'repliedEnquiries',
+
+                'totalNotifications',
+                'unreadNotifications',
+                'readNotifications',
+
+                'recentProperties',
+                'recentBookings',
+                'recentEnquiries',
+                'recentNotifications'
+            )
+        );
     }
 }

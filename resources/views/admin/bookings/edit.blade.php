@@ -1,150 +1,208 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Edit Booking')
 
 @section('content')
 
-<div class="container py-5">
+    <div class="container-fluid py-4">
 
-    <div class="row justify-content-center">
+        <div class="row justify-content-center">
 
-        <div class="col-lg-8">
+            <div class="col-lg-8">
 
-            <div class="card shadow border-0 rounded-4">
+                <div class="card shadow-sm border-0 rounded-4">
 
-                <div class="card-header bg-warning text-dark">
+                    <div class="card-header bg-warning">
 
-                    <h3 class="mb-0">
+                        <h4 class="mb-0">
 
-                        <i class="bi bi-pencil-square me-2"></i>
+                            <i class="bi bi-pencil-square me-2"></i>
 
-                        Edit Booking
+                            Edit Booking
 
-                    </h3>
+                        </h4>
 
-                </div>
+                    </div>
 
-                <div class="card-body">
+                    <div class="card-body">
 
-                    @if($errors->any())
+                        @if($errors->any())
 
-                        <div class="alert alert-danger">
+                            <div class="alert alert-danger">
 
-                            <ul class="mb-0">
+                                <ul class="mb-0">
 
-                                @foreach($errors->all() as $error)
+                                    @foreach($errors->all() as $error)
 
-                                    <li>{{ $error }}</li>
+                                        <li>{{ $error }}</li>
 
-                                @endforeach
+                                    @endforeach
 
-                            </ul>
+                                </ul>
 
-                        </div>
+                            </div>
 
-                    @endif
+                        @endif
 
-                    <form action="{{ route('admin.bookings.update',$booking) }}"
-                          method="POST">
+                        <form action="{{ route('admin.bookings.update', $booking) }}" method="POST">
 
-                        @csrf
-                        @method('PUT')
+                            @csrf
 
-                        <div class="mb-4">
+                            @method('PUT')
 
-                            <label class="form-label fw-bold">
+                            <div class="row">
 
-                                Tenant
+                                <div class="col-md-6 mb-3">
 
-                            </label>
+                                    <label class="form-label fw-bold">
 
-                            <input type="text"
-                                   class="form-control"
-                                   value="{{ $booking->tenant->name ?? 'N/A' }}"
-                                   readonly>
+                                        Booking ID
 
-                        </div>
+                                    </label>
 
-                        <div class="mb-4">
+                                    <input type="text" class="form-control" value="#{{ $booking->id }}" readonly>
 
-                            <label class="form-label fw-bold">
+                                </div>
 
-                                Property
+                                <div class="col-md-6 mb-3">
 
-                            </label>
+                                    <label class="form-label fw-bold">
 
-                            <input type="text"
-                                   class="form-control"
-                                   value="{{ $booking->property->title ?? 'N/A' }}"
-                                   readonly>
+                                        Booking Date
 
-                        </div>
+                                    </label>
 
-                        <div class="mb-4">
+                                    <input type="text" class="form-control"
+                                        value="{{ $booking->created_at->format('d M Y') }}" readonly>
 
-                            <label class="form-label fw-bold">
+                                </div>
 
-                                Booking Status
+                                <div class="col-md-6 mb-3">
 
-                            </label>
+                                    <label class="form-label fw-bold">
 
-                            <select name="status"
-                                    class="form-select">
+                                        Tenant
 
-                                <option value="Pending"
-                                    {{ $booking->status=='Pending'?'selected':'' }}>
+                                    </label>
 
-                                    Pending
+                                    <input type="text" class="form-control" value="{{ $booking->tenant->name ?? 'N/A' }}"
+                                        readonly>
 
-                                </option>
+                                </div>
 
-                                <option value="Approved"
-                                    {{ $booking->status=='Approved'?'selected':'' }}>
+                                <div class="col-md-6 mb-3">
 
-                                    Approved
+                                    <label class="form-label fw-bold">
 
-                                </option>
+                                        Landlord
 
-                                <option value="Rejected"
-                                    {{ $booking->status=='Rejected'?'selected':'' }}>
+                                    </label>
 
-                                    Rejected
+                                    <input type="text" class="form-control" value="{{ $booking->landlord->name ?? 'N/A' }}"
+                                        readonly>
 
-                                </option>
+                                </div>
 
-                                <option value="Completed"
-                                    {{ $booking->status=='Completed'?'selected':'' }}>
+                                <div class="col-12 mb-3">
 
-                                    Completed
+                                    <label class="form-label fw-bold">
 
-                                </option>
+                                        Property
 
-                            </select>
+                                    </label>
 
-                        </div>
+                                    <input type="text" class="form-control" value="{{ $booking->property->title ?? 'N/A' }}"
+                                        readonly>
 
-                        <div class="d-flex justify-content-between">
+                                </div>
+                                <div class="col-md-12 mb-4">
 
-                            <a href="{{ route('admin.bookings.index') }}"
-                               class="btn btn-secondary">
+                                    <label class="form-label fw-bold">
 
-                                <i class="bi bi-arrow-left me-2"></i>
+                                        Booking Status
 
-                                Back
+                                    </label>
 
-                            </a>
+                                    <select name="status" class="form-select @error('status') is-invalid @enderror"
+                                        required>
 
-                            <button class="btn btn-success">
+                                        <option value="Pending" {{ old('status', $booking->status) == 'Pending' ? 'selected' : '' }}>
 
-                                <i class="bi bi-check-circle me-2"></i>
+                                            Pending
 
-                                Update Booking
+                                        </option>
 
-                            </button>
+                                        <option value="Approved" {{ old('status', $booking->status) == 'Approved' ? 'selected' : '' }}>
 
-                        </div>
+                                            Approved
 
-                    </form>
+                                        </option>
+
+                                        <option value="Rejected" {{ old('status', $booking->status) == 'Rejected' ? 'selected' : '' }}>
+
+                                            Rejected
+
+                                        </option>
+
+                                        <option value="Completed" {{ old('status', $booking->status) == 'Completed' ? 'selected' : '' }}>
+
+                                            Completed
+
+                                        </option>
+
+                                    </select>
+
+                                    @error('status')
+
+                                        <div class="invalid-feedback">
+
+                                            {{ $message }}
+
+                                        </div>
+
+                                    @enderror
+
+                                </div>
+
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex justify-content-between">
+
+                                <a href="{{ route('admin.bookings.index') }}" class="btn btn-secondary">
+
+                                    <i class="bi bi-arrow-left me-2"></i>
+
+                                    Back
+
+                                </a>
+
+                                <div>
+
+                                    <button type="reset" class="btn btn-outline-dark me-2">
+
+                                        <i class="bi bi-arrow-clockwise me-2"></i>
+
+                                        Reset
+
+                                    </button>
+
+                                    <button type="submit" class="btn btn-success">
+
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+
+                                        Update Booking
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
+                    </div>
 
                 </div>
 
@@ -153,7 +211,5 @@
         </div>
 
     </div>
-
-</div>
 
 @endsection

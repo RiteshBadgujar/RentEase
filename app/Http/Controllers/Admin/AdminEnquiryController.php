@@ -11,17 +11,113 @@ class AdminEnquiryController extends Controller
     /**
      * Display all enquiries.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $enquiries = Enquiry::with([
+        $query = Enquiry::with([
             'sender',
             'receiver',
             'property'
-        ])
-        ->latest()
-        ->paginate(10);
+        ]);
 
-        return view('admin.enquiries.index', compact('enquiries'));
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+
+                $q->whereHas('sender', function ($q) use ($search) {
+
+                    $q->where('name', 'like', "%{$search}%");
+
+                })
+
+                ->orWhereHas('receiver', function ($q) use ($search) {
+
+                    $q->where('name', 'like', "%{$search}%");
+
+                })
+
+                ->orWhereHas('property', function ($q) use ($search) {
+
+                    $q->where('title', 'like', "%{$search}%");
+
+                });
+
+            });
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('status')) {
+
+            $query->where(
+                'status',
+                $request->status
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enquiries List
+        |--------------------------------------------------------------------------
+        */
+
+        $enquiries = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard Statistics
+        |--------------------------------------------------------------------------
+        */
+
+        $totalEnquiries = Enquiry::count();
+
+        $pendingEnquiries = Enquiry::where(
+            'status',
+            'Pending'
+        )->count();
+
+        $repliedEnquiries = Enquiry::where(
+            'status',
+            'Replied'
+        )->count();
+
+        $closedEnquiries = Enquiry::where(
+            'status',
+            'Closed'
+        )->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'admin.enquiries.index',
+            compact(
+                'enquiries',
+                'totalEnquiries',
+                'pendingEnquiries',
+                'repliedEnquiries',
+                'closedEnquiries'
+            )
+        );
     }
 
     /**
@@ -51,7 +147,10 @@ class AdminEnquiryController extends Controller
             'property'
         ]);
 
-        return view('admin.enquiries.show', compact('enquiry'));
+        return view(
+            'admin.enquiries.show',
+            compact('enquiry')
+        );
     }
 
     /**
@@ -59,7 +158,10 @@ class AdminEnquiryController extends Controller
      */
     public function edit(Enquiry $enquiry)
     {
-        return view('admin.enquiries.edit', compact('enquiry'));
+        return view(
+            'admin.enquiries.edit',
+            compact('enquiry')
+        );
     }
 
     /**
@@ -67,17 +169,42 @@ class AdminEnquiryController extends Controller
      */
     public function update(Request $request, Enquiry $enquiry)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
+
             'status' => 'required|in:Pending,Replied,Closed',
+
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Update
+        |--------------------------------------------------------------------------
+        */
+
         $enquiry->update([
+
             'status' => $request->status,
+
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
 
         return redirect()
             ->route('admin.enquiries.index')
-            ->with('success', 'Enquiry updated successfully.');
+            ->with(
+                'success',
+                'Enquiry updated successfully.'
+            );
     }
 
     /**
@@ -85,10 +212,25 @@ class AdminEnquiryController extends Controller
      */
     public function destroy(Enquiry $enquiry)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Delete
+        |--------------------------------------------------------------------------
+        */
+
         $enquiry->delete();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
 
         return redirect()
             ->route('admin.enquiries.index')
-            ->with('success', 'Enquiry deleted successfully.');
+            ->with(
+                'success',
+                'Enquiry deleted successfully.'
+            );
     }
 }

@@ -16,18 +16,13 @@ class Enquiry extends Model
     */
 
     protected $fillable = [
-
         'property_id',
-
         'sender_id',
-
         'receiver_id',
-
         'message',
-
         'status',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -36,10 +31,9 @@ class Enquiry extends Model
     */
 
     protected $attributes = [
-
         'status' => 'Pending',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -52,24 +46,36 @@ class Enquiry extends Model
      */
     public function property()
     {
-        return $this->belongsTo(Property::class);
+        return $this->belongsTo(
+            Property::class,
+            'property_id'
+        );
     }
+
 
     /**
      * User who sent the enquiry.
      */
     public function sender()
     {
-        return $this->belongsTo(User::class, 'sender_id');
+        return $this->belongsTo(
+            User::class,
+            'sender_id'
+        );
     }
+
 
     /**
      * Property owner who received the enquiry.
      */
     public function receiver()
     {
-        return $this->belongsTo(User::class, 'receiver_id');
+        return $this->belongsTo(
+            User::class,
+            'receiver_id'
+        );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -78,18 +84,37 @@ class Enquiry extends Model
     */
 
     /**
-     * Pending enquiries.
+     * Scope pending enquiries.
      */
     public function scopePending($query)
     {
-        return $query->where('status', 'Pending');
+        return $query->where(
+            'status',
+            'Pending'
+        );
     }
 
+
     /**
-     * Replied enquiries.
+     * Scope replied enquiries.
      */
     public function scopeReplied($query)
     {
-        return $query->where('status', 'Replied');
+        return $query->where(
+            'status',
+            'Replied'
+        );
+    }
+
+
+    /**
+     * Scope closed enquiries.
+     */
+    public function scopeClosed($query)
+    {
+        return $query->where(
+            'status',
+            'Closed'
+        );
     }
 }

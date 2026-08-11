@@ -6,9 +6,40 @@
 
 <div class="container py-5">
 
-    <div class="card shadow border-0">
+    <!-- ==========================
+            Page Header
+    =========================== -->
 
-        <div class="card-header bg-primary text-white">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+
+                <i class="bi bi-bell-fill text-warning me-2"></i>
+
+                Notification Details
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                View notification information and related activity.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================
+            Notification Card
+    =========================== -->
+
+    <div class="card shadow-lg border-0 rounded-4">
+
+        <div class="card-header bg-primary text-white py-3">
 
             <h4 class="mb-0">
 
@@ -20,119 +51,181 @@
 
         </div>
 
-        <div class="card-body">
 
-            <!-- Title -->
+        <div class="card-body p-4">
+
+            <!-- ==========================
+                    Title & Type
+            =========================== -->
 
             <div class="mb-4">
 
-                <h3 class="fw-bold">
+                <h3 class="fw-bold mb-2">
 
                     {{ $notification->title }}
 
                 </h3>
 
-                <span class="badge bg-info">
+                @if($notification->type)
 
-                    {{ $notification->type }}
+                    <span class="badge bg-info">
 
-                </span>
+                        <i class="bi bi-tag me-1"></i>
+
+                        {{ $notification->type }}
+
+                    </span>
+
+                @endif
 
             </div>
 
+
             <hr>
 
-            <!-- Message -->
+
+            <!-- ==========================
+                    Message
+            =========================== -->
 
             <div class="mb-4">
 
-                <h5>
+                <h5 class="fw-bold mb-3">
+
+                    <i class="bi bi-chat-left-text me-2"></i>
 
                     Message
 
                 </h5>
 
-                <div class="border rounded p-3 bg-light">
+                <div class="border rounded-3 p-4 bg-light">
 
-                    {{ $notification->message }}
+                    <p class="mb-0">
+
+                        {{ $notification->message }}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==========================
+                    Notification Information
+            =========================== -->
+
+            <div class="row gy-4 mb-4">
+
+                <!-- Notification ID -->
+
+                <div class="col-md-4">
+
+                    <div class="border rounded-3 p-3 h-100">
+
+                        <small class="text-muted d-block mb-1">
+
+                            Notification ID
+
+                        </small>
+
+                        <strong>
+
+                            #{{ $notification->id }}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Status -->
+
+                <div class="col-md-4">
+
+                    <div class="border rounded-3 p-3 h-100">
+
+                        <small class="text-muted d-block mb-1">
+
+                            Status
+
+                        </small>
+
+                        @if($notification->is_read)
+
+                            <span class="badge bg-success">
+
+                                <i class="bi bi-check-circle-fill me-1"></i>
+
+                                Read
+
+                            </span>
+
+                        @else
+
+                            <span class="badge bg-warning text-dark">
+
+                                <i class="bi bi-bell-fill me-1"></i>
+
+                                Unread
+
+                            </span>
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+
+                <!-- Created -->
+
+                <div class="col-md-4">
+
+                    <div class="border rounded-3 p-3 h-100">
+
+                        <small class="text-muted d-block mb-1">
+
+                            Created
+
+                        </small>
+
+                        <strong>
+
+                            {{ $notification->created_at->format('d M Y') }}
+
+                        </strong>
+
+                        <small class="d-block text-muted">
+
+                            {{ $notification->created_at->format('h:i A') }}
+
+                        </small>
+
+                        <small class="d-block text-muted mt-1">
+
+                            {{ $notification->created_at->diffForHumans() }}
+
+                        </small>
+
+                    </div>
 
                 </div>
 
             </div>
 
-            <!-- Information -->
-
-            <div class="row gy-4">
-
-                <div class="col-md-4">
-
-                    <strong>Notification ID</strong>
-
-                    <br>
-
-                    #{{ $notification->id }}
-
-                </div>
-
-                <div class="col-md-4">
-
-                    <strong>Status</strong>
-
-                    <br>
-
-                    @if($notification->is_read)
-
-                        <span class="badge bg-success">
-
-                            <i class="bi bi-check-circle-fill me-1"></i>
-
-                            Read
-
-                        </span>
-
-                    @else
-
-                        <span class="badge bg-warning text-dark">
-
-                            <i class="bi bi-bell-fill me-1"></i>
-
-                            Unread
-
-                        </span>
-
-                    @endif
-
-                </div>
-
-                <div class="col-md-4">
-
-                    <strong>Created</strong>
-
-                    <br>
-
-                    <small>
-
-                        {{ $notification->created_at->format('d M Y h:i A') }}
-
-                    </small>
-
-                    <br>
-
-                    <small class="text-muted">
-
-                        {{ $notification->created_at->diffForHumans() }}
-
-                    </small>
-
-                </div>
-
-            </div>
 
             <hr>
 
-            <!-- Action Buttons -->
+
+            <!-- ==========================
+                    Action Buttons
+            =========================== -->
 
             <div class="d-flex flex-wrap gap-2">
+
+                <!-- Open Related Page -->
 
                 @if($notification->url)
 
@@ -147,19 +240,10 @@
 
                     </a>
 
-                @else
-
-                    <button
-                        class="btn btn-outline-secondary"
-                        disabled>
-
-                        <i class="bi bi-link-45deg me-1"></i>
-
-                        No Related Page
-
-                    </button>
-
                 @endif
+
+
+                <!-- Back -->
 
                 <a
                     href="{{ route('notifications.index') }}"
@@ -171,6 +255,9 @@
                     Back
 
                 </a>
+
+
+                <!-- Delete -->
 
                 <form
                     action="{{ route('notifications.destroy', $notification->id) }}"
@@ -185,7 +272,7 @@
                         type="submit"
                         class="btn btn-danger"
                         title="Delete Notification"
-                        onclick="return confirm('Delete this notification?')">
+                        onclick="return confirm('Are you sure you want to delete this notification?')">
 
                         <i class="bi bi-trash me-1"></i>
 

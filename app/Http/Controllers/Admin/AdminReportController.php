@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Property;
 use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Notification;
+use App\Models\Property;
+use App\Models\User;
 use App\Models\Wishlist;
 
 class AdminReportController extends Controller
@@ -19,7 +19,7 @@ class AdminReportController extends Controller
     {
         /*
         |--------------------------------------------------------------------------
-        | Statistics
+        | Overall Statistics
         |--------------------------------------------------------------------------
         */
 
@@ -37,37 +37,40 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Recent Records
+        | User Statistics
         |--------------------------------------------------------------------------
         */
 
-        $recentUsers = User::latest()
-            ->take(5)
-            ->get();
+        $totalAdmins = User::where('role', 'admin')->count();
 
-        $recentProperties = Property::latest()
-            ->take(5)
-            ->get();
+        $totalLandlords = User::where('role', 'landlord')->count();
 
-        $recentBookings = Booking::with([
-                'tenant',
-                'property'
-            ])
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $recentEnquiries = Enquiry::with([
-                'sender',
-                'property'
-            ])
-            ->latest()
-            ->take(5)
-            ->get();
+        $totalTenants = User::where('role', 'tenant')->count();
 
         /*
         |--------------------------------------------------------------------------
-        | Booking Status
+        | Property Statistics
+        |--------------------------------------------------------------------------
+        */
+
+        $availableProperties = Property::where(
+            'status',
+            'Available'
+        )->count();
+
+        $rentedProperties = Property::where(
+            'status',
+            'Rented'
+        )->count();
+
+        $pendingProperties = Property::where(
+            'status',
+            'Pending'
+        )->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Booking Statistics
         |--------------------------------------------------------------------------
         */
 
@@ -86,56 +89,137 @@ class AdminReportController extends Controller
             'Completed'
         )->count();
 
+        $rejectedBookings = Booking::where(
+            'status',
+            'Rejected'
+        )->count();
+
         /*
         |--------------------------------------------------------------------------
-        | Property Status
+        | Enquiry Statistics
         |--------------------------------------------------------------------------
         */
 
-        $availableProperties = Property::where(
+        $pendingEnquiries = Enquiry::where(
             'status',
-            'Available'
+            'Pending'
         )->count();
 
-        $rentedProperties = Property::where(
+        $repliedEnquiries = Enquiry::where(
             'status',
-            'Rented'
+            'Replied'
         )->count();
+
+        $closedEnquiries = Enquiry::where(
+            'status',
+            'Closed'
+        )->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notification Statistics
+        |--------------------------------------------------------------------------
+        */
+
+        $readNotifications = Notification::where(
+            'is_read',
+            true
+        )->count();
+
+        $unreadNotifications = Notification::where(
+            'is_read',
+            false
+        )->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Users
+        |--------------------------------------------------------------------------
+        */
+
+        $recentUsers = User::latest()
+            ->take(5)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Properties
+        |--------------------------------------------------------------------------
+        */
+
+        $recentProperties = Property::latest()
+            ->take(5)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Bookings
+        |--------------------------------------------------------------------------
+        */
+
+        $recentBookings = Booking::with([
+                'tenant',
+                'property'
+            ])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Enquiries
+        |--------------------------------------------------------------------------
+        */
+
+        $recentEnquiries = Enquiry::with([
+                'sender',
+                'property'
+            ])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'admin.reports.index',
             compact(
 
                 'totalUsers',
-
                 'totalProperties',
-
                 'totalBookings',
-
                 'totalEnquiries',
-
                 'totalNotifications',
-
                 'totalWishlist',
 
-                'pendingBookings',
-
-                'approvedBookings',
-
-                'completedBookings',
+                'totalAdmins',
+                'totalLandlords',
+                'totalTenants',
 
                 'availableProperties',
-
                 'rentedProperties',
+                'pendingProperties',
+
+                'pendingBookings',
+                'approvedBookings',
+                'completedBookings',
+                'rejectedBookings',
+
+                'pendingEnquiries',
+                'repliedEnquiries',
+                'closedEnquiries',
+
+                'readNotifications',
+                'unreadNotifications',
 
                 'recentUsers',
-
                 'recentProperties',
-
                 'recentBookings',
-
                 'recentEnquiries'
-
             )
         );
     }

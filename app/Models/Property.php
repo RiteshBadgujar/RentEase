@@ -16,48 +16,28 @@ class Property extends Model
     */
 
     protected $fillable = [
-
         'user_id',
-
         'title',
-
         'slug',
-
         'description',
-
         'property_type',
-
         'purpose',
-
         'price',
-
         'deposit',
-
         'bedrooms',
-
         'bathrooms',
-
         'balconies',
-
         'area',
-
         'furnishing',
-
         'parking',
-
         'address',
-
         'city',
-
         'state',
-
         'pincode',
-
         'image',
-
         'status',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -66,10 +46,11 @@ class Property extends Model
     */
 
     protected $attributes = [
-
         'status' => 'Available',
-
+        'balconies' => 0,
+        'parking' => false,
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -78,14 +59,17 @@ class Property extends Model
     */
 
     protected $casts = [
-
         'price' => 'decimal:2',
-
         'deposit' => 'decimal:2',
+        'area' => 'decimal:2',
+
+        'bedrooms' => 'integer',
+        'bathrooms' => 'integer',
+        'balconies' => 'integer',
 
         'parking' => 'boolean',
-
     ];
+
 
     /*
     |--------------------------------------------------------------------------
@@ -101,6 +85,7 @@ class Property extends Model
         return $this->belongsTo(User::class);
     }
 
+
     /**
      * Property has many Wishlist items.
      */
@@ -108,6 +93,7 @@ class Property extends Model
     {
         return $this->hasMany(Wishlist::class);
     }
+
 
     /**
      * Property has many Enquiries.
@@ -117,6 +103,7 @@ class Property extends Model
         return $this->hasMany(Enquiry::class);
     }
 
+
     /**
      * Property has many Bookings.
      */
@@ -124,6 +111,7 @@ class Property extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -133,13 +121,18 @@ class Property extends Model
 
     /**
      * Get the full property image URL.
+     *
+     * Images are stored on Laravel's public storage disk.
      */
     public function getImageUrlAttribute()
     {
-        return $this->image
-            ? asset('storage/' . $this->image)
-            : asset('images/no-image.png');
+        if (!$this->image) {
+            return asset('images/no-image.png');
+        }
+
+        return asset('storage/' . $this->image);
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -152,14 +145,33 @@ class Property extends Model
      */
     public function scopeAvailable($query)
     {
-        return $query->where('status', 'Available');
+        return $query->where(
+            'status',
+            'Available'
+        );
     }
+
 
     /**
      * Scope only rented properties.
      */
     public function scopeRented($query)
     {
-        return $query->where('status', 'Rented');
+        return $query->where(
+            'status',
+            'Rented'
+        );
+    }
+
+
+    /**
+     * Scope only pending properties.
+     */
+    public function scopePending($query)
+    {
+        return $query->where(
+            'status',
+            'Pending'
+        );
     }
 }
