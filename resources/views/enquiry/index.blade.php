@@ -6,36 +6,29 @@
 
 <div class="container py-5">
 
-    <!-- ==========================
-            Page Header
-    =========================== -->
+    <!-- ==========================================================
+         PAGE HEADER
+    =========================================================== -->
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
 
             <h2 class="fw-bold mb-1">
-
                 <i class="bi bi-chat-dots-fill text-primary me-2"></i>
-
                 My Enquiries
-
             </h2>
 
             <p class="text-muted mb-0">
-
                 Manage enquiries received from tenants.
-
             </p>
 
         </div>
 
-        <a
-            href="{{ route('dashboard') }}"
-            class="btn btn-secondary">
+        <a href="{{ route('dashboard') }}"
+           class="btn btn-secondary">
 
             <i class="bi bi-arrow-left me-1"></i>
-
             Back
 
         </a>
@@ -43,24 +36,22 @@
     </div>
 
 
-    <!-- ==========================
-            Success Message
-    =========================== -->
+    <!-- ==========================================================
+         SUCCESS MESSAGE
+    =========================================================== -->
 
     @if(session('success'))
 
-        <div
-            class="alert alert-success alert-dismissible fade show"
-            role="alert">
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
 
             <i class="bi bi-check-circle-fill me-2"></i>
 
             {{ session('success') }}
 
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="alert">
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
             </button>
 
         </div>
@@ -68,24 +59,22 @@
     @endif
 
 
-    <!-- ==========================
-            Error Message
-    =========================== -->
+    <!-- ==========================================================
+         ERROR MESSAGE
+    =========================================================== -->
 
     @if(session('error'))
 
-        <div
-            class="alert alert-danger alert-dismissible fade show"
-            role="alert">
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
 
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
 
             {{ session('error') }}
 
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="alert">
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
             </button>
 
         </div>
@@ -93,9 +82,42 @@
     @endif
 
 
-    <!-- ==========================
-            Enquiry List
-    =========================== -->
+    <!-- ==========================================================
+         VALIDATION ERRORS
+    =========================================================== -->
+
+    @if($errors->any())
+
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            <strong>Please fix the following:</strong>
+
+            <ul class="mb-0 mt-2">
+
+                @foreach($errors->all() as $error)
+
+                    <li>{{ $error }}</li>
+
+                @endforeach
+
+            </ul>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    @endif
+
+
+    <!-- ==========================================================
+         ENQUIRY LIST
+    =========================================================== -->
 
     <div class="card shadow-lg border-0 rounded-4">
 
@@ -114,14 +136,13 @@
 
         <div class="card-body">
 
-
             <div class="table-responsive">
 
                 <table class="table table-hover align-middle mb-0">
 
-                    <!-- ==========================
-                            Table Header
-                    =========================== -->
+                    <!-- ==================================================
+                         TABLE HEADER
+                    =================================================== -->
 
                     <thead class="table-primary">
 
@@ -155,7 +176,7 @@
                                 Date
                             </th>
 
-                            <th width="120">
+                            <th width="220">
                                 Action
                             </th>
 
@@ -164,9 +185,9 @@
                     </thead>
 
 
-                    <!-- ==========================
-                            Table Body
-                    =========================== -->
+                    <!-- ==================================================
+                         TABLE BODY
+                    =================================================== -->
 
                     <tbody>
 
@@ -177,9 +198,7 @@
                                 <!-- Serial Number -->
 
                                 <td>
-
                                     {{ $enquiries->firstItem() + $loop->index }}
-
                                 </td>
 
 
@@ -188,9 +207,7 @@
                                 <td>
 
                                     <strong>
-
                                         {{ $enquiry->property->title }}
-
                                     </strong>
 
                                 </td>
@@ -205,9 +222,7 @@
                                         <i class="bi bi-person-circle text-primary me-2"></i>
 
                                         <strong>
-
                                             {{ $enquiry->sender->name }}
-
                                         </strong>
 
                                     </div>
@@ -219,9 +234,8 @@
 
                                 <td>
 
-                                    <a
-                                        href="mailto:{{ $enquiry->sender->email }}"
-                                        class="text-decoration-none">
+                                    <a href="mailto:{{ $enquiry->sender->email }}"
+                                       class="text-decoration-none">
 
                                         {{ $enquiry->sender->email }}
 
@@ -234,10 +248,9 @@
 
                                 <td style="max-width: 300px;">
 
-                                    <div
-                                        class="text-truncate"
-                                        style="max-width: 280px;"
-                                        title="{{ $enquiry->message }}">
+                                    <div class="text-truncate"
+                                         style="max-width: 280px;"
+                                         title="{{ $enquiry->message }}">
 
                                         {{ $enquiry->message }}
 
@@ -250,7 +263,7 @@
 
                                 <td>
 
-                                    @if($enquiry->status == 'Pending')
+                                    @if($enquiry->status === 'Pending')
 
                                         <span class="badge bg-warning text-dark">
 
@@ -260,7 +273,7 @@
 
                                         </span>
 
-                                    @elseif($enquiry->status == 'Replied')
+                                    @elseif($enquiry->status === 'Replied')
 
                                         <span class="badge bg-success">
 
@@ -270,7 +283,7 @@
 
                                         </span>
 
-                                    @elseif($enquiry->status == 'Closed')
+                                    @elseif($enquiry->status === 'Closed')
 
                                         <span class="badge bg-secondary">
 
@@ -283,9 +296,7 @@
                                     @else
 
                                         <span class="badge bg-secondary">
-
                                             {{ $enquiry->status }}
-
                                         </span>
 
                                     @endif
@@ -312,30 +323,142 @@
                                 </td>
 
 
-                                <!-- Action -->
+                                <!-- Actions -->
 
                                 <td>
 
-                                    <form
-                                        action="{{ route('enquiries.destroy', $enquiry->id) }}"
-                                        method="POST"
-                                        class="d-inline">
+                                    <div class="d-flex flex-wrap gap-1">
 
-                                        @csrf
 
-                                        @method('DELETE')
+                                        <!-- ==================================
+                                             PENDING ACTIONS
+                                        =================================== -->
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-danger btn-sm"
-                                            title="Delete Enquiry"
-                                            onclick="return confirm('Are you sure you want to delete this enquiry?')">
+                                        @if($enquiry->status === 'Pending')
 
-                                            <i class="bi bi-trash"></i>
+                                            <!-- Mark as Replied -->
 
-                                        </button>
+                                            <form
+                                                action="{{ route('enquiries.update', $enquiry) }}"
+                                                method="POST"
+                                                class="d-inline">
 
-                                    </form>
+                                                @csrf
+
+                                                @method('PATCH')
+
+                                                <input
+                                                    type="hidden"
+                                                    name="status"
+                                                    value="Replied">
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-success btn-sm"
+                                                    title="Mark as Replied">
+
+                                                    <i class="bi bi-check-circle me-1"></i>
+                                                    Reply
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- Close Enquiry -->
+
+                                            <form
+                                                action="{{ route('enquiries.update', $enquiry) }}"
+                                                method="POST"
+                                                class="d-inline">
+
+                                                @csrf
+
+                                                @method('PATCH')
+
+                                                <input
+                                                    type="hidden"
+                                                    name="status"
+                                                    value="Closed">
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-secondary btn-sm"
+                                                    title="Close Enquiry"
+                                                    onclick="return confirm('Are you sure you want to close this enquiry?')">
+
+                                                    <i class="bi bi-x-circle me-1"></i>
+                                                    Close
+
+                                                </button>
+
+                                            </form>
+
+                                        @endif
+
+
+                                        <!-- ==================================
+                                             REPLIED ACTION
+                                        =================================== -->
+
+                                        @if($enquiry->status === 'Replied')
+
+                                            <form
+                                                action="{{ route('enquiries.update', $enquiry) }}"
+                                                method="POST"
+                                                class="d-inline">
+
+                                                @csrf
+
+                                                @method('PATCH')
+
+                                                <input
+                                                    type="hidden"
+                                                    name="status"
+                                                    value="Closed">
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-secondary btn-sm"
+                                                    title="Close Enquiry"
+                                                    onclick="return confirm('Are you sure you want to close this enquiry?')">
+
+                                                    <i class="bi bi-x-circle me-1"></i>
+                                                    Close
+
+                                                </button>
+
+                                            </form>
+
+                                        @endif
+
+
+                                        <!-- ==================================
+                                             DELETE
+                                        =================================== -->
+
+                                        <form
+                                            action="{{ route('enquiries.destroy', $enquiry) }}"
+                                            method="POST"
+                                            class="d-inline">
+
+                                            @csrf
+
+                                            @method('DELETE')
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-danger btn-sm"
+                                                title="Delete Enquiry"
+                                                onclick="return confirm('Are you sure you want to delete this enquiry?')">
+
+                                                <i class="bi bi-trash"></i>
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
 
                                 </td>
 
@@ -343,33 +466,27 @@
 
                         @empty
 
-                            <!-- ==========================
-                                    Empty State
-                            =========================== -->
+                            <!-- ==========================================
+                                 EMPTY STATE
+                            =========================================== -->
 
                             <tr>
 
-                                <td
-                                    colspan="8"
+                                <td colspan="8"
                                     class="text-center py-5">
 
                                     <i class="bi bi-chat-left-text display-1 text-secondary"></i>
 
                                     <h4 class="fw-bold mt-3">
-
                                         No Enquiries Found
-
                                     </h4>
 
                                     <p class="text-muted mb-3">
-
                                         You haven't received any enquiries yet.
-
                                     </p>
 
-                                    <a
-                                        href="{{ route('properties.index') }}"
-                                        class="btn btn-primary">
+                                    <a href="{{ route('properties.index') }}"
+                                       class="btn btn-primary">
 
                                         <i class="bi bi-house-door me-2"></i>
 
@@ -390,9 +507,9 @@
             </div>
 
 
-            <!-- ==========================
-                    Pagination
-            =========================== -->
+            <!-- ==========================================================
+                 PAGINATION
+            =========================================================== -->
 
             @if($enquiries->hasPages())
 
@@ -403,7 +520,6 @@
                 </div>
 
             @endif
-
 
         </div>
 

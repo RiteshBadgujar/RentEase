@@ -3,20 +3,31 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Enquiry;
+use App\Models\Notification;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class AdminEnquiryController extends Controller
 {
     /**
      * Display all enquiries.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Enquiry Query
+        |--------------------------------------------------------------------------
+        */
+
         $query = Enquiry::with([
             'sender',
             'receiver',
-            'property'
+            'property',
         ]);
 
         /*
@@ -27,30 +38,36 @@ class AdminEnquiryController extends Controller
 
         if ($request->filled('search')) {
 
-            $search = $request->search;
+            $search = $request->input('search');
 
             $query->where(function ($q) use ($search) {
 
-                $q->whereHas('sender', function ($q) use ($search) {
+                $q->whereHas('sender', function ($sender) use ($search) {
 
-                    $q->where('name', 'like', "%{$search}%");
+                    $sender->where(
+                        'name',
+                        'like',
+                        '%' . $search . '%'
+                    );
 
-                })
+                })->orWhereHas('receiver', function ($receiver) use ($search) {
 
-                ->orWhereHas('receiver', function ($q) use ($search) {
+                    $receiver->where(
+                        'name',
+                        'like',
+                        '%' . $search . '%'
+                    );
 
-                    $q->where('name', 'like', "%{$search}%");
+                })->orWhereHas('property', function ($property) use ($search) {
 
-                })
-
-                ->orWhereHas('property', function ($q) use ($search) {
-
-                    $q->where('title', 'like', "%{$search}%");
+                    $property->where(
+                        'title',
+                        'like',
+                        '%' . $search . '%'
+                    );
 
                 });
-
             });
-
         }
 
         /*
@@ -61,16 +78,22 @@ class AdminEnquiryController extends Controller
 
         if ($request->filled('status')) {
 
+            $request->validate([
+                'status' => [
+                    'nullable',
+                    'in:Pending,Replied,Closed',
+                ],
+            ]);
+
             $query->where(
                 'status',
-                $request->status
+                $request->input('status')
             );
-
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Enquiries List
+        | Enquiry List
         |--------------------------------------------------------------------------
         */
 
@@ -81,7 +104,7 @@ class AdminEnquiryController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Dashboard Statistics
+        | Statistics
         |--------------------------------------------------------------------------
         */
 
@@ -121,17 +144,17 @@ class AdminEnquiryController extends Controller
     }
 
     /**
-     * Not Used.
+     * Enquiry creation is disabled for administrators.
      */
-    public function create()
+    public function create(): View
     {
         abort(404);
     }
 
     /**
-     * Not Used.
+     * Enquiry creation is disabled for administrators.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         abort(404);
     }
@@ -139,12 +162,12 @@ class AdminEnquiryController extends Controller
     /**
      * Display enquiry details.
      */
-    public function show(Enquiry $enquiry)
+    public function show(Enquiry $enquiry): View
     {
         $enquiry->load([
             'sender',
             'receiver',
-            'property'
+            'property',
         ]);
 
         return view(
@@ -156,7 +179,7 @@ class AdminEnquiryController extends Controller
     /**
      * Show edit form.
      */
-    public function edit(Enquiry $enquiry)
+    public function edit(Enquiry $enquiry): View
     {
         return view(
             'admin.enquiries.edit',
@@ -165,33 +188,144 @@ class AdminEnquiryController extends Controller
     }
 
     /**
-     * Update enquiry.
+     * Update enquiry status.
      */
-    public function update(Request $request, Enquiry $enquiry)
-    {
+    public function update(
+        Request $request,
+        Enquiry $enquiry
+    ): RedirectResponse {
+
         /*
         |--------------------------------------------------------------------------
         | Validation
         |--------------------------------------------------------------------------
         */
 
-        $request->validate([
-
-            'status' => 'required|in:Pending,Replied,Closed',
-
+        $validated = $request->validate([
+            'status' => [
+                'required',
+                'in:Pending,Replied,Closed',
+            ],
         ]);
+
+        $oldStatus = $enquiry->status;
+        $newStatus = $validated['status'];
 
         /*
         |--------------------------------------------------------------------------
-        | Update
+        | No Change
         |--------------------------------------------------------------------------
         */
 
-        $enquiry->update([
+        if ($oldStatus === $newStatus) {
 
-            'status' => $request->status,
+            return redirect()
+                ->route('admin.enquiries.index')
+                ->with(
+                    'success',
+                    'Enquiry status is already ' . $newStatus . '.'
+                );
+        }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Load Relationships
+        |--------------------------------------------------------------------------
+        */
+
+        $enquiry->load([
+            'sender',
+            'property',
         ]);
+
+        $propertyTitle = $enquiry->property?->title
+            ?? 'the property';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update + Activity Log + Notification
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use (
+            $enquiry,
+            $oldStatus,
+            $newStatus,
+            $propertyTitle
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Update Enquiry
+            |--------------------------------------------------------------------------
+            */
+
+            $enquiry->update([
+                'status' => $newStatus,
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activity Log
+            |--------------------------------------------------------------------------
+            */
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+
+                'module' => 'Enquiry',
+
+                'action' => 'Updated',
+
+                'description' =>
+                    'Admin changed enquiry #' .
+                    $enquiry->id .
+                    ' status from ' .
+                    $oldStatus .
+                    ' to ' .
+                    $newStatus .
+                    ' for "' .
+                    $propertyTitle .
+                    '".',
+
+                'ip_address' => request()->ip(),
+
+                'browser' => request()->userAgent(),
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Notify Enquiry Sender
+            |--------------------------------------------------------------------------
+            */
+
+            if ($enquiry->sender_id) {
+
+                Notification::create([
+                    'user_id' => $enquiry->sender_id,
+
+                    'title' => 'Enquiry Status Updated',
+
+                    'message' =>
+                        'Your enquiry for "' .
+                        $propertyTitle .
+                        '" has been changed from ' .
+                        $oldStatus .
+                        ' to ' .
+                        $newStatus .
+                        ' by an administrator.',
+
+                    'type' => 'Enquiry',
+
+                    'url' => route(
+                        'properties.show',
+                        $enquiry->property_id
+                    ),
+
+                    'is_read' => false,
+                ]);
+            }
+        });
 
         /*
         |--------------------------------------------------------------------------
@@ -203,22 +337,107 @@ class AdminEnquiryController extends Controller
             ->route('admin.enquiries.index')
             ->with(
                 'success',
-                'Enquiry updated successfully.'
+                'Enquiry status updated successfully.'
             );
     }
 
     /**
      * Delete enquiry.
      */
-    public function destroy(Enquiry $enquiry)
-    {
+    public function destroy(
+        Enquiry $enquiry
+    ): RedirectResponse {
+
         /*
         |--------------------------------------------------------------------------
-        | Delete
+        | Load Relationships
         |--------------------------------------------------------------------------
         */
 
-        $enquiry->delete();
+        $enquiry->load([
+            'property',
+        ]);
+
+        $enquiryId = $enquiry->id;
+
+        $senderId = $enquiry->sender_id;
+
+        $propertyTitle = $enquiry->property?->title
+            ?? 'the property';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete + Activity Log
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use (
+            $enquiry,
+            $enquiryId,
+            $propertyTitle
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete Enquiry
+            |--------------------------------------------------------------------------
+            */
+
+            $enquiry->delete();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activity Log
+            |--------------------------------------------------------------------------
+            */
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+
+                'module' => 'Enquiry',
+
+                'action' => 'Deleted',
+
+                'description' =>
+                    'Admin deleted enquiry #' .
+                    $enquiryId .
+                    ' for "' .
+                    $propertyTitle .
+                    '".',
+
+                'ip_address' => request()->ip(),
+
+                'browser' => request()->userAgent(),
+            ]);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notify Sender
+        |--------------------------------------------------------------------------
+        */
+
+        if ($senderId) {
+
+            Notification::create([
+                'user_id' => $senderId,
+
+                'title' => 'Enquiry Deleted',
+
+                'message' =>
+                    'Your enquiry for "' .
+                    $propertyTitle .
+                    '" was deleted by an administrator.',
+
+                'type' => 'Enquiry',
+
+                'url' => route(
+                    'properties.index'
+                ),
+
+                'is_read' => false,
+            ]);
+        }
 
         /*
         |--------------------------------------------------------------------------

@@ -5,20 +5,30 @@
     ========================================================== --}}
 
     <div class="col-12">
+
         <h5 class="fw-bold text-primary mb-3">
+
             <i class="bi bi-info-circle me-2"></i>
+
             Basic Property Information
+
         </h5>
+
         <hr>
+
     </div>
 
 
     {{-- Property Title --}}
+
     <div class="col-md-6 mb-4">
 
         <label class="form-label fw-semibold">
+
             Property Title
+
             <span class="text-danger">*</span>
+
         </label>
 
         <input
@@ -31,20 +41,28 @@
             required>
 
         @error('title')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Property Type --}}
+
     <div class="col-md-6 mb-4">
 
         <label class="form-label fw-semibold">
+
             Property Type
+
             <span class="text-danger">*</span>
+
         </label>
 
         <select
@@ -53,7 +71,9 @@
             required>
 
             <option value="">
+
                 Select Property Type
+
             </option>
 
             @foreach([
@@ -78,20 +98,28 @@
         </select>
 
         @error('property_type')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Purpose --}}
+
     <div class="col-md-6 mb-4">
 
         <label class="form-label fw-semibold">
+
             Purpose
+
             <span class="text-danger">*</span>
+
         </label>
 
         <select
@@ -100,38 +128,52 @@
             required>
 
             <option value="">
+
                 Select Purpose
+
             </option>
 
             <option
                 value="Rent"
                 {{ old('purpose', $property->purpose ?? '') === 'Rent' ? 'selected' : '' }}>
+
                 Rent
+
             </option>
 
             <option
                 value="Sale"
                 {{ old('purpose', $property->purpose ?? '') === 'Sale' ? 'selected' : '' }}>
+
                 Sale
+
             </option>
 
         </select>
 
         @error('purpose')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Price --}}
+
     <div class="col-md-3 mb-4">
 
         <label class="form-label fw-semibold">
+
             Price (₹)
+
             <span class="text-danger">*</span>
+
         </label>
 
         <input
@@ -145,19 +187,26 @@
             required>
 
         @error('price')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Security Deposit --}}
+
     <div class="col-md-3 mb-4">
 
         <label class="form-label fw-semibold">
+
             Security Deposit
+
         </label>
 
         <input
@@ -170,9 +219,13 @@
             step="0.01">
 
         @error('deposit')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
@@ -185,8 +238,11 @@
     <div class="col-12 mt-2">
 
         <h5 class="fw-bold text-primary mb-3">
+
             <i class="bi bi-house-gear me-2"></i>
+
             Property Features
+
         </h5>
 
         <hr>
@@ -195,11 +251,15 @@
 
 
     {{-- Bedrooms --}}
+
     <div class="col-md-3 mb-4">
 
         <label class="form-label fw-semibold">
+
             Bedrooms
+
             <span class="text-danger">*</span>
+
         </label>
 
         <input
@@ -212,20 +272,28 @@
             required>
 
         @error('bedrooms')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Bathrooms --}}
+
     <div class="col-md-3 mb-4">
 
         <label class="form-label fw-semibold">
+
             Bathrooms
+
             <span class="text-danger">*</span>
+
         </label>
 
         <input
@@ -238,19 +306,26 @@
             required>
 
         @error('bathrooms')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Balconies --}}
+
     <div class="col-md-3 mb-4">
 
         <label class="form-label fw-semibold">
+
             Balconies
+
         </label>
 
         <input
@@ -262,20 +337,28 @@
             placeholder="0">
 
         @error('balconies')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Area --}}
+
     <div class="col-md-3 mb-4">
 
         <label class="form-label fw-semibold">
+
             Area (Sq. Ft.)
+
             <span class="text-danger">*</span>
+
         </label>
 
         <input
@@ -289,20 +372,28 @@
             required>
 
         @error('area')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Furnishing --}}
+
     <div class="col-md-6 mb-4">
 
         <label class="form-label fw-semibold">
+
             Furnishing
+
             <span class="text-danger">*</span>
+
         </label>
 
         <select
@@ -311,7 +402,9 @@
             required>
 
             <option value="">
+
                 Select Furnishing
+
             </option>
 
             @foreach([
@@ -333,20 +426,28 @@
         </select>
 
         @error('furnishing')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Parking --}}
+
     <div class="col-md-6 mb-4">
 
         <label class="form-label fw-semibold">
+
             Parking Available
+
             <span class="text-danger">*</span>
+
         </label>
 
         <select
@@ -355,27 +456,37 @@
             required>
 
             <option value="">
+
                 Select Parking
+
             </option>
 
             <option
                 value="1"
                 {{ old('parking', $property->parking ?? '') == '1' ? 'selected' : '' }}>
+
                 Yes
+
             </option>
 
             <option
                 value="0"
                 {{ old('parking', $property->parking ?? '') == '0' ? 'selected' : '' }}>
+
                 No
+
             </option>
 
         </select>
 
         @error('parking')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
@@ -388,8 +499,11 @@
     <div class="col-12 mt-2">
 
         <h5 class="fw-bold text-primary mb-3">
+
             <i class="bi bi-geo-alt-fill me-2"></i>
+
             Location Information
+
         </h5>
 
         <hr>
@@ -398,11 +512,15 @@
 
 
     {{-- Address --}}
+
     <div class="col-12 mb-4">
 
         <label class="form-label fw-semibold">
+
             Full Address
+
             <span class="text-danger">*</span>
+
         </label>
 
         <textarea
@@ -414,20 +532,28 @@
             required>{{ old('address', $property->address ?? '') }}</textarea>
 
         @error('address')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- City --}}
+
     <div class="col-md-4 mb-4">
 
         <label class="form-label fw-semibold">
+
             City
+
             <span class="text-danger">*</span>
+
         </label>
 
         <input
@@ -440,20 +566,28 @@
             required>
 
         @error('city')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- State --}}
+
     <div class="col-md-4 mb-4">
 
         <label class="form-label fw-semibold">
+
             State
+
             <span class="text-danger">*</span>
+
         </label>
 
         <input
@@ -466,20 +600,28 @@
             required>
 
         @error('state')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Pincode --}}
+
     <div class="col-md-4 mb-4">
 
         <label class="form-label fw-semibold">
+
             Pincode
+
             <span class="text-danger">*</span>
+
         </label>
 
         <input
@@ -489,25 +631,34 @@
             class="form-control @error('pincode') is-invalid @enderror"
             placeholder="Enter 6-digit Pincode"
             maxlength="6"
+            minlength="6"
             pattern="[0-9]{6}"
             inputmode="numeric"
             required>
 
         @error('pincode')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
 
 
     {{-- Description --}}
+
     <div class="col-12 mb-4">
 
         <label class="form-label fw-semibold">
+
             Property Description
+
             <span class="text-danger">*</span>
+
         </label>
 
         <textarea
@@ -520,13 +671,19 @@
             required>{{ old('description', $property->description ?? '') }}</textarea>
 
         <div class="form-text">
+
             Minimum 20 characters and maximum 5000 characters.
+
         </div>
 
         @error('description')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
@@ -548,16 +705,19 @@
 
 
         {{-- Existing Image --}}
+
         @if(isset($property) && $property->image)
 
             <div class="mb-3">
 
                 <p class="text-muted mb-2">
+
                     Current Image:
+
                 </p>
 
                 <img
-                    id="imagePreview"
+                    id="currentImage"
                     src="{{ $property->image_url }}"
                     class="img-thumbnail rounded shadow"
                     style="max-width:220px; max-height:180px; object-fit:cover;"
@@ -565,43 +725,46 @@
 
             </div>
 
-        @else
-
-            {{-- New Image Preview --}}
-            <div class="mb-3">
-
-                <div
-                    id="imagePreviewContainer"
-                    class="border rounded bg-light d-flex align-items-center justify-content-center"
-                    style="width:220px; height:150px;">
-
-                    <div
-                        id="noImageText"
-                        class="text-center text-muted">
-
-                        <i class="bi bi-image fs-1"></i>
-
-                        <div>
-                            Image Preview
-                        </div>
-
-                    </div>
-
-                    <img
-                        id="imagePreview"
-                        src=""
-                        class="img-thumbnail rounded shadow"
-                        style="max-width:220px; max-height:180px; object-fit:cover; display:none;"
-                        alt="Image Preview">
-
-                </div>
-
-            </div>
-
         @endif
 
 
+        {{-- New Image Preview --}}
+
+        <div class="mb-3">
+
+            <div
+                id="imagePreviewContainer"
+                class="border rounded bg-light d-flex align-items-center justify-content-center"
+                style="width:220px; min-height:150px;">
+
+                <div
+                    id="noImageText"
+                    class="text-center text-muted">
+
+                    <i class="bi bi-image fs-1"></i>
+
+                    <div>
+
+                        New Image Preview
+
+                    </div>
+
+                </div>
+
+                <img
+                    id="imagePreview"
+                    src=""
+                    class="img-thumbnail rounded shadow"
+                    style="max-width:220px; max-height:180px; object-fit:cover; display:none;"
+                    alt="New Image Preview">
+
+            </div>
+
+        </div>
+
+
         {{-- Image Input --}}
+
         <input
             id="image"
             type="file"
@@ -610,13 +773,19 @@
             class="form-control @error('image') is-invalid @enderror">
 
         <div class="form-text">
+
             Optional. JPG, JPEG or PNG only. Maximum size: 2 MB.
+
         </div>
 
         @error('image')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
@@ -629,8 +798,11 @@
     <div class="col-md-6 mb-4">
 
         <label class="form-label fw-semibold">
+
             Property Status
+
             <span class="text-danger">*</span>
+
         </label>
 
         <select
@@ -639,31 +811,37 @@
             required>
 
             <option value="">
-                Select Status
-            </option>
 
-            {{-- IMPORTANT:
-                 Database only supports Available and Rented.
-                 Do NOT add Pending here. --}}
+                Select Status
+
+            </option>
 
             <option
                 value="Available"
                 {{ old('status', $property->status ?? 'Available') === 'Available' ? 'selected' : '' }}>
+
                 Available
+
             </option>
 
             <option
                 value="Rented"
                 {{ old('status', $property->status ?? '') === 'Rented' ? 'selected' : '' }}>
+
                 Rented
+
             </option>
 
         </select>
 
         @error('status')
+
             <div class="invalid-feedback">
+
                 {{ $message }}
+
             </div>
+
         @enderror
 
     </div>
@@ -684,6 +862,7 @@
                 class="btn btn-secondary">
 
                 <i class="bi bi-arrow-left me-2"></i>
+
                 Back
 
             </a>
@@ -696,6 +875,7 @@
                     class="btn btn-outline-danger me-2">
 
                     <i class="bi bi-arrow-clockwise me-2"></i>
+
                     Reset
 
                 </button>
@@ -725,23 +905,46 @@
 ========================================================== --}}
 
 <script>
+
 document.addEventListener('DOMContentLoaded', function () {
 
     const imageInput = document.getElementById('image');
+
     const imagePreview = document.getElementById('imagePreview');
+
     const noImageText = document.getElementById('noImageText');
 
+    const form = imageInput ? imageInput.closest('form') : null;
+
+
     if (!imageInput || !imagePreview) {
+
         return;
+
     }
+
 
     imageInput.addEventListener('change', function (event) {
 
         const file = event.target.files[0];
 
+
         if (!file) {
+
+            imagePreview.src = '';
+
+            imagePreview.style.display = 'none';
+
+            if (noImageText) {
+
+                noImageText.style.display = 'block';
+
+            }
+
             return;
+
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -754,6 +957,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'image/png'
         ];
 
+
         if (!allowedTypes.includes(file.type)) {
 
             alert(
@@ -762,8 +966,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
             imageInput.value = '';
 
+            imagePreview.src = '';
+
+            imagePreview.style.display = 'none';
+
+            if (noImageText) {
+
+                noImageText.style.display = 'block';
+
+            }
+
             return;
+
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -773,6 +989,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const maxSize = 2 * 1024 * 1024;
 
+
         if (file.size > maxSize) {
 
             alert(
@@ -781,8 +998,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
             imageInput.value = '';
 
+            imagePreview.src = '';
+
+            imagePreview.style.display = 'none';
+
+            if (noImageText) {
+
+                noImageText.style.display = 'block';
+
+            }
+
             return;
+
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -792,19 +1021,57 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const reader = new FileReader();
 
+
         reader.onload = function (e) {
 
             imagePreview.src = e.target.result;
+
             imagePreview.style.display = 'block';
 
             if (noImageText) {
+
                 noImageText.style.display = 'none';
+
             }
+
         };
+
 
         reader.readAsDataURL(file);
 
     });
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reset Image Preview
+    |--------------------------------------------------------------------------
+    */
+
+    if (form) {
+
+        form.addEventListener('reset', function () {
+
+            setTimeout(function () {
+
+                imageInput.value = '';
+
+                imagePreview.src = '';
+
+                imagePreview.style.display = 'none';
+
+                if (noImageText) {
+
+                    noImageText.style.display = 'block';
+
+                }
+
+            }, 50);
+
+        });
+
+    }
+
 });
+
 </script>

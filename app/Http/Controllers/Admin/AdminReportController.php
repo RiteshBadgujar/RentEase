@@ -9,13 +9,14 @@ use App\Models\Notification;
 use App\Models\Property;
 use App\Models\User;
 use App\Models\Wishlist;
+use Illuminate\View\View;
 
 class AdminReportController extends Controller
 {
     /**
      * Display Reports Dashboard.
      */
-    public function index()
+    public function index(): View
     {
         /*
         |--------------------------------------------------------------------------
@@ -41,11 +42,20 @@ class AdminReportController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalAdmins = User::where('role', 'admin')->count();
+        $totalAdmins = User::where(
+            'role',
+            'admin'
+        )->count();
 
-        $totalLandlords = User::where('role', 'landlord')->count();
+        $totalLandlords = User::where(
+            'role',
+            'landlord'
+        )->count();
 
-        $totalTenants = User::where('role', 'tenant')->count();
+        $totalTenants = User::where(
+            'role',
+            'tenant'
+        )->count();
 
         /*
         |--------------------------------------------------------------------------
@@ -137,7 +147,14 @@ class AdminReportController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $recentUsers = User::latest()
+        $recentUsers = User::select([
+                'id',
+                'name',
+                'email',
+                'role',
+                'created_at',
+            ])
+            ->latest()
             ->take(5)
             ->get();
 
@@ -147,7 +164,17 @@ class AdminReportController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $recentProperties = Property::latest()
+        $recentProperties = Property::select([
+                'id',
+                'user_id',
+                'title',
+                'property_type',
+                'price',
+                'status',
+                'city',
+                'created_at',
+            ])
+            ->latest()
             ->take(5)
             ->get();
 
@@ -158,8 +185,8 @@ class AdminReportController extends Controller
         */
 
         $recentBookings = Booking::with([
-                'tenant',
-                'property'
+                'tenant:id,name',
+                'property:id,title',
             ])
             ->latest()
             ->take(5)
@@ -172,8 +199,8 @@ class AdminReportController extends Controller
         */
 
         $recentEnquiries = Enquiry::with([
-                'sender',
-                'property'
+                'sender:id,name',
+                'property:id,title',
             ])
             ->latest()
             ->take(5)
@@ -181,14 +208,13 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Return View
+        | Return Reports View
         |--------------------------------------------------------------------------
         */
 
         return view(
             'admin.reports.index',
             compact(
-
                 'totalUsers',
                 'totalProperties',
                 'totalBookings',

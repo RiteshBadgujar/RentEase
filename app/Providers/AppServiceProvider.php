@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
 use App\Models\Notification;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,27 +23,31 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
 
+            // Default values for guests
+            $navbarNotifications = collect();
+            $navbarUnreadCount = 0;
+
+            // Load notifications only for authenticated users
             if (auth()->check()) {
 
-                $notifications = Notification::where('user_id', auth()->id())
+                $userId = auth()->id();
+
+                $navbarNotifications = Notification::query()
+                    ->where('user_id', $userId)
                     ->latest()
                     ->take(5)
                     ->get();
 
-                $unreadCount = Notification::where('user_id', auth()->id())
-                    ->where('is_read', false)
+                $navbarUnreadCount = Notification::query()
+                    ->where('user_id', $userId)
+                    ->unread()
                     ->count();
-
-                $view->with([
-
-                    'navbarNotifications' => $notifications,
-
-                    'navbarUnreadCount' => $unreadCount,
-
-                ]);
-
             }
 
+            $view->with([
+                'navbarNotifications' => $navbarNotifications,
+                'navbarUnreadCount' => $navbarUnreadCount,
+            ]);
         });
     }
 }

@@ -4,14 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class AdminActivityLogController extends Controller
 {
     /**
      * Display all activity logs.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         /*
         |--------------------------------------------------------------------------
@@ -19,7 +21,8 @@ class AdminActivityLogController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $query = ActivityLog::with('user')->latest();
+        $query = ActivityLog::with('user')
+            ->latest();
 
         /*
         |--------------------------------------------------------------------------
@@ -29,21 +32,46 @@ class AdminActivityLogController extends Controller
 
         if ($request->filled('search')) {
 
-            $search = trim($request->search);
+            $search = trim(
+                $request->input('search')
+            );
 
             $query->where(function ($q) use ($search) {
 
-                $q->where('module', 'like', "%{$search}%")
-                    ->orWhere('action', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('user', function ($user) use ($search) {
+                $q->where(
+                    'module',
+                    'like',
+                    '%' . $search . '%'
+                )
 
-                        $user->where('name', 'like', "%{$search}%");
+                ->orWhere(
+                    'action',
+                    'like',
+                    '%' . $search . '%'
+                )
 
-                    });
+                ->orWhere(
+                    'description',
+                    'like',
+                    '%' . $search . '%'
+                )
 
+                ->orWhereHas('user', function ($user) use ($search) {
+
+                    $user->where(
+                        'name',
+                        'like',
+                        '%' . $search . '%'
+                    )
+
+                    ->orWhere(
+                        'email',
+                        'like',
+                        '%' . $search . '%'
+                    );
+
+                });
             });
-
         }
 
         /*
@@ -59,8 +87,11 @@ class AdminActivityLogController extends Controller
             today()
         )->count();
 
-        $activeUsers = ActivityLog::distinct('user_id')
-            ->count('user_id');
+        $activeUsers = ActivityLog::whereNotNull(
+            'user_id'
+        )
+        ->distinct()
+        ->count('user_id');
 
         /*
         |--------------------------------------------------------------------------
@@ -90,10 +121,12 @@ class AdminActivityLogController extends Controller
     }
 
     /**
-     * Display activity details.
+     * Display activity log details.
      */
-    public function show(ActivityLog $activityLog)
-    {
+    public function show(
+        ActivityLog $activityLog
+    ): View {
+
         $activityLog->load('user');
 
         return view(
@@ -104,9 +137,14 @@ class AdminActivityLogController extends Controller
 
     /**
      * Delete activity log.
+     *
+     * Activity log deletion is intentionally not logged
+     * to avoid creating a circular logging operation.
      */
-    public function destroy(ActivityLog $activityLog)
-    {
+    public function destroy(
+        ActivityLog $activityLog
+    ): RedirectResponse {
+
         $activityLog->delete();
 
         return redirect()
@@ -118,34 +156,39 @@ class AdminActivityLogController extends Controller
     }
 
     /**
-     * Not Used.
+     * Activity log creation is disabled.
      */
-    public function create()
+    public function create(): View
     {
         abort(404);
     }
 
     /**
-     * Not Used.
+     * Activity log creation is disabled.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         abort(404);
     }
 
     /**
-     * Not Used.
+     * Activity log editing is disabled.
      */
-    public function edit(ActivityLog $activityLog)
-    {
+    public function edit(
+        ActivityLog $activityLog
+    ): View {
+
         abort(404);
     }
 
     /**
-     * Not Used.
+     * Activity log updating is disabled.
      */
-    public function update(Request $request, ActivityLog $activityLog)
-    {
+    public function update(
+        Request $request,
+        ActivityLog $activityLog
+    ): RedirectResponse {
+
         abort(404);
     }
 }

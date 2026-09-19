@@ -2,10 +2,13 @@
 
     <div class="container">
 
-        <!-- Logo -->
+        <!-- ==========================================================
+             LOGO
+        =========================================================== -->
 
-        <a class="navbar-brand fw-bold fs-3 text-primary"
-           href="{{ route('home') }}">
+        <a
+            class="navbar-brand fw-bold fs-3 text-primary"
+            href="{{ route('home') }}">
 
             <i class="bi bi-buildings-fill"></i>
 
@@ -13,28 +16,43 @@
 
         </a>
 
-        <!-- Mobile Toggle -->
+
+        <!-- ==========================================================
+             MOBILE TOGGLE
+        =========================================================== -->
 
         <button
             class="navbar-toggler border-0 shadow-none"
             type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#navbar">
+            data-bs-target="#navbar"
+            aria-controls="navbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
 
             <span class="navbar-toggler-icon"></span>
 
         </button>
 
-        <div class="collapse navbar-collapse" id="navbar">
 
-            <!-- Left Menu -->
+        <div
+            class="collapse navbar-collapse"
+            id="navbar">
+
+
+            <!-- ======================================================
+                 LEFT MENU
+            ======================================================= -->
 
             <ul class="navbar-nav mx-auto">
 
+                <!-- Home -->
+
                 <li class="nav-item">
 
-                    <a class="nav-link {{ request()->routeIs('home') ? 'active fw-bold' : '' }}"
-                       href="{{ route('home') }}">
+                    <a
+                        class="nav-link {{ request()->routeIs('home') ? 'active fw-bold' : '' }}"
+                        href="{{ route('home') }}">
 
                         Home
 
@@ -42,10 +60,14 @@
 
                 </li>
 
+
+                <!-- Properties -->
+
                 <li class="nav-item">
 
-                    <a class="nav-link {{ request()->routeIs('properties.*') ? 'active fw-bold' : '' }}"
-                       href="{{ route('properties.index') }}">
+                    <a
+                        class="nav-link {{ request()->routeIs('properties.*') ? 'active fw-bold' : '' }}"
+                        href="{{ route('properties.index') }}">
 
                         Properties
 
@@ -53,9 +75,14 @@
 
                 </li>
 
+
+                <!-- About -->
+
                 <li class="nav-item">
 
-                    <a class="nav-link" href="#">
+                    <a
+                        class="nav-link"
+                        href="#">
 
                         About
 
@@ -63,9 +90,14 @@
 
                 </li>
 
+
+                <!-- Contact -->
+
                 <li class="nav-item">
 
-                    <a class="nav-link" href="#">
+                    <a
+                        class="nav-link"
+                        href="#">
 
                         Contact
 
@@ -75,17 +107,32 @@
 
             </ul>
 
+
+            <!-- ======================================================
+                 RIGHT SIDE
+            ======================================================= -->
+
             <div class="d-flex align-items-center gap-3">
 
-                <!-- Search -->
 
-                <a href="#"
-                   class="text-dark fs-5"
-                   title="Search">
+                <!-- ==================================================
+                     SEARCH
+                =================================================== -->
+
+                <a
+                    href="{{ route('properties.index') }}"
+                    class="text-dark fs-5"
+                    title="Search Properties"
+                    aria-label="Search Properties">
 
                     <i class="bi bi-search"></i>
 
                 </a>
+
+
+                <!-- ==================================================
+                     GUEST
+                =================================================== -->
 
                 @guest
 
@@ -97,6 +144,7 @@
 
                     </a>
 
+
                     <a
                         href="{{ route('register') }}"
                         class="btn btn-primary">
@@ -107,25 +155,40 @@
 
                 @endguest
 
+
+                <!-- ==================================================
+                     AUTHENTICATED USER
+                =================================================== -->
+
                 @auth
 
-                    <!-- Notification -->
+
+                    <!-- ==============================================
+                         NOTIFICATIONS
+                    =============================================== -->
 
                     <div class="dropdown">
 
                         <button
                             class="btn btn-light position-relative"
+                            type="button"
                             data-bs-toggle="dropdown"
+                            aria-expanded="false"
                             title="Notifications">
 
                             <i class="bi bi-bell-fill fs-5"></i>
 
-                            @if($navbarUnreadCount > 0)
+
+                            @if(($navbarUnreadCount ?? 0) > 0)
 
                                 <span
                                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
 
                                     {{ $navbarUnreadCount }}
+
+                                    <span class="visually-hidden">
+                                        unread notifications
+                                    </span>
 
                                 </span>
 
@@ -133,8 +196,11 @@
 
                         </button>
 
-                        <ul class="dropdown-menu dropdown-menu-end shadow"
+
+                        <ul
+                            class="dropdown-menu dropdown-menu-end shadow"
                             style="width:350px;">
+
 
                             <li>
 
@@ -146,7 +212,8 @@
 
                             </li>
 
-                            @forelse($navbarNotifications as $notification)
+
+                            @forelse(($navbarNotifications ?? collect()) as $notification)
 
                                 <li>
 
@@ -160,7 +227,9 @@
 
                                         </strong>
 
+
                                         <br>
+
 
                                         <small class="text-muted">
 
@@ -168,7 +237,9 @@
 
                                         </small>
 
+
                                         <br>
+
 
                                         <small class="text-secondary">
 
@@ -194,11 +265,13 @@
 
                             @endforelse
 
+
                             <li>
 
                                 <hr class="dropdown-divider">
 
                             </li>
+
 
                             <li>
 
@@ -216,29 +289,47 @@
 
                     </div>
 
-                    <!-- Dashboard -->
+
+                    <!-- ==============================================
+                         DASHBOARD
+                    =============================================== -->
 
                     <a
                         href="{{ route('dashboard') }}"
                         class="btn btn-outline-success">
 
+                        <i class="bi bi-speedometer2 me-1"></i>
+
                         Dashboard
 
                     </a>
 
-                    <!-- User -->
+
+                    <!-- ==============================================
+                         USER MENU
+                    =============================================== -->
 
                     <div class="dropdown">
 
                         <button
                             class="btn btn-primary dropdown-toggle"
-                            data-bs-toggle="dropdown">
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+
+                            <i class="bi bi-person-circle me-1"></i>
 
                             {{ Auth::user()->name }}
 
                         </button>
 
+
                         <ul class="dropdown-menu dropdown-menu-end">
+
+
+                            <!-- ======================================
+                                 PROFILE
+                            ======================================= -->
 
                             <li>
 
@@ -254,39 +345,176 @@
 
                             </li>
 
+
+                            <!-- ======================================
+                                 TENANT MENU
+                            ======================================= -->
+
+                            @if(Auth::user()->isTenant())
+
+                                <li>
+
+                                    <a
+                                        class="dropdown-item"
+                                        href="{{ route('tenant.bookings.index') }}">
+
+                                        <i class="bi bi-calendar-check me-2"></i>
+
+                                        My Bookings
+
+                                    </a>
+
+                                </li>
+
+
+                                <li>
+
+                                    <a
+                                        class="dropdown-item"
+                                        href="{{ route('wishlist.index') }}">
+
+                                        <i class="bi bi-heart me-2"></i>
+
+                                        Wishlist
+
+                                    </a>
+
+                                </li>
+
+                            @endif
+
+
+                            <!-- ======================================
+                                 LANDLORD MENU
+                            ======================================= -->
+
+                            @if(Auth::user()->isLandlord())
+
+                                <li>
+
+                                    <a
+                                        class="dropdown-item"
+                                        href="{{ route('properties.create') }}">
+
+                                        <i class="bi bi-plus-circle me-2"></i>
+
+                                        Add Property
+
+                                    </a>
+
+                                </li>
+
+
+                                <li>
+
+                                    <a
+                                        class="dropdown-item"
+                                        href="{{ route('properties.index') }}">
+
+                                        <i class="bi bi-buildings me-2"></i>
+
+                                        Manage Properties
+
+                                    </a>
+
+                                </li>
+
+
+                                <li>
+
+                                    <a
+                                        class="dropdown-item"
+                                        href="{{ route('bookings.index') }}">
+
+                                        <i class="bi bi-calendar-check me-2"></i>
+
+                                        Booking Requests
+
+                                    </a>
+
+                                </li>
+
+
+                                <li>
+
+                                    <a
+                                        class="dropdown-item"
+                                        href="{{ route('enquiries.index') }}">
+
+                                        <i class="bi bi-chat-dots me-2"></i>
+
+                                        Enquiries
+
+                                    </a>
+
+                                </li>
+
+                            @endif
+
+
+                            <!-- ======================================
+                                 ADMIN MENU
+                            ======================================= -->
+
+                            @if(Auth::user()->isAdmin())
+
+                                <li>
+
+                                    <hr class="dropdown-divider">
+
+                                </li>
+
+
+                                <li>
+
+                                    <a
+                                        class="dropdown-item text-primary fw-semibold"
+                                        href="{{ route('admin.dashboard') }}">
+
+                                        <i class="bi bi-speedometer2 me-2"></i>
+
+                                        Admin Panel
+
+                                    </a>
+
+                                </li>
+
+                            @endif
+
+
+                            <!-- ======================================
+                                 COMMON NOTIFICATIONS
+                            ======================================= -->
+
                             <li>
 
                                 <a
                                     class="dropdown-item"
-                                    href="{{ route('tenant.bookings.index') }}">
+                                    href="{{ route('notifications.index') }}">
 
-                                    <i class="bi bi-calendar-check me-2"></i>
+                                    <i class="bi bi-bell me-2"></i>
 
-                                    My Bookings
+                                    Notifications
 
                                 </a>
 
                             </li>
 
-                            <li>
 
-                                <a
-                                    class="dropdown-item"
-                                    href="{{ route('wishlist.index') }}">
-
-                                    <i class="bi bi-heart me-2"></i>
-
-                                    Wishlist
-
-                                </a>
-
-                            </li>
+                            <!-- ======================================
+                                 DIVIDER
+                            ======================================= -->
 
                             <li>
 
                                 <hr class="dropdown-divider">
 
                             </li>
+
+
+                            <!-- ======================================
+                                 LOGOUT
+                            ======================================= -->
 
                             <li>
 

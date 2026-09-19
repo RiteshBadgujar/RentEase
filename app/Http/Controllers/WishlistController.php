@@ -4,23 +4,54 @@ namespace App\Http\Controllers;
 
 use App\Models\Property;
 use App\Models\Wishlist;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class WishlistController extends Controller
 {
     /**
-     * Display the authenticated user's wishlist.
+     * Display the authenticated tenant's wishlist.
      */
-    public function index()
+    public function index(): View
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Tenant Authorization
+        |--------------------------------------------------------------------------
+        */
+
+        $user = auth()->user();
+
+        if (!$user || !$user->isTenant()) {
+            abort(
+                403,
+                'Only tenants can access the wishlist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get Tenant Wishlist
+        |--------------------------------------------------------------------------
+        */
+
         $wishlists = Wishlist::with([
                 'property.user'
             ])
             ->where(
                 'user_id',
-                auth()->id()
+                $user->id
             )
             ->latest()
             ->paginate(10);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'wishlist.index',
@@ -28,35 +59,80 @@ class WishlistController extends Controller
         );
     }
 
+
     /**
-     * Add a property to the authenticated user's wishlist.
+     * Add a property to the authenticated tenant's wishlist.
      */
-    public function store(Property $property)
-    {
+    public function store(
+        Property $property
+    ): RedirectResponse {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tenant Authorization
+        |--------------------------------------------------------------------------
+        */
+
+        $user = auth()->user();
+
+        if (!$user || !$user->isTenant()) {
+            abort(
+                403,
+                'Only tenants can add properties to the wishlist.'
+            );
+        }
+
+
         /*
         |--------------------------------------------------------------------------
         | Prevent Own Property Wishlist
         |--------------------------------------------------------------------------
         */
 
-        if ($property->user_id == auth()->id()) {
-
+        if (
+            (int) $property->user_id ===
+            (int) $user->id
+        ) {
             return back()->with(
                 'error',
                 'You cannot add your own property to the wishlist.'
             );
         }
 
+
         /*
         |--------------------------------------------------------------------------
-        | Add to Wishlist
+        | Property Must Be Available
         |--------------------------------------------------------------------------
+        |
+        | Pending and Rented properties should not be added to a
+        | tenant's wishlist because they are not currently available.
+        |
+        */
+
+        if ($property->status !== 'Available') {
+            return back()->with(
+                'error',
+                'Only available properties can be added to the wishlist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Duplicate Wishlist
+        |--------------------------------------------------------------------------
+        |
+        | firstOrCreate ensures that the same property is not added
+        | multiple times for the same tenant.
+        |
         */
 
         Wishlist::firstOrCreate([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'property_id' => $property->id,
         ]);
+
 
         /*
         |--------------------------------------------------------------------------
@@ -70,26 +146,46 @@ class WishlistController extends Controller
         );
     }
 
+
     /**
-     * Remove a property from the authenticated user's wishlist.
+     * Remove a property from the authenticated tenant's wishlist.
      */
-    public function destroy(Property $property)
-    {
+    public function destroy(
+        Property $property
+    ): RedirectResponse {
+
         /*
         |--------------------------------------------------------------------------
-        | Remove Only Current User's Wishlist Item
+        | Tenant Authorization
+        |--------------------------------------------------------------------------
+        */
+
+        $user = auth()->user();
+
+        if (!$user || !$user->isTenant()) {
+            abort(
+                403,
+                'Only tenants can manage the wishlist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Remove Only Current Tenant's Wishlist Item
         |--------------------------------------------------------------------------
         */
 
         Wishlist::where(
                 'user_id',
-                auth()->id()
+                $user->id
             )
             ->where(
                 'property_id',
                 $property->id
             )
             ->delete();
+
 
         /*
         |--------------------------------------------------------------------------

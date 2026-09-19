@@ -6,9 +6,9 @@
 
 <div class="container py-5">
 
-    <!-- ==========================
-            Page Header
-    =========================== -->
+    <!-- ==========================================================
+         PAGE HEADER
+    =========================================================== -->
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
@@ -33,9 +33,9 @@
     </div>
 
 
-    <!-- ==========================
-            Success Message
-    =========================== -->
+    <!-- ==========================================================
+         SUCCESS MESSAGE
+    =========================================================== -->
 
     @if(session('success'))
 
@@ -58,9 +58,9 @@
     @endif
 
 
-    <!-- ==========================
-            Error Message
-    =========================== -->
+    <!-- ==========================================================
+         ERROR MESSAGE
+    =========================================================== -->
 
     @if(session('error'))
 
@@ -83,11 +83,15 @@
     @endif
 
 
-    <!-- ==========================
-            Booking Card
-    =========================== -->
+    <!-- ==========================================================
+         BOOKING CARD
+    =========================================================== -->
 
     <div class="card shadow-lg border-0 rounded-4">
+
+        <!-- ======================================================
+             CARD HEADER
+        ======================================================= -->
 
         <div class="card-header bg-primary text-white">
 
@@ -115,13 +119,18 @@
         </div>
 
 
+        <!-- ======================================================
+             CARD BODY
+        ======================================================= -->
+
         <div class="card-body p-4">
 
             <div class="row g-4">
 
-                <!-- ==========================
-                        Property Information
-                =========================== -->
+
+                <!-- ==================================================
+                     PROPERTY INFORMATION
+                =================================================== -->
 
                 <div class="col-md-6">
 
@@ -138,29 +147,27 @@
 
                         @if($booking->property)
 
+                            <!-- Property -->
+
                             <div class="mb-3">
 
                                 <span class="text-muted d-block">
-
                                     Property
-
                                 </span>
 
                                 <strong>
-
                                     {{ $booking->property->title }}
-
                                 </strong>
 
                             </div>
 
 
+                            <!-- Location -->
+
                             <div class="mb-3">
 
                                 <span class="text-muted d-block">
-
                                     Location
-
                                 </span>
 
                                 <strong>
@@ -178,17 +185,20 @@
                             </div>
 
 
+                            <!-- Property Status -->
+
                             <div class="mb-0">
 
                                 <span class="text-muted d-block">
-
                                     Property Status
-
                                 </span>
+
 
                                 @if($booking->property->status === 'Available')
 
                                     <span class="badge bg-success">
+
+                                        <i class="bi bi-check-circle me-1"></i>
 
                                         Available
 
@@ -198,15 +208,9 @@
 
                                     <span class="badge bg-danger">
 
+                                        <i class="bi bi-house-x me-1"></i>
+
                                         Rented
-
-                                    </span>
-
-                                @elseif($booking->property->status === 'Pending')
-
-                                    <span class="badge bg-warning text-dark">
-
-                                        Pending
 
                                     </span>
 
@@ -237,9 +241,9 @@
                 </div>
 
 
-                <!-- ==========================
-                        Landlord Information
-                =========================== -->
+                <!-- ==================================================
+                     LANDLORD INFORMATION
+                =================================================== -->
 
                 <div class="col-md-6">
 
@@ -256,35 +260,31 @@
 
                         @if($booking->landlord)
 
+                            <!-- Name -->
+
                             <div class="mb-3">
 
                                 <span class="text-muted d-block">
-
                                     Name
-
                                 </span>
 
                                 <strong>
-
                                     {{ $booking->landlord->name }}
-
                                 </strong>
 
                             </div>
 
 
+                            <!-- Email -->
+
                             <div class="mb-0">
 
                                 <span class="text-muted d-block">
-
                                     Email
-
                                 </span>
 
                                 <strong>
-
                                     {{ $booking->landlord->email }}
-
                                 </strong>
 
                             </div>
@@ -304,9 +304,9 @@
                 </div>
 
 
-                <!-- ==========================
-                        Visit Information
-                =========================== -->
+                <!-- ==================================================
+                     VISIT INFORMATION
+                =================================================== -->
 
                 <div class="col-md-6">
 
@@ -321,19 +321,19 @@
                         </h5>
 
 
+                        <!-- Visit Date -->
+
                         <div class="mb-3">
 
                             <span class="text-muted d-block">
-
                                 Visit Date
-
                             </span>
 
                             <strong>
 
                                 @if($booking->visit_date)
 
-                                    {{ \Carbon\Carbon::parse($booking->visit_date)->format('d M Y') }}
+                                    {{ $booking->visit_date->format('d M Y') }}
 
                                 @else
 
@@ -346,12 +346,12 @@
                         </div>
 
 
+                        <!-- Visit Time -->
+
                         <div class="mb-0">
 
                             <span class="text-muted d-block">
-
                                 Visit Time
-
                             </span>
 
                             <strong>
@@ -375,9 +375,9 @@
                 </div>
 
 
-                <!-- ==========================
-                        Booking Status
-                =========================== -->
+                <!-- ==================================================
+                     BOOKING STATUS
+                =================================================== -->
 
                 <div class="col-md-6">
 
@@ -406,9 +406,11 @@
 
                                 <p class="text-muted mt-3 mb-0">
 
-                                    Your booking request is waiting for the landlord's response.
+                                    Your booking request is waiting for
+                                    the landlord's response.
 
                                 </p>
+
 
                             @elseif($booking->status === 'Approved')
 
@@ -422,9 +424,11 @@
 
                                 <p class="text-muted mt-3 mb-0">
 
-                                    Your visit request has been approved by the landlord.
+                                    Your visit request has been approved
+                                    by the landlord.
 
                                 </p>
+
 
                             @elseif($booking->status === 'Rejected')
 
@@ -438,9 +442,11 @@
 
                                 <p class="text-muted mt-3 mb-0">
 
-                                    Your visit request was rejected by the landlord.
+                                    Your visit request was rejected
+                                    by the landlord.
 
                                 </p>
+
 
                             @elseif($booking->status === 'Completed')
 
@@ -454,9 +460,11 @@
 
                                 <p class="text-muted mt-3 mb-0">
 
-                                    The property visit has been marked as completed.
+                                    The property visit has been marked
+                                    as completed.
 
                                 </p>
+
 
                             @else
 
@@ -475,9 +483,9 @@
                 </div>
 
 
-                <!-- ==========================
-                        Message
-                =========================== -->
+                <!-- ==================================================
+                     MESSAGE
+                =================================================== -->
 
                 <div class="col-12">
 
@@ -520,11 +528,14 @@
             <hr class="my-4">
 
 
-            <!-- ==========================
-                    Action Buttons
-            =========================== -->
+            <!-- ======================================================
+                 ACTION BUTTONS
+            ======================================================= -->
 
             <div class="d-flex flex-wrap gap-2">
+
+
+                <!-- Back to My Bookings -->
 
                 <a
                     href="{{ route('tenant.bookings.index') }}"
@@ -537,12 +548,14 @@
                 </a>
 
 
-                <!-- Cancel Pending Booking -->
+                <!-- ==================================================
+                     CANCEL PENDING BOOKING
+                =================================================== -->
 
                 @if($booking->status === 'Pending')
 
                     <form
-                        action="{{ route('tenant.bookings.destroy', $booking->id) }}"
+                        action="{{ route('tenant.bookings.destroy', $booking) }}"
                         method="POST"
                         class="d-inline">
 
@@ -566,12 +579,14 @@
                 @endif
 
 
-                <!-- View Property -->
+                <!-- ==================================================
+                     VIEW PROPERTY
+                =================================================== -->
 
                 @if($booking->property)
 
                     <a
-                        href="{{ route('properties.show', $booking->property->id) }}"
+                        href="{{ route('properties.show', $booking->property) }}"
                         class="btn btn-outline-primary">
 
                         <i class="bi bi-house-door me-1"></i>

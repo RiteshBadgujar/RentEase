@@ -179,7 +179,7 @@
 
                                     <option
                                         value="Apartment"
-                                        {{ old('property_type') == 'Apartment' ? 'selected' : '' }}>
+                                        {{ old('property_type') === 'Apartment' ? 'selected' : '' }}>
 
                                         Apartment
 
@@ -187,7 +187,7 @@
 
                                     <option
                                         value="House"
-                                        {{ old('property_type') == 'House' ? 'selected' : '' }}>
+                                        {{ old('property_type') === 'House' ? 'selected' : '' }}>
 
                                         House
 
@@ -195,7 +195,7 @@
 
                                     <option
                                         value="Villa"
-                                        {{ old('property_type') == 'Villa' ? 'selected' : '' }}>
+                                        {{ old('property_type') === 'Villa' ? 'selected' : '' }}>
 
                                         Villa
 
@@ -203,7 +203,7 @@
 
                                     <option
                                         value="PG"
-                                        {{ old('property_type') == 'PG' ? 'selected' : '' }}>
+                                        {{ old('property_type') === 'PG' ? 'selected' : '' }}>
 
                                         PG
 
@@ -211,7 +211,7 @@
 
                                     <option
                                         value="Office"
-                                        {{ old('property_type') == 'Office' ? 'selected' : '' }}>
+                                        {{ old('property_type') === 'Office' ? 'selected' : '' }}>
 
                                         Office
 
@@ -219,7 +219,7 @@
 
                                     <option
                                         value="Commercial"
-                                        {{ old('property_type') == 'Commercial' ? 'selected' : '' }}>
+                                        {{ old('property_type') === 'Commercial' ? 'selected' : '' }}>
 
                                         Commercial
 
@@ -265,7 +265,7 @@
 
                                     <option
                                         value="Rent"
-                                        {{ old('purpose') == 'Rent' ? 'selected' : '' }}>
+                                        {{ old('purpose') === 'Rent' ? 'selected' : '' }}>
 
                                         Rent
 
@@ -273,7 +273,7 @@
 
                                     <option
                                         value="Sale"
-                                        {{ old('purpose') == 'Sale' ? 'selected' : '' }}>
+                                        {{ old('purpose') === 'Sale' ? 'selected' : '' }}>
 
                                         Sale
 
@@ -539,7 +539,7 @@
 
                                     <option
                                         value="Fully Furnished"
-                                        {{ old('furnishing') == 'Fully Furnished' ? 'selected' : '' }}>
+                                        {{ old('furnishing') === 'Fully Furnished' ? 'selected' : '' }}>
 
                                         Fully Furnished
 
@@ -547,7 +547,7 @@
 
                                     <option
                                         value="Semi Furnished"
-                                        {{ old('furnishing') == 'Semi Furnished' ? 'selected' : '' }}>
+                                        {{ old('furnishing') === 'Semi Furnished' ? 'selected' : '' }}>
 
                                         Semi Furnished
 
@@ -555,7 +555,7 @@
 
                                     <option
                                         value="Unfurnished"
-                                        {{ old('furnishing') == 'Unfurnished' ? 'selected' : '' }}>
+                                        {{ old('furnishing') === 'Unfurnished' ? 'selected' : '' }}>
 
                                         Unfurnished
 
@@ -601,7 +601,7 @@
 
                                     <option
                                         value="1"
-                                        {{ old('parking') == '1' ? 'selected' : '' }}>
+                                        {{ old('parking') === '1' ? 'selected' : '' }}>
 
                                         Available
 
@@ -609,7 +609,7 @@
 
                                     <option
                                         value="0"
-                                        {{ old('parking') == '0' ? 'selected' : '' }}>
+                                        {{ old('parking') === '0' ? 'selected' : '' }}>
 
                                         Not Available
 
@@ -769,6 +769,7 @@
                                     class="form-control @error('pincode') is-invalid @enderror"
                                     placeholder="Enter 6-digit Pincode"
                                     maxlength="6"
+                                    minlength="6"
                                     pattern="[0-9]{6}"
                                     inputmode="numeric"
                                     required>
@@ -933,23 +934,15 @@
 
                                     <option
                                         value="Available"
-                                        {{ old('status') == 'Available' ? 'selected' : '' }}>
+                                        {{ old('status', 'Available') === 'Available' ? 'selected' : '' }}>
 
                                         Available
 
                                     </option>
 
                                     <option
-                                        value="Pending"
-                                        {{ old('status') == 'Pending' ? 'selected' : '' }}>
-
-                                        Pending
-
-                                    </option>
-
-                                    <option
                                         value="Rented"
-                                        {{ old('status') == 'Rented' ? 'selected' : '' }}>
+                                        {{ old('status') === 'Rented' ? 'selected' : '' }}>
 
                                         Rented
 
@@ -1003,6 +996,7 @@
 
                                         </button>
 
+
                                         <button
                                             type="submit"
                                             class="btn btn-primary">
@@ -1042,25 +1036,23 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    const imageInput =
-        document.getElementById('image');
+    const imageInput = document.getElementById('image');
 
-    const imagePreview =
-        document.getElementById('imagePreview');
+    const imagePreview = document.getElementById('imagePreview');
 
-    const noImageText =
-        document.getElementById('noImageText');
+    const noImageText = document.getElementById('noImageText');
 
 
     if (!imageInput) {
+
         return;
+
     }
 
 
     imageInput.addEventListener('change', function (event) {
 
-        const file =
-            event.target.files[0];
+        const file = event.target.files[0];
 
 
         if (!file) {
@@ -1072,6 +1064,7 @@ document.addEventListener('DOMContentLoaded', function () {
             noImageText.style.display = 'flex';
 
             return;
+
         }
 
 
@@ -1102,6 +1095,7 @@ document.addEventListener('DOMContentLoaded', function () {
             noImageText.style.display = 'flex';
 
             return;
+
         }
 
 
@@ -1111,8 +1105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         |--------------------------------------------------------------------------
         */
 
-        const maxSize =
-            2 * 1024 * 1024;
+        const maxSize = 2 * 1024 * 1024;
 
 
         if (file.size > maxSize) {
@@ -1130,6 +1123,7 @@ document.addEventListener('DOMContentLoaded', function () {
             noImageText.style.display = 'flex';
 
             return;
+
         }
 
 
@@ -1139,20 +1133,17 @@ document.addEventListener('DOMContentLoaded', function () {
         |--------------------------------------------------------------------------
         */
 
-        const reader =
-            new FileReader();
+        const reader = new FileReader();
 
 
         reader.onload = function (e) {
 
-            imagePreview.src =
-                e.target.result;
+            imagePreview.src = e.target.result;
 
-            imagePreview.style.display =
-                'inline-block';
+            imagePreview.style.display = 'inline-block';
 
-            noImageText.style.display =
-                'none';
+            noImageText.style.display = 'none';
+
         };
 
 
@@ -1167,8 +1158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     |--------------------------------------------------------------------------
     */
 
-    const form =
-        imageInput.closest('form');
+    const form = imageInput.closest('form');
 
 
     if (form) {
@@ -1179,11 +1169,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 imagePreview.src = '';
 
-                imagePreview.style.display =
-                    'none';
+                imagePreview.style.display = 'none';
 
-                noImageText.style.display =
-                    'flex';
+                noImageText.style.display = 'flex';
 
             }, 50);
 

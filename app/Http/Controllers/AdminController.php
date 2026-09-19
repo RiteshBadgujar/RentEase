@@ -27,7 +27,10 @@ class AdminController extends Controller
             !auth()->check() ||
             auth()->user()->role !== 'admin'
         ) {
-            abort(403, 'Unauthorized Access.');
+            abort(
+                403,
+                'Unauthorized Access.'
+            );
         }
 
 
@@ -71,6 +74,11 @@ class AdminController extends Controller
         $rentedProperties = Property::where(
             'status',
             'Rented'
+        )->count();
+
+        $pendingProperties = Property::where(
+            'status',
+            'Pending'
         )->count();
 
 
@@ -185,8 +193,12 @@ class AdminController extends Controller
         */
 
         $monthlyBookings = Booking::select(
-                DB::raw('MONTH(created_at) as month'),
-                DB::raw('COUNT(*) as total')
+                DB::raw(
+                    'MONTH(created_at) as month'
+                ),
+                DB::raw(
+                    'COUNT(*) as total'
+                )
             )
             ->whereYear(
                 'created_at',
@@ -239,18 +251,24 @@ class AdminController extends Controller
                 'totalAdmins',
                 'totalLandlords',
                 'totalTenants',
+
                 'totalProperties',
                 'availableProperties',
                 'rentedProperties',
+                'pendingProperties',
+
                 'totalBookings',
                 'pendingBookings',
                 'approvedBookings',
                 'completedBookings',
+
                 'totalEnquiries',
                 'pendingEnquiries',
                 'repliedEnquiries',
+
                 'totalNotifications',
                 'unreadNotifications',
+
                 'recentUsers',
                 'recentProperties',
                 'recentBookings',

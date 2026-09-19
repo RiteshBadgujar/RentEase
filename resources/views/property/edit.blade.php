@@ -35,7 +35,9 @@
 
                 <div class="card-body p-4">
 
-                    <!-- Validation Errors -->
+                    <!-- ==========================
+                            Validation Errors
+                    =========================== -->
 
                     @if($errors->any())
 
@@ -64,7 +66,8 @@
                             <button
                                 type="button"
                                 class="btn-close"
-                                data-bs-dismiss="alert">
+                                data-bs-dismiss="alert"
+                                aria-label="Close">
                             </button>
 
                         </div>
@@ -72,7 +75,9 @@
                     @endif
 
 
-                    <!-- Success Message -->
+                    <!-- ==========================
+                            Success Message
+                    =========================== -->
 
                     @if(session('success'))
 
@@ -87,7 +92,8 @@
                             <button
                                 type="button"
                                 class="btn-close"
-                                data-bs-dismiss="alert">
+                                data-bs-dismiss="alert"
+                                aria-label="Close">
                             </button>
 
                         </div>
@@ -95,7 +101,9 @@
                     @endif
 
 
-                    <!-- Edit Property Form -->
+                    <!-- ==========================
+                            Edit Property Form
+                    =========================== -->
 
                     <form
                         action="{{ route('properties.update', $property) }}"
@@ -106,7 +114,9 @@
 
                         @method('PUT')
 
+
                         @include('property._form')
+
 
                     </form>
 

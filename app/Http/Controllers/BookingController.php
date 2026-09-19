@@ -6,19 +6,40 @@ use App\Models\Booking;
 use App\Models\Notification;
 use App\Models\Property;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class BookingController extends Controller
 {
     /**
      * Display all booking requests for the logged-in landlord.
      */
-    public function index()
+    public function index(): View
     {
+        $user = auth()->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Only Landlords Can Access Booking Requests
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user->isLandlord()) {
+            abort(403, 'Only landlords can access booking requests.');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get Landlord Bookings
+        |--------------------------------------------------------------------------
+        */
+
         $bookings = Booking::with([
                 'property',
                 'tenant',
             ])
-            ->where('landlord_id', auth()->id())
+            ->where('landlord_id', $user->id)
             ->latest()
             ->paginate(10);
 
@@ -34,7 +55,7 @@ class BookingController extends Controller
      *
      * Booking creation is handled from the property details page.
      */
-    public function create()
+    public function create(): RedirectResponse
     {
         return redirect()
             ->route('properties.index');
@@ -43,9 +64,27 @@ class BookingController extends Controller
 
     /**
      * Store a new booking request.
+     *
+     * Only tenants can request a property visit.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tenant Authorization
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user->isTenant()) {
+            return back()->with(
+                'error',
+                'Only tenants can request a property visit.'
+            );
+        }
+
+
         /*
         |--------------------------------------------------------------------------
         | Validation
@@ -56,6 +95,7 @@ class BookingController extends Controller
 
             'property_id' => [
                 'required',
+                'integer',
                 'exists:properties,id',
             ],
 
@@ -81,13 +121,33 @@ class BookingController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Prevent Past Time for Today's Visit
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $validated['visit_date'] === now()->toDateString() &&
+            $validated['visit_time'] <= now()->format('H:i')
+        ) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Please select a future time for today.'
+                );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Find Property
         |--------------------------------------------------------------------------
         */
 
-        $property = Property::findOrFail(
-            $validated['property_id']
-        );
+        $property = Property::with('user')
+            ->findOrFail(
+                $validated['property_id']
+            );
 
 
         /*
@@ -96,8 +156,10 @@ class BookingController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($property->user_id === auth()->id()) {
-
+        if (
+            (int) $property->user_id ===
+            (int) $user->id
+        ) {
             return back()->with(
                 'error',
                 'You cannot book your own property.'
@@ -112,7 +174,6 @@ class BookingController extends Controller
         */
 
         if ($property->status !== 'Available') {
-
             return back()->with(
                 'error',
                 'This property is currently not available for booking.'
@@ -122,17 +183,35 @@ class BookingController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Prevent Duplicate Booking
+        | Property Owner Must Exist
         |--------------------------------------------------------------------------
         */
 
-        $alreadyBooked = Booking::where(
+        if (!$property->user) {
+            return back()->with(
+                'error',
+                'This property owner could not be found.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Duplicate Booking By Same Tenant
+        |--------------------------------------------------------------------------
+        |
+        | A tenant cannot create another Pending or Approved booking
+        | for the same property, date and time.
+        |
+        */
+
+        $tenantAlreadyBooked = Booking::where(
                 'property_id',
                 $property->id
             )
             ->where(
                 'tenant_id',
-                auth()->id()
+                $user->id
             )
             ->where(
                 'visit_date',
@@ -152,12 +231,60 @@ class BookingController extends Controller
             ->exists();
 
 
-        if ($alreadyBooked) {
+        if ($tenantAlreadyBooked) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'You already have an active booking request for this property at the selected date and time.'
+                );
+        }
 
-            return back()->with(
-                'error',
-                'You already requested a visit for this property at the selected date and time.'
-            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Property Time-Slot Conflict
+        |--------------------------------------------------------------------------
+        |
+        | A property can have only one active booking for the same
+        | date and time.
+        |
+        | This prevents:
+        |
+        | Tenant A → Property X → 10:00 AM → Pending
+        | Tenant B → Property X → 10:00 AM → Pending ❌
+        |
+        */
+
+        $slotAlreadyBooked = Booking::where(
+                'property_id',
+                $property->id
+            )
+            ->where(
+                'visit_date',
+                $validated['visit_date']
+            )
+            ->where(
+                'visit_time',
+                $validated['visit_time']
+            )
+            ->whereIn(
+                'status',
+                [
+                    'Pending',
+                    'Approved',
+                ]
+            )
+            ->exists();
+
+
+        if ($slotAlreadyBooked) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'The selected visit time is already booked or awaiting approval. Please choose another time.'
+                );
         }
 
 
@@ -167,23 +294,103 @@ class BookingController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $booking = Booking::create([
+        try {
 
-            'property_id' => $property->id,
+            $booking = DB::transaction(function () use (
+                $property,
+                $user,
+                $validated
+            ) {
 
-            'tenant_id' => auth()->id(),
+                /*
+                |--------------------------------------------------------------------------
+                | Re-check Slot Inside Transaction
+                |--------------------------------------------------------------------------
+                |
+                | This protects the flow against another request arriving
+                | between the first availability check and creation.
+                |
+                */
 
-            'landlord_id' => $property->user_id,
+                $slotAlreadyBooked = Booking::where(
+                        'property_id',
+                        $property->id
+                    )
+                    ->where(
+                        'visit_date',
+                        $validated['visit_date']
+                    )
+                    ->where(
+                        'visit_time',
+                        $validated['visit_time']
+                    )
+                    ->whereIn(
+                        'status',
+                        [
+                            'Pending',
+                            'Approved',
+                        ]
+                    )
+                    ->lockForUpdate()
+                    ->exists();
 
-            'visit_date' => $validated['visit_date'],
 
-            'visit_time' => $validated['visit_time'],
+                if ($slotAlreadyBooked) {
+                    throw new \RuntimeException(
+                        'BOOKING_SLOT_ALREADY_TAKEN'
+                    );
+                }
 
-            'message' => $validated['message'] ?? null,
 
-            'status' => 'Pending',
+                /*
+                |--------------------------------------------------------------------------
+                | Create Booking
+                |--------------------------------------------------------------------------
+                */
 
-        ]);
+                return Booking::create([
+
+                    'property_id' => $property->id,
+
+                    'tenant_id' => $user->id,
+
+                    'landlord_id' => $property->user_id,
+
+                    'visit_date' => $validated['visit_date'],
+
+                    'visit_time' => $validated['visit_time'],
+
+                    'message' =>
+                        $validated['message'] ?? null,
+
+                    'status' => 'Pending',
+
+                ]);
+            });
+
+
+        } catch (\RuntimeException $e) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Booking Slot Conflict
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $e->getMessage() ===
+                'BOOKING_SLOT_ALREADY_TAKEN'
+            ) {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'The selected visit time is already booked or awaiting approval. Please choose another time.'
+                    );
+            }
+
+            throw $e;
+        }
 
 
         /*
@@ -199,7 +406,7 @@ class BookingController extends Controller
             'title' => 'New Booking Request',
 
             'message' =>
-                auth()->user()->name .
+                $user->name .
                 ' has requested a visit for "' .
                 $property->title .
                 '".',
@@ -234,7 +441,7 @@ class BookingController extends Controller
      *
      * Both tenant and landlord can view the booking.
      */
-    public function show(Booking $booking)
+    public function show(Booking $booking): View
     {
         /*
         |--------------------------------------------------------------------------
@@ -242,11 +449,15 @@ class BookingController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (
-            auth()->id() !== $booking->tenant_id &&
-            auth()->id() !== $booking->landlord_id
-        ) {
+        $userId = auth()->id();
 
+        if (
+            (int) $userId !==
+                (int) $booking->tenant_id
+            &&
+            (int) $userId !==
+                (int) $booking->landlord_id
+        ) {
             abort(
                 403,
                 'Unauthorized Access.'
@@ -285,8 +496,32 @@ class BookingController extends Controller
      *
      * Booking editing is not supported.
      */
-    public function edit(Booking $booking)
-    {
+    public function edit(
+        Booking $booking
+    ): RedirectResponse {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Authorization
+        |--------------------------------------------------------------------------
+        */
+
+        $userId = auth()->id();
+
+        if (
+            (int) $userId !==
+                (int) $booking->tenant_id
+            &&
+            (int) $userId !==
+                (int) $booking->landlord_id
+        ) {
+            abort(
+                403,
+                'Unauthorized Access.'
+            );
+        }
+
+
         return redirect()
             ->route('bookings.index');
     }
@@ -295,24 +530,41 @@ class BookingController extends Controller
     /**
      * Update booking status.
      *
-     * Only the landlord can change the booking status.
+     * Only the landlord assigned to the booking
+     * can change the booking status.
      */
     public function update(
         Request $request,
         Booking $booking
-    ) {
+    ): RedirectResponse {
 
         /*
         |--------------------------------------------------------------------------
-        | Authorization
+        | Landlord Authorization
         |--------------------------------------------------------------------------
         */
 
-        if ($booking->landlord_id !== auth()->id()) {
-
+        if (
+            (int) $booking->landlord_id !==
+            (int) auth()->id()
+        ) {
             abort(
                 403,
                 'Unauthorized Access.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ensure Logged-in User Is Landlord
+        |--------------------------------------------------------------------------
+        */
+
+        if (!auth()->user()->isLandlord()) {
+            abort(
+                403,
+                'Only landlords can update booking status.'
             );
         }
 
@@ -336,6 +588,22 @@ class BookingController extends Controller
         $newStatus = $validated['status'];
 
         $currentStatus = $booking->status;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Same Status Update
+        |--------------------------------------------------------------------------
+        */
+
+        if ($newStatus === $currentStatus) {
+            return back()->with(
+                'error',
+                'The booking is already marked as ' .
+                $currentStatus .
+                '.'
+            );
+        }
 
 
         /*
@@ -369,7 +637,6 @@ class BookingController extends Controller
                 true
             )
         ) {
-
             return back()->with(
                 'error',
                 'This booking status cannot be changed from ' .
@@ -378,6 +645,72 @@ class BookingController extends Controller
                 $newStatus .
                 '.'
             );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Extra Approval Safety
+        |--------------------------------------------------------------------------
+        |
+        | Before approving, make sure another active booking has not
+        | already taken the same property slot.
+        |
+        */
+
+        if ($newStatus === 'Approved') {
+
+            $conflictingBooking = Booking::where(
+                    'property_id',
+                    $booking->property_id
+                )
+                ->where(
+                    'visit_date',
+                    $booking->visit_date
+                )
+                ->where(
+                    'visit_time',
+                    $booking->visit_time
+                )
+                ->whereIn(
+                    'status',
+                    [
+                        'Approved',
+                    ]
+                )
+                ->where(
+                    'id',
+                    '!=',
+                    $booking->id
+                )
+                ->exists();
+
+
+            if ($conflictingBooking) {
+                return back()->with(
+                    'error',
+                    'This visit time has already been approved for another booking.'
+                );
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Property Must Still Be Available
+            |--------------------------------------------------------------------------
+            */
+
+            $booking->load('property');
+
+            if (
+                !$booking->property ||
+                $booking->property->status !== 'Available'
+            ) {
+                return back()->with(
+                    'error',
+                    'This property is no longer available.'
+                );
+            }
         }
 
 
@@ -392,6 +725,15 @@ class BookingController extends Controller
             'status' => $newStatus,
 
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Load Property
+        |--------------------------------------------------------------------------
+        */
+
+        $booking->load('property');
 
 
         /*
@@ -431,7 +773,7 @@ class BookingController extends Controller
 
             'message' =>
                 'Your booking for "' .
-                $booking->property->title .
+                ($booking->property?->title ?? 'the property') .
                 '" has been updated. ' .
                 $statusMessage,
 
@@ -469,22 +811,34 @@ class BookingController extends Controller
      * Landlord:
      * - Can delete only Rejected or Completed bookings.
      */
-    public function destroy(Booking $booking)
-    {
+    public function destroy(
+        Booking $booking
+    ): RedirectResponse {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Current User
+        |--------------------------------------------------------------------------
+        */
+
+        $user = auth()->user();
+
+        $userId = $user->id;
+
+
         /*
         |--------------------------------------------------------------------------
         | Authorization
         |--------------------------------------------------------------------------
         */
 
-        $userId = auth()->id();
-
-
         if (
-            $userId !== $booking->tenant_id &&
-            $userId !== $booking->landlord_id
+            (int) $userId !==
+                (int) $booking->tenant_id
+            &&
+            (int) $userId !==
+                (int) $booking->landlord_id
         ) {
-
             abort(
                 403,
                 'Unauthorized Access.'
@@ -498,16 +852,44 @@ class BookingController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($userId === $booking->tenant_id) {
+        if (
+            (int) $userId ===
+            (int) $booking->tenant_id
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Tenant Role Check
+            |--------------------------------------------------------------------------
+            */
+
+            if (!$user->isTenant()) {
+                abort(
+                    403,
+                    'Only tenants can cancel their booking requests.'
+                );
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Only Pending Can Be Cancelled
+            |--------------------------------------------------------------------------
+            */
 
             if ($booking->status !== 'Pending') {
-
                 return back()->with(
                     'error',
                     'Only pending bookings can be cancelled.'
                 );
             }
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete Booking
+            |--------------------------------------------------------------------------
+            */
 
             $booking->delete();
 
@@ -527,23 +909,53 @@ class BookingController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($userId === $booking->landlord_id) {
+        if (
+            (int) $userId ===
+            (int) $booking->landlord_id
+        ) {
 
-            if (!in_array(
-                $booking->status,
-                [
-                    'Rejected',
-                    'Completed',
-                ],
-                true
-            )) {
+            /*
+            |--------------------------------------------------------------------------
+            | Landlord Role Check
+            |--------------------------------------------------------------------------
+            */
 
+            if (!$user->isLandlord()) {
+                abort(
+                    403,
+                    'Only landlords can delete completed or rejected bookings.'
+                );
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Only Rejected / Completed Can Be Deleted
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                !in_array(
+                    $booking->status,
+                    [
+                        'Rejected',
+                        'Completed',
+                    ],
+                    true
+                )
+            ) {
                 return back()->with(
                     'error',
                     'Only rejected or completed bookings can be deleted.'
                 );
             }
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete Booking
+            |--------------------------------------------------------------------------
+            */
 
             $booking->delete();
 

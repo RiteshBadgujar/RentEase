@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'My Booking Requests')
+@section('title', 'My Enquiries')
 
 @section('content')
 
@@ -13,32 +13,22 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-
             <h2 class="fw-bold mb-1">
-
-                <i class="bi bi-calendar-check-fill text-primary me-2"></i>
-
-                My Booking Requests
-
+                <i class="bi bi-chat-left-text-fill text-primary me-2"></i>
+                My Enquiries
             </h2>
 
             <p class="text-muted mb-0">
-
-                View and manage your property visit requests.
-
+                View and track your property enquiries.
             </p>
-
         </div>
-
 
         <a
             href="{{ route('dashboard') }}"
-            class="btn btn-secondary">
-
+            class="btn btn-secondary"
+        >
             <i class="bi bi-arrow-left me-1"></i>
-
             Dashboard
-
         </a>
 
     </div>
@@ -52,8 +42,8 @@
 
         <div
             class="alert alert-success alert-dismissible fade show"
-            role="alert">
-
+            role="alert"
+        >
             <i class="bi bi-check-circle-fill me-2"></i>
 
             {{ session('success') }}
@@ -61,9 +51,8 @@
             <button
                 type="button"
                 class="btn-close"
-                data-bs-dismiss="alert">
-            </button>
-
+                data-bs-dismiss="alert"
+            ></button>
         </div>
 
     @endif
@@ -77,8 +66,8 @@
 
         <div
             class="alert alert-danger alert-dismissible fade show"
-            role="alert">
-
+            role="alert"
+        >
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
 
             {{ session('error') }}
@@ -86,9 +75,8 @@
             <button
                 type="button"
                 class="btn-close"
-                data-bs-dismiss="alert">
-            </button>
-
+                data-bs-dismiss="alert"
+            ></button>
         </div>
 
     @endif
@@ -102,8 +90,8 @@
 
         <div
             class="alert alert-danger alert-dismissible fade show"
-            role="alert">
-
+            role="alert"
+        >
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
 
             <strong>Please fix the following errors:</strong>
@@ -123,16 +111,15 @@
             <button
                 type="button"
                 class="btn-close"
-                data-bs-dismiss="alert">
-            </button>
-
+                data-bs-dismiss="alert"
+            ></button>
         </div>
 
     @endif
 
 
     <!-- ==========================================================
-         BOOKING CARD
+         ENQUIRY CARD
     =========================================================== -->
 
     <div class="card shadow-lg border-0 rounded-4">
@@ -144,21 +131,17 @@
             <div class="d-flex justify-content-between align-items-center">
 
                 <h5 class="mb-0">
-
                     <i class="bi bi-list-ul me-2"></i>
-
-                    Booking List
-
+                    Enquiry List
                 </h5>
-
 
                 <span class="badge bg-primary">
 
-                    {{ $bookings->count() }}
+                    {{ $enquiries->count() }}
 
-                    {{ $bookings->count() === 1
-                        ? 'Booking'
-                        : 'Bookings'
+                    {{ $enquiries->count() === 1
+                        ? 'Enquiry'
+                        : 'Enquiries'
                     }}
 
                 </span>
@@ -197,18 +180,18 @@
                             </th>
 
                             <th>
-                                Visit Date
-                            </th>
-
-                            <th>
-                                Visit Time
+                                Message
                             </th>
 
                             <th>
                                 Status
                             </th>
 
-                            <th width="170">
+                            <th>
+                                Date
+                            </th>
+
+                            <th width="120">
                                 Action
                             </th>
 
@@ -223,11 +206,13 @@
 
                     <tbody>
 
-                        @forelse($bookings as $booking)
+                        @forelse($enquiries as $enquiry)
 
                             <tr>
 
-                                <!-- Serial Number -->
+                                <!-- ==================================================
+                                     SERIAL NUMBER
+                                =================================================== -->
 
                                 <td>
 
@@ -242,12 +227,10 @@
 
                                 <td>
 
-                                    @if($booking->property)
+                                    @if($enquiry->property)
 
                                         <strong>
-
-                                            {{ $booking->property->title }}
-
+                                            {{ $enquiry->property->title }}
                                         </strong>
 
                                         <br>
@@ -256,16 +239,14 @@
 
                                             <i class="bi bi-geo-alt me-1"></i>
 
-                                            {{ $booking->property->city ?? 'Location unavailable' }}
+                                            {{ $enquiry->property->city ?? 'Location unavailable' }}
 
                                         </small>
 
                                     @else
 
                                         <span class="text-muted">
-
                                             Property unavailable
-
                                         </span>
 
                                     @endif
@@ -279,28 +260,24 @@
 
                                 <td>
 
-                                    @if($booking->landlord)
+                                    @if($enquiry->receiver)
 
                                         <strong>
-
-                                            {{ $booking->landlord->name }}
-
+                                            {{ $enquiry->receiver->name }}
                                         </strong>
 
                                         <br>
 
                                         <small class="text-muted">
 
-                                            {{ $booking->landlord->email }}
+                                            {{ $enquiry->receiver->email }}
 
                                         </small>
 
                                     @else
 
                                         <span class="text-muted">
-
                                             Landlord unavailable
-
                                         </span>
 
                                     @endif
@@ -309,47 +286,18 @@
 
 
                                 <!-- ==================================================
-                                     VISIT DATE
+                                     MESSAGE
                                 =================================================== -->
 
-                                <td>
+                                <td style="min-width: 220px;">
 
-                                    @if($booking->visit_date)
-
-                                        {{ $booking->visit_date->format('d M Y') }}
-
-                                    @else
-
-                                        <span class="text-muted">
-
-                                            Not specified
-
-                                        </span>
-
-                                    @endif
-
-                                </td>
-
-
-                                <!-- ==================================================
-                                     VISIT TIME
-                                =================================================== -->
-
-                                <td>
-
-                                    @if($booking->visit_time)
-
-                                        {{ \Carbon\Carbon::parse($booking->visit_time)->format('h:i A') }}
-
-                                    @else
-
-                                        <span class="text-muted">
-
-                                            Not specified
-
-                                        </span>
-
-                                    @endif
+                                    <div
+                                        class="text-truncate"
+                                        style="max-width: 280px;"
+                                        title="{{ $enquiry->message }}"
+                                    >
+                                        {{ $enquiry->message }}
+                                    </div>
 
                                 </td>
 
@@ -360,7 +308,7 @@
 
                                 <td>
 
-                                    @if($booking->status === 'Pending')
+                                    @if($enquiry->status === 'Pending')
 
                                         <span class="badge bg-warning text-dark">
 
@@ -370,41 +318,31 @@
 
                                         </span>
 
-                                    @elseif($booking->status === 'Approved')
+                                    @elseif($enquiry->status === 'Replied')
 
                                         <span class="badge bg-success">
 
                                             <i class="bi bi-check-circle me-1"></i>
 
-                                            Approved
+                                            Replied
 
                                         </span>
 
-                                    @elseif($booking->status === 'Rejected')
+                                    @elseif($enquiry->status === 'Closed')
 
-                                        <span class="badge bg-danger">
+                                        <span class="badge bg-secondary">
 
                                             <i class="bi bi-x-circle me-1"></i>
 
-                                            Rejected
-
-                                        </span>
-
-                                    @elseif($booking->status === 'Completed')
-
-                                        <span class="badge bg-primary">
-
-                                            <i class="bi bi-check2-all me-1"></i>
-
-                                            Completed
+                                            Closed
 
                                         </span>
 
                                     @else
 
-                                        <span class="badge bg-secondary">
+                                        <span class="badge bg-dark">
 
-                                            {{ $booking->status }}
+                                            {{ $enquiry->status }}
 
                                         </span>
 
@@ -414,20 +352,47 @@
 
 
                                 <!-- ==================================================
-                                     ACTIONS
+                                     DATE
                                 =================================================== -->
 
                                 <td>
 
-                                    <div class="d-flex flex-wrap gap-1">
+                                    @if($enquiry->created_at)
+
+                                        {{ $enquiry->created_at->format('d M Y') }}
+
+                                        <br>
+
+                                        <small class="text-muted">
+
+                                            {{ $enquiry->created_at->format('h:i A') }}
+
+                                        </small>
+
+                                    @else
+
+                                        <span class="text-muted">
+                                            Not available
+                                        </span>
+
+                                    @endif
+
+                                </td>
 
 
-                                        <!-- View Booking -->
+                                <!-- ==================================================
+                                     ACTION
+                                =================================================== -->
+
+                                <td>
+
+                                    @if($enquiry->property)
 
                                         <a
-                                            href="{{ route('tenant.bookings.show', $booking) }}"
+                                            href="{{ route('properties.show', $enquiry->property) }}"
                                             class="btn btn-info btn-sm"
-                                            title="View Booking">
+                                            title="View Property"
+                                        >
 
                                             <i class="bi bi-eye me-1"></i>
 
@@ -435,37 +400,13 @@
 
                                         </a>
 
+                                    @else
 
-                                        <!-- Cancel Pending Booking -->
+                                        <span class="text-muted">
+                                            —
+                                        </span>
 
-                                        @if($booking->status === 'Pending')
-
-                                            <form
-                                                action="{{ route('tenant.bookings.destroy', $booking) }}"
-                                                method="POST"
-                                                class="d-inline">
-
-                                                @csrf
-
-                                                @method('DELETE')
-
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-danger btn-sm"
-                                                    title="Cancel Booking"
-                                                    onclick="return confirm('Are you sure you want to cancel this booking?')">
-
-                                                    <i class="bi bi-x-circle me-1"></i>
-
-                                                    Cancel
-
-                                                </button>
-
-                                            </form>
-
-                                        @endif
-
-                                    </div>
+                                    @endif
 
                                 </td>
 
@@ -481,31 +422,25 @@
 
                                 <td
                                     colspan="7"
-                                    class="text-center py-5">
+                                    class="text-center py-5"
+                                >
 
                                     <i
-                                        class="bi bi-calendar-x display-1 text-secondary">
-                                    </i>
-
+                                        class="bi bi-chat-square-text display-1 text-secondary"
+                                    ></i>
 
                                     <h4 class="fw-bold mt-3">
-
-                                        No Booking Requests Found
-
+                                        No Enquiries Found
                                     </h4>
 
-
                                     <p class="text-muted mb-3">
-
-                                        You haven't submitted any property visit
-                                        requests yet.
-
+                                        You haven't sent any property enquiries yet.
                                     </p>
-
 
                                     <a
                                         href="{{ route('properties.index') }}"
-                                        class="btn btn-primary">
+                                        class="btn btn-primary"
+                                    >
 
                                         <i class="bi bi-search me-2"></i>
 
@@ -524,6 +459,21 @@
                 </table>
 
             </div>
+
+
+            <!-- ==========================================================
+                 PAGINATION
+            =========================================================== -->
+
+            @if($enquiries->hasPages())
+
+                <div class="mt-4">
+
+                    {{ $enquiries->links() }}
+
+                </div>
+
+            @endif
 
         </div>
 

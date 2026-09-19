@@ -11,13 +11,45 @@ class TenantBookingController extends Controller
      */
     public function index()
     {
+        $user = auth()->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tenant Authorization
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user->isTenant()) {
+            abort(
+                403,
+                'Only tenants can access booking history.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tenant Bookings
+        |--------------------------------------------------------------------------
+        */
+
         $bookings = Booking::with([
                 'property',
                 'landlord',
             ])
-            ->where('tenant_id', auth()->id())
+            ->where(
+                'tenant_id',
+                $user->id
+            )
             ->latest()
             ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'tenant-bookings.index',
@@ -31,13 +63,32 @@ class TenantBookingController extends Controller
      */
     public function show(Booking $booking)
     {
+        $user = auth()->user();
+
         /*
         |--------------------------------------------------------------------------
-        | Authorization
+        | Tenant Authorization
         |--------------------------------------------------------------------------
         */
 
-        if ($booking->tenant_id != auth()->id()) {
+        if (!$user->isTenant()) {
+            abort(
+                403,
+                'Only tenants can access booking history.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Booking Ownership
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) $booking->tenant_id !==
+            (int) $user->id
+        ) {
 
             abort(
                 403,
@@ -78,13 +129,32 @@ class TenantBookingController extends Controller
      */
     public function destroy(Booking $booking)
     {
+        $user = auth()->user();
+
         /*
         |--------------------------------------------------------------------------
-        | Authorization
+        | Tenant Authorization
         |--------------------------------------------------------------------------
         */
 
-        if ($booking->tenant_id != auth()->id()) {
+        if (!$user->isTenant()) {
+            abort(
+                403,
+                'Only tenants can cancel bookings.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Booking Ownership
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) $booking->tenant_id !==
+            (int) $user->id
+        ) {
 
             abort(
                 403,

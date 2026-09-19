@@ -13,26 +13,40 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
+
             <h2 class="fw-bold mb-1">
+
                 <i class="bi bi-house-door-fill text-primary me-2"></i>
+
                 Property Management
+
             </h2>
 
             <p class="text-muted mb-0">
+
                 Browse, search and manage properties.
+
             </p>
+
         </div>
 
+
         @auth
+
             @if(auth()->user()->isLandlord())
+
                 <a
                     href="{{ route('properties.create') }}"
-                    class="btn btn-primary"
-                >
+                    class="btn btn-primary">
+
                     <i class="bi bi-plus-circle me-2"></i>
+
                     Add Property
+
                 </a>
+
             @endif
+
         @endauth
 
     </div>
@@ -46,8 +60,8 @@
 
         <div
             class="alert alert-success alert-dismissible fade show"
-            role="alert"
-        >
+            role="alert">
+
             <i class="bi bi-check-circle-fill me-2"></i>
 
             {{ session('success') }}
@@ -56,7 +70,9 @@
                 type="button"
                 class="btn-close"
                 data-bs-dismiss="alert"
-            ></button>
+                aria-label="Close">
+            </button>
+
         </div>
 
     @endif
@@ -70,8 +86,8 @@
 
         <div
             class="alert alert-danger alert-dismissible fade show"
-            role="alert"
-        >
+            role="alert">
+
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
 
             {{ session('error') }}
@@ -80,7 +96,9 @@
                 type="button"
                 class="btn-close"
                 data-bs-dismiss="alert"
-            ></button>
+                aria-label="Close">
+            </button>
+
         </div>
 
     @endif
@@ -95,8 +113,11 @@
         <div class="card-header bg-light py-3">
 
             <h5 class="mb-0">
+
                 <i class="bi bi-search me-2"></i>
+
                 Search Properties
+
             </h5>
 
         </div>
@@ -106,8 +127,7 @@
 
             <form
                 action="{{ route('properties.index') }}"
-                method="GET"
-            >
+                method="GET">
 
                 <div class="row g-3">
 
@@ -116,7 +136,9 @@
                     <div class="col-lg-3 col-md-6">
 
                         <label class="form-label">
+
                             Property Title
+
                         </label>
 
                         <input
@@ -124,8 +146,7 @@
                             name="title"
                             value="{{ request('title') }}"
                             class="form-control"
-                            placeholder="Search by title"
-                        >
+                            placeholder="Search by title">
 
                     </div>
 
@@ -135,7 +156,9 @@
                     <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
+
                             City
+
                         </label>
 
                         <input
@@ -143,8 +166,7 @@
                             name="city"
                             value="{{ request('city') }}"
                             class="form-control"
-                            placeholder="City"
-                        >
+                            placeholder="City">
 
                     </div>
 
@@ -154,59 +176,39 @@
                     <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
+
                             Property Type
+
                         </label>
 
                         <select
                             name="property_type"
-                            class="form-select"
-                        >
+                            class="form-select">
 
                             <option value="">
+
                                 All
+
                             </option>
 
-                            <option
-                                value="Apartment"
-                                {{ request('property_type') == 'Apartment' ? 'selected' : '' }}
-                            >
-                                Apartment
-                            </option>
+                            @foreach([
+                                'Apartment',
+                                'House',
+                                'Villa',
+                                'PG',
+                                'Office',
+                                'Commercial'
+                            ] as $type)
 
-                            <option
-                                value="House"
-                                {{ request('property_type') == 'House' ? 'selected' : '' }}
-                            >
-                                House
-                            </option>
+                                <option
+                                    value="{{ $type }}"
+                                    {{ request('property_type') === $type ? 'selected' : '' }}>
 
-                            <option
-                                value="Villa"
-                                {{ request('property_type') == 'Villa' ? 'selected' : '' }}
-                            >
-                                Villa
-                            </option>
+                                    {{ $type }}
 
-                            <option
-                                value="PG"
-                                {{ request('property_type') == 'PG' ? 'selected' : '' }}
-                            >
-                                PG
-                            </option>
+                                </option>
 
-                            <option
-                                value="Office"
-                                {{ request('property_type') == 'Office' ? 'selected' : '' }}
-                            >
-                                Office
-                            </option>
-
-                            <option
-                                value="Commercial"
-                                {{ request('property_type') == 'Commercial' ? 'selected' : '' }}
-                            >
-                                Commercial
-                            </option>
+                            @endforeach
 
                         </select>
 
@@ -218,30 +220,35 @@
                     <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
+
                             Purpose
+
                         </label>
 
                         <select
                             name="purpose"
-                            class="form-select"
-                        >
+                            class="form-select">
 
                             <option value="">
+
                                 All
+
                             </option>
 
                             <option
                                 value="Rent"
-                                {{ request('purpose') == 'Rent' ? 'selected' : '' }}
-                            >
+                                {{ request('purpose') === 'Rent' ? 'selected' : '' }}>
+
                                 Rent
+
                             </option>
 
                             <option
                                 value="Sale"
-                                {{ request('purpose') == 'Sale' ? 'selected' : '' }}
-                            >
+                                {{ request('purpose') === 'Sale' ? 'selected' : '' }}>
+
                                 Sale
+
                             </option>
 
                         </select>
@@ -254,37 +261,35 @@
                     <div class="col-lg-3 col-md-6">
 
                         <label class="form-label">
+
                             Status
+
                         </label>
 
                         <select
                             name="status"
-                            class="form-select"
-                        >
+                            class="form-select">
 
                             <option value="">
+
                                 All
+
                             </option>
 
                             <option
                                 value="Available"
-                                {{ request('status') == 'Available' ? 'selected' : '' }}
-                            >
-                                Available
-                            </option>
+                                {{ request('status') === 'Available' ? 'selected' : '' }}>
 
-                            <option
-                                value="Pending"
-                                {{ request('status') == 'Pending' ? 'selected' : '' }}
-                            >
-                                Pending
+                                Available
+
                             </option>
 
                             <option
                                 value="Rented"
-                                {{ request('status') == 'Rented' ? 'selected' : '' }}
-                            >
+                                {{ request('status') === 'Rented' ? 'selected' : '' }}>
+
                                 Rented
+
                             </option>
 
                         </select>
@@ -297,7 +302,9 @@
                     <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
+
                             Min Price
+
                         </label>
 
                         <input
@@ -306,8 +313,7 @@
                             value="{{ request('min_price') }}"
                             class="form-control"
                             min="0"
-                            placeholder="Minimum"
-                        >
+                            placeholder="Minimum">
 
                     </div>
 
@@ -317,7 +323,9 @@
                     <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
+
                             Max Price
+
                         </label>
 
                         <input
@@ -326,8 +334,7 @@
                             value="{{ request('max_price') }}"
                             class="form-control"
                             min="0"
-                            placeholder="Maximum"
-                        >
+                            placeholder="Maximum">
 
                     </div>
 
@@ -337,25 +344,29 @@
                     <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
+
                             Bedrooms
+
                         </label>
 
                         <select
                             name="bedrooms"
-                            class="form-select"
-                        >
+                            class="form-select">
 
                             <option value="">
+
                                 All
+
                             </option>
 
                             @for($i = 1; $i <= 10; $i++)
 
                                 <option
                                     value="{{ $i }}"
-                                    {{ request('bedrooms') == $i ? 'selected' : '' }}
-                                >
+                                    {{ request('bedrooms') == $i ? 'selected' : '' }}>
+
                                     {{ $i }}
+
                                 </option>
 
                             @endfor
@@ -370,25 +381,29 @@
                     <div class="col-lg-2 col-md-6">
 
                         <label class="form-label">
+
                             Bathrooms
+
                         </label>
 
                         <select
                             name="bathrooms"
-                            class="form-select"
-                        >
+                            class="form-select">
 
                             <option value="">
+
                                 All
+
                             </option>
 
                             @for($i = 1; $i <= 10; $i++)
 
                                 <option
                                     value="{{ $i }}"
-                                    {{ request('bathrooms') == $i ? 'selected' : '' }}
-                                >
+                                    {{ request('bathrooms') == $i ? 'selected' : '' }}>
+
                                     {{ $i }}
+
                                 </option>
 
                             @endfor
@@ -403,40 +418,45 @@
                     <div class="col-lg-4 col-md-6">
 
                         <label class="form-label">
+
                             Sort By
+
                         </label>
 
                         <select
                             name="sort"
-                            class="form-select"
-                        >
+                            class="form-select">
 
                             <option
                                 value=""
-                                {{ !request('sort') ? 'selected' : '' }}
-                            >
+                                {{ !request('sort') ? 'selected' : '' }}>
+
                                 Latest
+
                             </option>
 
                             <option
                                 value="price_low"
-                                {{ request('sort') == 'price_low' ? 'selected' : '' }}
-                            >
+                                {{ request('sort') === 'price_low' ? 'selected' : '' }}>
+
                                 Price: Low to High
+
                             </option>
 
                             <option
                                 value="price_high"
-                                {{ request('sort') == 'price_high' ? 'selected' : '' }}
-                            >
+                                {{ request('sort') === 'price_high' ? 'selected' : '' }}>
+
                                 Price: High to Low
+
                             </option>
 
                             <option
                                 value="oldest"
-                                {{ request('sort') == 'oldest' ? 'selected' : '' }}
-                            >
+                                {{ request('sort') === 'oldest' ? 'selected' : '' }}>
+
                                 Oldest
+
                             </option>
 
                         </select>
@@ -452,18 +472,23 @@
 
                     <a
                         href="{{ route('properties.index') }}"
-                        class="btn btn-secondary"
-                    >
+                        class="btn btn-secondary">
+
                         <i class="bi bi-arrow-counterclockwise me-1"></i>
+
                         Reset
+
                     </a>
+
 
                     <button
                         type="submit"
-                        class="btn btn-primary"
-                    >
+                        class="btn btn-primary">
+
                         <i class="bi bi-search me-2"></i>
+
                         Search
+
                     </button>
 
                 </div>
@@ -486,9 +511,13 @@
             <div class="d-flex justify-content-between align-items-center">
 
                 <h5 class="mb-0">
+
                     <i class="bi bi-list-ul me-2"></i>
+
                     Property List
+
                 </h5>
+
 
                 <span class="badge bg-primary">
 
@@ -514,39 +543,57 @@
                         <tr>
 
                             <th width="80">
+
                                 Image
+
                             </th>
 
                             <th>
+
                                 Title
+
                             </th>
 
                             <th>
+
                                 Owner
+
                             </th>
 
                             <th>
+
                                 City
+
                             </th>
 
                             <th>
+
                                 Type
+
                             </th>
 
                             <th>
+
                                 Purpose
+
                             </th>
 
                             <th>
+
                                 Price
+
                             </th>
 
                             <th>
+
                                 Status
+
                             </th>
 
                             <th width="190">
+
                                 Action
+
                             </th>
 
                         </tr>
@@ -572,16 +619,16 @@
                                             width="70"
                                             height="70"
                                             style="object-fit: cover;"
-                                            alt="{{ $property->title }}"
-                                        >
+                                            alt="{{ $property->title }}">
 
                                     @else
 
                                         <div
                                             class="bg-light rounded d-flex align-items-center justify-content-center"
-                                            style="width: 70px; height: 70px;"
-                                        >
+                                            style="width: 70px; height: 70px;">
+
                                             <i class="bi bi-house-door text-secondary fs-3"></i>
+
                                         </div>
 
                                     @endif
@@ -594,7 +641,9 @@
                                 <td>
 
                                     <strong>
+
                                         {{ $property->title }}
+
                                     </strong>
 
                                 </td>
@@ -611,7 +660,9 @@
                                     @else
 
                                         <span class="text-muted">
+
                                             Unknown
+
                                         </span>
 
                                     @endif
@@ -622,7 +673,9 @@
                                 {{-- City --}}
 
                                 <td>
+
                                     {{ $property->city }}
+
                                 </td>
 
 
@@ -631,7 +684,9 @@
                                 <td>
 
                                     <span class="badge bg-info">
+
                                         {{ $property->property_type }}
+
                                     </span>
 
                                 </td>
@@ -642,7 +697,9 @@
                                 <td>
 
                                     <span class="badge bg-secondary">
+
                                         {{ $property->purpose }}
+
                                     </span>
 
                                 </td>
@@ -653,7 +710,9 @@
                                 <td>
 
                                     <strong class="text-success">
+
                                         ₹{{ number_format((float) $property->price, 2) }}
+
                                     </strong>
 
                                 </td>
@@ -663,28 +722,28 @@
 
                                 <td>
 
-                                    @if($property->status == 'Available')
+                                    @if($property->status === 'Available')
 
                                         <span class="badge bg-success">
+
                                             Available
+
                                         </span>
 
-                                    @elseif($property->status == 'Pending')
-
-                                        <span class="badge bg-warning text-dark">
-                                            Pending
-                                        </span>
-
-                                    @elseif($property->status == 'Rented')
+                                    @elseif($property->status === 'Rented')
 
                                         <span class="badge bg-danger">
+
                                             Rented
+
                                         </span>
 
                                     @else
 
                                         <span class="badge bg-secondary">
+
                                             {{ $property->status }}
+
                                         </span>
 
                                     @endif
@@ -701,24 +760,31 @@
                                     <a
                                         href="{{ route('properties.show', $property) }}"
                                         class="btn btn-info btn-sm"
-                                        title="View Property"
-                                    >
+                                        title="View Property">
+
                                         <i class="bi bi-eye"></i>
+
                                     </a>
 
 
                                     @auth
 
-                                        @if(auth()->id() === $property->user_id)
+                                        {{-- Owner Actions --}}
+
+                                        @if(
+                                            auth()->user()->isLandlord() &&
+                                            (int) auth()->id() === (int) $property->user_id
+                                        )
 
                                             {{-- Edit --}}
 
                                             <a
                                                 href="{{ route('properties.edit', $property) }}"
                                                 class="btn btn-warning btn-sm"
-                                                title="Edit Property"
-                                            >
+                                                title="Edit Property">
+
                                                 <i class="bi bi-pencil-square"></i>
+
                                             </a>
 
 
@@ -727,8 +793,7 @@
                                             <form
                                                 action="{{ route('properties.destroy', $property) }}"
                                                 method="POST"
-                                                class="d-inline"
-                                            >
+                                                class="d-inline">
 
                                                 @csrf
 
@@ -738,9 +803,10 @@
                                                     type="submit"
                                                     class="btn btn-danger btn-sm"
                                                     title="Delete Property"
-                                                    onclick="return confirm('Are you sure you want to delete this property?')"
-                                                >
+                                                    onclick="return confirm('Are you sure you want to delete this property?')">
+
                                                     <i class="bi bi-trash"></i>
+
                                                 </button>
 
                                             </form>
@@ -761,25 +827,30 @@
 
                                 <td
                                     colspan="9"
-                                    class="text-center py-5"
-                                >
+                                    class="text-center py-5">
 
                                     <i class="bi bi-house-x display-1 text-secondary"></i>
 
                                     <h4 class="fw-bold mt-3">
+
                                         No Properties Found
+
                                     </h4>
 
                                     <p class="text-muted">
+
                                         No properties match your current search criteria.
+
                                     </p>
 
                                     <a
                                         href="{{ route('properties.index') }}"
-                                        class="btn btn-primary mt-2"
-                                    >
+                                        class="btn btn-primary mt-2">
+
                                         <i class="bi bi-arrow-clockwise me-2"></i>
+
                                         Reset Filters
+
                                     </a>
 
                                 </td>
@@ -835,18 +906,23 @@
                             <i class="bi bi-plus-circle-fill display-4 text-primary"></i>
 
                             <h5 class="mt-3">
+
                                 Add New Property
+
                             </h5>
 
                             <p class="text-muted">
+
                                 Publish a new property for rent or sale.
+
                             </p>
 
                             <a
                                 href="{{ route('properties.create') }}"
-                                class="btn btn-primary"
-                            >
+                                class="btn btn-primary">
+
                                 Add Property
+
                             </a>
 
                         </div>
@@ -867,18 +943,23 @@
                             <i class="bi bi-search display-4 text-success"></i>
 
                             <h5 class="mt-3">
+
                                 Browse Properties
+
                             </h5>
 
                             <p class="text-muted">
+
                                 Search and view available properties.
+
                             </p>
 
                             <a
                                 href="{{ route('properties.index') }}"
-                                class="btn btn-success"
-                            >
+                                class="btn btn-success">
+
                                 View List
+
                             </a>
 
                         </div>
@@ -899,18 +980,23 @@
                             <i class="bi bi-arrow-repeat display-4 text-warning"></i>
 
                             <h5 class="mt-3">
+
                                 Refresh
+
                             </h5>
 
                             <p class="text-muted">
+
                                 Reload the latest property information.
+
                             </p>
 
                             <a
                                 href="{{ route('properties.index') }}"
-                                class="btn btn-warning"
-                            >
+                                class="btn btn-warning">
+
                                 Refresh
+
                             </a>
 
                         </div>

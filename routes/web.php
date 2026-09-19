@@ -29,8 +29,31 @@ use App\Http\Controllers\Admin\AdminSettingController;
 |--------------------------------------------------------------------------
 */
 
+
+/*
+|--------------------------------------------------------------------------
+| Home
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', [HomeController::class, 'index'])
     ->name('home');
+
+
+/*
+|--------------------------------------------------------------------------
+| Public Property Browsing
+|--------------------------------------------------------------------------
+|
+| Guests and authenticated users can:
+|
+| - View property listing
+| - View property details
+|
+*/
+
+Route::get('/properties', [PropertyController::class, 'index'])
+    ->name('properties.index');
 
 
 /*
@@ -55,9 +78,37 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     | Property Management
     |--------------------------------------------------------------------------
+    |
+    | Landlord:
+    | - View own properties
+    | - Add property
+    | - Edit property
+    | - Delete property
+    |
     */
 
-    Route::resource('properties', PropertyController::class);
+    Route::get('/my-properties', [PropertyController::class, 'myProperties'])
+        ->name('properties.my');
+
+    Route::get('/properties/create', [PropertyController::class, 'create'])
+        ->name('properties.create');
+
+    Route::post('/properties', [PropertyController::class, 'store'])
+        ->name('properties.store');
+
+    Route::get('/properties/{property}/edit', [PropertyController::class, 'edit'])
+        ->name('properties.edit');
+
+    Route::match(
+        ['put', 'patch'],
+        '/properties/{property}',
+        [PropertyController::class, 'update']
+    )->name('properties.update');
+
+    Route::delete(
+        '/properties/{property}',
+        [PropertyController::class, 'destroy']
+    )->name('properties.destroy');
 
 
     /*
@@ -80,38 +131,76 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     | Enquiry System
     |--------------------------------------------------------------------------
+    |
+    | Tenant:
+    | - Send enquiry
+    | - View sent enquiries
+    |
+    | Landlord:
+    | - View received enquiries
+    | - Change enquiry status
+    | - Delete enquiry
+    |
+    | The controller decides which view to display based
+    | on the authenticated user's role.
+    |
     */
 
     Route::get('/enquiries', [EnquiryController::class, 'index'])
         ->name('enquiries.index');
 
-    Route::post('/properties/{property}/enquiry', [EnquiryController::class, 'store'])
-        ->name('enquiries.store');
+    Route::post(
+        '/properties/{property}/enquiry',
+        [EnquiryController::class, 'store']
+    )->name('enquiries.store');
 
-    Route::delete('/enquiries/{enquiry}', [EnquiryController::class, 'destroy'])
-        ->name('enquiries.destroy');
+    Route::patch(
+        '/enquiries/{enquiry}',
+        [EnquiryController::class, 'update']
+    )->name('enquiries.update');
+
+    Route::delete(
+        '/enquiries/{enquiry}',
+        [EnquiryController::class, 'destroy']
+    )->name('enquiries.destroy');
 
 
     /*
     |--------------------------------------------------------------------------
     | Booking System
     |--------------------------------------------------------------------------
+    |
+    | Tenant:
+    | - Request property visit
+    |
+    | Landlord:
+    | - View bookings
+    | - Approve / reject / complete bookings
+    |
     */
 
     Route::get('/bookings', [BookingController::class, 'index'])
         ->name('bookings.index');
 
-    Route::post('/properties/{property}/booking', [BookingController::class, 'store'])
-        ->name('bookings.store');
+    Route::post(
+        '/properties/{property}/booking',
+        [BookingController::class, 'store']
+    )->name('bookings.store');
 
-    Route::get('/bookings/{booking}', [BookingController::class, 'show'])
-        ->name('bookings.show');
+    Route::get(
+        '/bookings/{booking}',
+        [BookingController::class, 'show']
+    )->name('bookings.show');
 
-    Route::patch('/bookings/{booking}', [BookingController::class, 'update'])
-        ->name('bookings.update');
+    Route::patch(
+        '/bookings/{booking}',
+        [BookingController::class, 'update']
+    )->name('bookings.update');
 
-    Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])
-        ->name('bookings.destroy');
+    Route::delete(
+        '/bookings/{booking}',
+        [BookingController::class, 'destroy']
+    )->name('bookings.destroy');
 
 
     /*
@@ -120,14 +209,20 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/my-bookings', [TenantBookingController::class, 'index'])
-        ->name('tenant.bookings.index');
+    Route::get(
+        '/my-bookings',
+        [TenantBookingController::class, 'index']
+    )->name('tenant.bookings.index');
 
-    Route::get('/my-bookings/{booking}', [TenantBookingController::class, 'show'])
-        ->name('tenant.bookings.show');
+    Route::get(
+        '/my-bookings/{booking}',
+        [TenantBookingController::class, 'show']
+    )->name('tenant.bookings.show');
 
-    Route::delete('/my-bookings/{booking}', [TenantBookingController::class, 'destroy'])
-        ->name('tenant.bookings.destroy');
+    Route::delete(
+        '/my-bookings/{booking}',
+        [TenantBookingController::class, 'destroy']
+    )->name('tenant.bookings.destroy');
 
 
     /*
@@ -136,17 +231,25 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/notifications', [NotificationController::class, 'index'])
-        ->name('notifications.index');
+    Route::get(
+        '/notifications',
+        [NotificationController::class, 'index']
+    )->name('notifications.index');
 
-    Route::get('/notifications/{notification}', [NotificationController::class, 'show'])
-        ->name('notifications.show');
+    Route::get(
+        '/notifications/{notification}',
+        [NotificationController::class, 'show']
+    )->name('notifications.show');
 
-    Route::patch('/notifications/{notification}', [NotificationController::class, 'update'])
-        ->name('notifications.update');
+    Route::patch(
+        '/notifications/{notification}',
+        [NotificationController::class, 'update']
+    )->name('notifications.update');
 
-    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])
-        ->name('notifications.destroy');
+    Route::delete(
+        '/notifications/{notification}',
+        [NotificationController::class, 'destroy']
+    )->name('notifications.destroy');
 
 
     /*
@@ -155,15 +258,41 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
+    Route::get(
+        '/profile',
+        [ProfileController::class, 'edit']
+    )->name('profile.edit');
 
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
+    Route::patch(
+        '/profile',
+        [ProfileController::class, 'update']
+    )->name('profile.update');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+    Route::delete(
+        '/profile',
+        [ProfileController::class, 'destroy']
+    )->name('profile.destroy');
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| Property Details
+|--------------------------------------------------------------------------
+|
+| This route is intentionally placed AFTER:
+|
+| /properties/create
+| /properties/{property}/edit
+|
+| so "create" and "edit" are not treated as property parameters.
+|
+*/
+
+Route::get(
+    '/properties/{property}',
+    [PropertyController::class, 'show']
+)->name('properties.show');
 
 
 /*
@@ -192,8 +321,10 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::get('/', [AdminController::class, 'index'])
-            ->name('dashboard');
+        Route::get(
+            '/',
+            [AdminController::class, 'index']
+        )->name('dashboard');
 
 
         /*
@@ -202,11 +333,13 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::resource('users', AdminUserController::class)
-            ->except([
-                'create',
-                'store',
-            ]);
+        Route::resource(
+            'users',
+            AdminUserController::class
+        )->except([
+            'create',
+            'store',
+        ]);
 
 
         /*
@@ -215,11 +348,13 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::resource('properties', AdminPropertyController::class)
-            ->except([
-                'create',
-                'store',
-            ]);
+        Route::resource(
+            'properties',
+            AdminPropertyController::class
+        )->except([
+            'create',
+            'store',
+        ]);
 
 
         /*
@@ -228,11 +363,13 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::resource('bookings', AdminBookingController::class)
-            ->except([
-                'create',
-                'store',
-            ]);
+        Route::resource(
+            'bookings',
+            AdminBookingController::class
+        )->except([
+            'create',
+            'store',
+        ]);
 
 
         /*
@@ -241,11 +378,13 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::resource('enquiries', AdminEnquiryController::class)
-            ->except([
-                'create',
-                'store',
-            ]);
+        Route::resource(
+            'enquiries',
+            AdminEnquiryController::class
+        )->except([
+            'create',
+            'store',
+        ]);
 
 
         /*
@@ -254,11 +393,13 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::resource('notifications', AdminNotificationController::class)
-            ->except([
-                'create',
-                'store',
-            ]);
+        Route::resource(
+            'notifications',
+            AdminNotificationController::class
+        )->except([
+            'create',
+            'store',
+        ]);
 
 
         /*
@@ -267,8 +408,10 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::get('/reports', [AdminReportController::class, 'index'])
-            ->name('reports.index');
+        Route::get(
+            '/reports',
+            [AdminReportController::class, 'index']
+        )->name('reports.index');
 
 
         /*
@@ -277,11 +420,13 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::resource('activity-logs', AdminActivityLogController::class)
-            ->except([
-                'create',
-                'store',
-            ]);
+        Route::resource(
+            'activity-logs',
+            AdminActivityLogController::class
+        )->except([
+            'create',
+            'store',
+        ]);
 
 
         /*
@@ -290,11 +435,15 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::get('/settings', [AdminSettingController::class, 'index'])
-            ->name('settings.index');
+        Route::get(
+            '/settings',
+            [AdminSettingController::class, 'index']
+        )->name('settings.index');
 
-        Route::put('/settings', [AdminSettingController::class, 'update'])
-            ->name('settings.update');
+        Route::put(
+            '/settings',
+            [AdminSettingController::class, 'update']
+        )->name('settings.update');
     });
 
 

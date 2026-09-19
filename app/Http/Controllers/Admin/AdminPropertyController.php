@@ -3,88 +3,59 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Notification;
 use App\Models\Property;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class AdminPropertyController extends Controller
 {
     /**
      * Display all properties.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Property Query
-        |--------------------------------------------------------------------------
-        */
-
         $query = Property::with('user');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Search
-        |--------------------------------------------------------------------------
-        */
-
         if ($request->filled('search')) {
+            $search = $request->input('search');
 
-            $query->where(function ($q) use ($request) {
-
-                $q->where('title', 'like', '%' . $request->search . '%')
-                    ->orWhere('city', 'like', '%' . $request->search . '%')
-                    ->orWhere('address', 'like', '%' . $request->search . '%');
-
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('city', 'like', '%' . $search . '%')
+                    ->orWhere('address', 'like', '%' . $search . '%');
             });
-
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Property Type Filter
-        |--------------------------------------------------------------------------
-        */
 
         if ($request->filled('property_type')) {
-
             $query->where(
                 'property_type',
-                $request->property_type
+                $request->input('property_type')
             );
-
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Status Filter
-        |--------------------------------------------------------------------------
-        */
-
         if ($request->filled('status')) {
+            $request->validate([
+                'status' => [
+                    'nullable',
+                    'in:Available,Rented,Pending',
+                ],
+            ]);
 
             $query->where(
                 'status',
-                $request->status
+                $request->input('status')
             );
-
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Properties
-        |--------------------------------------------------------------------------
-        */
 
         $properties = $query
             ->latest()
-            ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Dashboard Statistics
-        |--------------------------------------------------------------------------
-        */
+            ->paginate(10)
+            ->withQueryString();
 
         $totalProperties = Property::count();
 
@@ -103,12 +74,6 @@ class AdminPropertyController extends Controller
             'Pending'
         )->count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Return View
-        |--------------------------------------------------------------------------
-        */
-
         return view(
             'admin.properties.index',
             compact(
@@ -122,36 +87,31 @@ class AdminPropertyController extends Controller
     }
 
     /**
-     * Not Used.
+     * Property creation is disabled for administrators.
      */
-    public function create()
+    public function create(): View
     {
         abort(404);
     }
 
     /**
-     * Not Used.
+     * Property creation is disabled for administrators.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         abort(404);
     }
 
     /**
-     * Display Property Details.
+     * Display property details.
      */
-    public function show(Property $property)
+    public function show(Property $property): View
     {
         $property->load([
-
             'user:id,name,email',
-
             'bookings',
-
             'wishlists',
-
-            'enquiries'
-
+            'enquiries',
         ]);
 
         return view(
@@ -161,9 +121,9 @@ class AdminPropertyController extends Controller
     }
 
     /**
-     * Edit Property.
+     * Show edit form.
      */
-    public function edit(Property $property)
+    public function edit(Property $property): View
     {
         return view(
             'admin.properties.edit',
@@ -172,63 +132,195 @@ class AdminPropertyController extends Controller
     }
 
     /**
-     * Update Property.
+     * Update property.
      */
-    public function update(Request $request, Property $property)
-    {
-        /*
-        |--------------------------------------------------------------------------
-        | Validation
-        |--------------------------------------------------------------------------
-        */
+    public function update(
+        Request $request,
+        Property $property
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-        $request->validate([
+            'description' => [
+                'required',
+                'string',
+                'min:20',
+                'max:5000',
+            ],
 
-            'title'           => 'required|string|max:255',
+            'price' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
 
-            'description'     => 'required|string',
+            'property_type' => [
+                'required',
+                'string',
+                'max:100',
+            ],
 
-            'price'           => 'required|numeric|min:0',
+            'status' => [
+                'required',
+                'in:Available,Rented,Pending',
+            ],
 
-            'property_type'   => 'required|string|max:100',
+            'address' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-            'status'          => 'required|in:Available,Rented,Pending',
+            'city' => [
+                'required',
+                'string',
+                'max:100',
+            ],
 
-            'address'         => 'required|string|max:255',
-
-            'city'            => 'required|string|max:100',
-
+            'image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png',
+                'max:2048',
+            ],
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Update Property
-        |--------------------------------------------------------------------------
-        */
-
-        $property->update([
-
-            'title'           => $request->title,
-
-            'description'     => $request->description,
-
-            'price'           => $request->price,
-
-            'property_type'   => $request->property_type,
-
-            'status'          => $request->status,
-
-            'address'         => $request->address,
-
-            'city'            => $request->city,
-
-        ]);
+        $oldStatus = $property->status;
+        $oldTitle = $property->title;
+        $oldImage = $property->image;
+        $newImage = $oldImage;
 
         /*
         |--------------------------------------------------------------------------
-        | Redirect
+        | Upload New Image
         |--------------------------------------------------------------------------
         */
+
+        if ($request->hasFile('image')) {
+            $newImage = $request
+                ->file('image')
+                ->store(
+                    'properties',
+                    'public'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Database
+        |--------------------------------------------------------------------------
+        */
+
+        try {
+            DB::transaction(function () use (
+                $property,
+                $validated,
+                $oldStatus,
+                $oldTitle,
+                $newImage
+            ) {
+                $property->update([
+                    'title' => $validated['title'],
+                    'description' => $validated['description'],
+                    'price' => $validated['price'],
+                    'property_type' => $validated['property_type'],
+                    'status' => $validated['status'],
+                    'address' => $validated['address'],
+                    'city' => $validated['city'],
+                    'image' => $newImage,
+                ]);
+
+                /*
+                |--------------------------------------------------------------------------
+                | Activity Log
+                |--------------------------------------------------------------------------
+                */
+
+                ActivityLog::create([
+                    'user_id' => auth()->id(),
+
+                    'module' => 'Property',
+
+                    'action' => 'Updated',
+
+                    'description' =>
+                        'Admin updated property #' .
+                        $property->id .
+                        ' "' .
+                        $oldTitle .
+                        '". Status changed from ' .
+                        $oldStatus .
+                        ' to ' .
+                        $property->status .
+                        '.',
+
+                    'ip_address' => request()->ip(),
+
+                    'browser' => request()->userAgent(),
+                ]);
+
+                /*
+                |--------------------------------------------------------------------------
+                | Notify Landlord
+                |--------------------------------------------------------------------------
+                */
+
+                if ($property->user_id) {
+                    Notification::create([
+                        'user_id' => $property->user_id,
+
+                        'title' => 'Property Updated',
+
+                        'message' =>
+                            'Your property "' .
+                            $property->title .
+                            '" was updated by an administrator.',
+
+                        'type' => 'Property',
+
+                        'url' => route(
+                            'properties.show',
+                            $property->id
+                        ),
+
+                        'is_read' => false,
+                    ]);
+                }
+            });
+        } catch (\Throwable $e) {
+            /*
+            |--------------------------------------------------------------------------
+            | Delete New Image If Database Update Fails
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $newImage !== $oldImage &&
+                Storage::disk('public')->exists($newImage)
+            ) {
+                Storage::disk('public')->delete($newImage);
+            }
+
+            throw $e;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Old Image After Successful Update
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $newImage !== $oldImage &&
+            $oldImage &&
+            Storage::disk('public')->exists($oldImage)
+        ) {
+            Storage::disk('public')->delete($oldImage);
+        }
 
         return redirect()
             ->route('admin.properties.index')
@@ -239,38 +331,77 @@ class AdminPropertyController extends Controller
     }
 
     /**
-     * Delete Property.
+     * Delete property.
      */
-    public function destroy(Property $property)
-    {
-        /*
-        |--------------------------------------------------------------------------
-        | Delete Image
-        |--------------------------------------------------------------------------
-        */
+    public function destroy(
+        Property $property
+    ): RedirectResponse {
+        $propertyId = $property->id;
+        $propertyTitle = $property->title;
+        $landlordId = $property->user_id;
+        $imagePath = $property->image;
 
-        if (
-            !empty($property->image) &&
-            Storage::disk('public')->exists($property->image)
+        DB::transaction(function () use (
+            $property,
+            $propertyId,
+            $propertyTitle,
+            $imagePath
         ) {
+            $property->delete();
 
-            Storage::disk('public')->delete($property->image);
+            ActivityLog::create([
+                'user_id' => auth()->id(),
 
+                'module' => 'Property',
+
+                'action' => 'Deleted',
+
+                'description' =>
+                    'Admin deleted property #' .
+                    $propertyId .
+                    ' "' .
+                    $propertyTitle .
+                    '".',
+
+                'ip_address' => request()->ip(),
+
+                'browser' => request()->userAgent(),
+            ]);
+
+            if (
+                !empty($imagePath) &&
+                Storage::disk('public')->exists($imagePath)
+            ) {
+                Storage::disk('public')->delete($imagePath);
+            }
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notify Landlord
+        |--------------------------------------------------------------------------
+        */
+
+        if ($landlordId) {
+            Notification::create([
+                'user_id' => $landlordId,
+
+                'title' => 'Property Deleted',
+
+                'message' =>
+                    'Your property "' .
+                    $propertyTitle .
+                    '" was deleted by an administrator.',
+
+                'type' => 'Property',
+
+                'url' => route(
+                    'properties.index'
+                ),
+
+                'is_read' => false,
+            ]);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Delete Property
-        |--------------------------------------------------------------------------
-        */
-
-        $property->delete();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Redirect
-        |--------------------------------------------------------------------------
-        */
 
         return redirect()
             ->route('admin.properties.index')

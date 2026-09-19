@@ -3,216 +3,56 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\User;
-use App\Models\Property;
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Notification;
-
+use App\Models\Property;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class AdminUserController extends Controller
 {
     /**
-     * Display the Admin Dashboard.
+     * Display the Admin User Management page.
      */
-    public function index()
+    public function index(): View
     {
-        /*
-        |--------------------------------------------------------------------------
-        | User Statistics
-        |--------------------------------------------------------------------------
-        */
-
-        $totalUsers = User::count();
-
-        $totalAdmins = User::where('role', 'admin')
-            ->count();
-
-        $totalLandlords = User::where('role', 'landlord')
-            ->count();
-
-        $totalTenants = User::where('role', 'tenant')
-            ->count();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Property Statistics
-        |--------------------------------------------------------------------------
-        */
-
-        $totalProperties = Property::count();
-
-        $availableProperties = Property::where(
-            'status',
-            'Available'
-        )->count();
-
-        $rentedProperties = Property::where(
-            'status',
-            'Rented'
-        )->count();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Booking Statistics
-        |--------------------------------------------------------------------------
-        */
-
-        $totalBookings = Booking::count();
-
-        $pendingBookings = Booking::where(
-            'status',
-            'Pending'
-        )->count();
-
-        $approvedBookings = Booking::where(
-            'status',
-            'Approved'
-        )->count();
-
-        $completedBookings = Booking::where(
-            'status',
-            'Completed'
-        )->count();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Enquiry Statistics
-        |--------------------------------------------------------------------------
-        */
-
-        $totalEnquiries = Enquiry::count();
-
-        $pendingEnquiries = Enquiry::where(
-            'status',
-            'Pending'
-        )->count();
-
-        $repliedEnquiries = Enquiry::where(
-            'status',
-            'Replied'
-        )->count();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Notification Statistics
-        |--------------------------------------------------------------------------
-        */
-
-        $totalNotifications = Notification::count();
-
-        $unreadNotifications = Notification::where(
-            'is_read',
-            false
-        )->count();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Recent Users
-        |--------------------------------------------------------------------------
-        */
-
-        $recentUsers = User::select(
-                'id',
-                'name',
-                'email',
-                'role',
-                'created_at'
-            )
+        $users = User::select([
+            'id',
+            'name',
+            'email',
+            'role',
+            'created_at',
+        ])
             ->latest()
-            ->take(5)
             ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Recent Properties
-        |--------------------------------------------------------------------------
-        */
-
-        $recentProperties = Property::with('user')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Recent Bookings
-        |--------------------------------------------------------------------------
-        */
-
-        $recentBookings = Booking::with([
-                'tenant:id,name',
-                'property:id,title'
-            ])
-            ->latest()
-            ->take(5)
-            ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Return Dashboard View
-        |--------------------------------------------------------------------------
-        */
-
-        return view('admin.dashboard', compact(
-
-            'totalUsers',
-
-            'totalAdmins',
-
-            'totalLandlords',
-
-            'totalTenants',
-
-            'totalProperties',
-
-            'availableProperties',
-
-            'rentedProperties',
-
-            'totalBookings',
-
-            'pendingBookings',
-
-            'approvedBookings',
-
-            'completedBookings',
-
-            'totalEnquiries',
-
-            'pendingEnquiries',
-
-            'repliedEnquiries',
-
-            'totalNotifications',
-
-            'unreadNotifications',
-
-            'recentUsers',
-
-            'recentProperties',
-
-            'recentBookings'
-
-        ));
+        return view(
+            'admin.users.index',
+            compact('users')
+        );
     }
-        /**
+
+
+    /**
      * Update the specified user.
      */
-    public function update(Request $request, User $user)
-    {
-        /*
-        |--------------------------------------------------------------------------
-        | Validation
-        |--------------------------------------------------------------------------
-        */
+    public function update(
+        Request $request,
+        User $user
+    ): RedirectResponse {
 
-        $request->validate([
-
-            'name' => 'required|string|max:255',
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
             'email' => [
                 'required',
@@ -221,25 +61,286 @@ class AdminUserController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
 
-            'role' => 'required|in:admin,landlord,tenant',
-
+            'role' => [
+                'required',
+                'in:admin,landlord,tenant',
+            ],
         ]);
+
 
         /*
         |--------------------------------------------------------------------------
-        | Update User
+        | Capture Old Values
         |--------------------------------------------------------------------------
         */
 
-        $user->update([
+        $oldName = $user->name;
+        $oldEmail = $user->email;
+        $oldRole = $user->role;
 
-            'name' => $request->name,
+        $newName = $validated['name'];
+        $newEmail = $validated['email'];
+        $newRole = $validated['role'];
 
-            'email' => $request->email,
 
-            'role' => $request->role,
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Self Role Change
+        |--------------------------------------------------------------------------
+        */
 
-        ]);
+        if (
+            $user->id === auth()->id() &&
+            $newRole !== 'admin'
+        ) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'You cannot remove your own administrator role.'
+                );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Last Admin Role Change
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $oldRole === 'admin' &&
+            $newRole !== 'admin'
+        ) {
+            $adminCount = User::where(
+                'role',
+                'admin'
+            )->count();
+
+            if ($adminCount <= 1) {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'The last administrator cannot be changed to another role.'
+                    );
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Invalid Landlord Role Change
+        |--------------------------------------------------------------------------
+        |
+        | A landlord who owns properties should remain a landlord.
+        |
+        */
+
+        if (
+            $oldRole === 'landlord' &&
+            $newRole !== 'landlord'
+        ) {
+            $propertyCount = Property::where(
+                'user_id',
+                $user->id
+            )->count();
+
+            if ($propertyCount > 0) {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'This landlord cannot change role because they still own properties.'
+                    );
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Invalid Tenant Role Change
+        |--------------------------------------------------------------------------
+        |
+        | Existing bookings and enquiries depend on the tenant role.
+        |
+        */
+
+        if (
+            $oldRole === 'tenant' &&
+            $newRole !== 'tenant'
+        ) {
+            $bookingCount = Booking::where(
+                'tenant_id',
+                $user->id
+            )->count();
+
+            if ($bookingCount > 0) {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'This tenant cannot change role because they have existing bookings.'
+                    );
+            }
+
+
+            $enquiryCount = Enquiry::where(
+                'sender_id',
+                $user->id
+            )->count();
+
+            if ($enquiryCount > 0) {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'This tenant cannot change role because they have existing enquiries.'
+                    );
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Detect Actual Changes
+        |--------------------------------------------------------------------------
+        */
+
+        $hasChanges =
+            $oldName !== $newName ||
+            $oldEmail !== $newEmail ||
+            $oldRole !== $newRole;
+
+        if (!$hasChanges) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with(
+                    'success',
+                    'No changes were made to the user.'
+                );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update User + Activity Log + Notification
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use (
+            $user,
+            $newName,
+            $newEmail,
+            $newRole,
+            $oldName,
+            $oldEmail,
+            $oldRole
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Update User
+            |--------------------------------------------------------------------------
+            */
+
+            $user->update([
+                'name' => $newName,
+                'email' => $newEmail,
+                'role' => $newRole,
+            ]);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Build Change Description
+            |--------------------------------------------------------------------------
+            */
+
+            $changes = [];
+
+            if ($oldName !== $newName) {
+                $changes[] =
+                    'name from "' .
+                    $oldName .
+                    '" to "' .
+                    $newName .
+                    '"';
+            }
+
+            if ($oldEmail !== $newEmail) {
+                $changes[] =
+                    'email from "' .
+                    $oldEmail .
+                    '" to "' .
+                    $newEmail .
+                    '"';
+            }
+
+            if ($oldRole !== $newRole) {
+                $changes[] =
+                    'role from "' .
+                    $oldRole .
+                    '" to "' .
+                    $newRole .
+                    '"';
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activity Log
+            |--------------------------------------------------------------------------
+            */
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+
+                'module' => 'User',
+
+                'action' => 'Updated',
+
+                'description' =>
+                    'Admin updated user #' .
+                    $user->id .
+                    ' (' .
+                    $user->email .
+                    '). Changed ' .
+                    implode(', ', $changes) .
+                    '.',
+
+                'ip_address' => request()->ip(),
+
+                'browser' => request()->userAgent(),
+            ]);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Notify User
+            |--------------------------------------------------------------------------
+            */
+
+            if ($user->id !== auth()->id()) {
+                Notification::create([
+                    'user_id' => $user->id,
+
+                    'title' => 'Account Updated',
+
+                    'message' =>
+                        'Your RentEase account information was updated by an administrator.',
+
+                    'type' => 'User',
+
+                    'url' => route(
+                        'profile.edit'
+                    ),
+
+                    'is_read' => false,
+                ]);
+            }
+        });
+
 
         /*
         |--------------------------------------------------------------------------
@@ -255,11 +356,14 @@ class AdminUserController extends Controller
             );
     }
 
+
     /**
      * Remove the specified user.
      */
-    public function destroy(User $user)
-    {
+    public function destroy(
+        User $user
+    ): RedirectResponse {
+
         /*
         |--------------------------------------------------------------------------
         | Prevent Self Deletion
@@ -267,21 +371,96 @@ class AdminUserController extends Controller
         */
 
         if ($user->id === auth()->id()) {
-
             return back()->with(
                 'error',
                 'You cannot delete your own account.'
             );
-
         }
+
 
         /*
         |--------------------------------------------------------------------------
-        | Delete User
+        | Prevent Deleting Last Admin
         |--------------------------------------------------------------------------
         */
 
-        $user->delete();
+        if ($user->isAdmin()) {
+            $adminCount = User::where(
+                'role',
+                'admin'
+            )->count();
+
+            if ($adminCount <= 1) {
+                return back()->with(
+                    'error',
+                    'The last administrator account cannot be deleted.'
+                );
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Capture User Information
+        |--------------------------------------------------------------------------
+        */
+
+        $userId = $user->id;
+        $userName = $user->name;
+        $userEmail = $user->email;
+        $userRole = $user->role;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete User + Activity Log
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use (
+            $user,
+            $userId,
+            $userEmail,
+            $userRole
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete User
+            |--------------------------------------------------------------------------
+            */
+
+            $user->delete();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activity Log
+            |--------------------------------------------------------------------------
+            */
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+
+                'module' => 'User',
+
+                'action' => 'Deleted',
+
+                'description' =>
+                    'Admin deleted user #' .
+                    $userId .
+                    ' (' .
+                    $userEmail .
+                    ') with role "' .
+                    $userRole .
+                    '".',
+
+                'ip_address' => request()->ip(),
+
+                'browser' => request()->userAgent(),
+            ]);
+        });
+
 
         /*
         |--------------------------------------------------------------------------
@@ -293,22 +472,26 @@ class AdminUserController extends Controller
             ->route('admin.users.index')
             ->with(
                 'success',
-                'User deleted successfully.'
+                'User "' .
+                $userName .
+                '" deleted successfully.'
             );
     }
 
+
     /**
-     * Not Used.
+     * User creation is disabled for administrators.
      */
-    public function create()
+    public function create(): View
     {
         abort(404);
     }
 
+
     /**
-     * Not Used.
+     * User creation is disabled for administrators.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         abort(404);
     }

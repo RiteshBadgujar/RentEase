@@ -10,17 +10,50 @@ use App\Models\Property;
 class DashboardController extends Controller
 {
     /**
-     * Display the Landlord Dashboard.
+     * Display the dashboard according to the authenticated user's role.
      */
     public function index()
     {
+        $user = auth()->user();
+
         /*
         |--------------------------------------------------------------------------
-        | Current User
+        | Authentication Check
         |--------------------------------------------------------------------------
         */
 
-        $userId = auth()->id();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Role Based Dashboard Routing
+        |--------------------------------------------------------------------------
+        */
+
+        // Admin
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Tenant
+        if ($user->isTenant()) {
+            return redirect()->route('tenant.bookings.index');
+        }
+
+        // Only landlords can continue to the landlord dashboard.
+        if (!$user->isLandlord()) {
+            abort(403, 'Invalid user role.');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Landlord Dashboard
+        |--------------------------------------------------------------------------
+        */
+
+        $userId = $user->id;
 
         /*
         |--------------------------------------------------------------------------
@@ -31,19 +64,38 @@ class DashboardController extends Controller
         $propertyStats = Property::where('user_id', $userId)
             ->selectRaw("
                 COUNT(*) as total_properties,
-                SUM(CASE WHEN status = 'Available' THEN 1 ELSE 0 END) as available_properties,
-                SUM(CASE WHEN status = 'Rented' THEN 1 ELSE 0 END) as rented_properties,
+
+                SUM(
+                    CASE
+                        WHEN status = 'Available'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as available_properties,
+
+                SUM(
+                    CASE
+                        WHEN status = 'Rented'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as rented_properties,
+
                 COALESCE(SUM(price), 0) as total_value
             ")
             ->first();
 
-        $totalProperties = (int) $propertyStats->total_properties;
+        $totalProperties =
+            (int) ($propertyStats->total_properties ?? 0);
 
-        $availableProperties = (int) $propertyStats->available_properties;
+        $availableProperties =
+            (int) ($propertyStats->available_properties ?? 0);
 
-        $rentedProperties = (int) $propertyStats->rented_properties;
+        $rentedProperties =
+            (int) ($propertyStats->rented_properties ?? 0);
 
-        $totalValue = (float) $propertyStats->total_value;
+        $totalValue =
+            (float) ($propertyStats->total_value ?? 0);
 
         /*
         |--------------------------------------------------------------------------
@@ -54,19 +106,44 @@ class DashboardController extends Controller
         $bookingStats = Booking::where('landlord_id', $userId)
             ->selectRaw("
                 COUNT(*) as total_bookings,
-                SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending_bookings,
-                SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END) as approved_bookings,
-                SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed_bookings
+
+                SUM(
+                    CASE
+                        WHEN status = 'Pending'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as pending_bookings,
+
+                SUM(
+                    CASE
+                        WHEN status = 'Approved'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as approved_bookings,
+
+                SUM(
+                    CASE
+                        WHEN status = 'Completed'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as completed_bookings
             ")
             ->first();
 
-        $totalBookings = (int) $bookingStats->total_bookings;
+        $totalBookings =
+            (int) ($bookingStats->total_bookings ?? 0);
 
-        $pendingBookings = (int) $bookingStats->pending_bookings;
+        $pendingBookings =
+            (int) ($bookingStats->pending_bookings ?? 0);
 
-        $approvedBookings = (int) $bookingStats->approved_bookings;
+        $approvedBookings =
+            (int) ($bookingStats->approved_bookings ?? 0);
 
-        $completedBookings = (int) $bookingStats->completed_bookings;
+        $completedBookings =
+            (int) ($bookingStats->completed_bookings ?? 0);
 
         /*
         |--------------------------------------------------------------------------
@@ -74,22 +151,18 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalEnquiries = Enquiry::where(
+        $enquiryQuery = Enquiry::where(
             'receiver_id',
             $userId
-        )->count();
+        );
 
-        $pendingEnquiries = Enquiry::where(
-            'receiver_id',
-            $userId
-        )
+        $totalEnquiries = (clone $enquiryQuery)->count();
+
+        $pendingEnquiries = (clone $enquiryQuery)
             ->where('status', 'Pending')
             ->count();
 
-        $repliedEnquiries = Enquiry::where(
-            'receiver_id',
-            $userId
-        )
+        $repliedEnquiries = (clone $enquiryQuery)
             ->where('status', 'Replied')
             ->count();
 
@@ -105,19 +178,33 @@ class DashboardController extends Controller
         )
             ->selectRaw("
                 COUNT(*) as total_notifications,
-                SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as unread_notifications,
-                SUM(CASE WHEN is_read = 1 THEN 1 ELSE 0 END) as read_notifications
+
+                SUM(
+                    CASE
+                        WHEN is_read = 0
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as unread_notifications,
+
+                SUM(
+                    CASE
+                        WHEN is_read = 1
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as read_notifications
             ")
             ->first();
 
         $totalNotifications =
-            (int) $notificationStats->total_notifications;
+            (int) ($notificationStats->total_notifications ?? 0);
 
         $unreadNotifications =
-            (int) $notificationStats->unread_notifications;
+            (int) ($notificationStats->unread_notifications ?? 0);
 
         $readNotifications =
-            (int) $notificationStats->read_notifications;
+            (int) ($notificationStats->read_notifications ?? 0);
 
         /*
         |--------------------------------------------------------------------------
@@ -141,9 +228,12 @@ class DashboardController extends Controller
 
         $recentBookings = Booking::with([
             'tenant',
-            'property'
+            'property',
         ])
-            ->where('landlord_id', $userId)
+            ->where(
+                'landlord_id',
+                $userId
+            )
             ->latest()
             ->take(5)
             ->get();
@@ -156,9 +246,12 @@ class DashboardController extends Controller
 
         $recentEnquiries = Enquiry::with([
             'sender',
-            'property'
+            'property',
         ])
-            ->where('receiver_id', $userId)
+            ->where(
+                'receiver_id',
+                $userId
+            )
             ->latest()
             ->take(5)
             ->get();
@@ -179,7 +272,7 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Return Dashboard
+        | Return Landlord Dashboard
         |--------------------------------------------------------------------------
         */
 
